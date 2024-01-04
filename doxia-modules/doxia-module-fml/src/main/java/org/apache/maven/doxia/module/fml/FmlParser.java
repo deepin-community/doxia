@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -46,7 +45,6 @@ import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
 import org.apache.maven.doxia.sink.impl.XhtmlBaseSink;
 import org.apache.maven.doxia.util.DoxiaUtils;
 import org.apache.maven.doxia.util.HtmlTools;
-
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
@@ -58,7 +56,6 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
  *
  * @author <a href="mailto:evenisse@codehaus.org">Emmanuel Venisse</a>
  * @author ltheussl
- * @version $Id: FmlParser.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 @Component( role = Parser.class, hint = "fml" )
@@ -89,10 +86,10 @@ public class FmlParser
     private String macroName;
 
     /** The macro parameters. */
-    private Map<String, Object> macroParameters = new HashMap<String, Object>();
+    private Map<String, Object> macroParameters = new HashMap<>();
 
     /** {@inheritDoc} */
-    public void parse( Reader source, Sink sink )
+    public void parse( Reader source, Sink sink, String reference )
         throws ParseException
     {
         this.faqs = null;
@@ -121,7 +118,7 @@ public class FmlParser
             this.faqs = new Faqs();
 
             // this populates faqs
-            super.parse( tmp, sink );
+            super.parse( tmp, sink, reference );
 
             writeFaqs( sink );
         }
@@ -187,9 +184,7 @@ public class FmlParser
         else if ( parser.getName().equals( TITLE.toString() ) )
         {
             buffer = new StringBuilder();
-
-            buffer.append( String.valueOf( LESS_THAN ) ).append( parser.getName() )
-                .append( String.valueOf( GREATER_THAN ) );
+            buffer.append( LESS_THAN ).append( parser.getName() ).append( GREATER_THAN );
         }
         else if ( parser.getName().equals( FAQ_TAG.toString() ) )
         {
@@ -215,16 +210,12 @@ public class FmlParser
         else if ( parser.getName().equals( QUESTION_TAG.toString() ) )
         {
             buffer = new StringBuilder();
-
-            buffer.append( String.valueOf( LESS_THAN ) ).append( parser.getName() )
-                .append( String.valueOf( GREATER_THAN ) );
+            buffer.append( LESS_THAN ).append( parser.getName() ).append( GREATER_THAN );
         }
         else if ( parser.getName().equals( ANSWER_TAG.toString() ) )
         {
             buffer = new StringBuilder();
-
-            buffer.append( String.valueOf( LESS_THAN ) ).append( parser.getName() )
-                .append( String.valueOf( GREATER_THAN ) );
+            buffer.append( LESS_THAN ).append( parser.getName() ).append( GREATER_THAN );
 
         }
 
@@ -242,23 +233,23 @@ public class FmlParser
         }
         else if ( buffer != null )
         {
-            buffer.append( String.valueOf( LESS_THAN ) ).append( parser.getName() );
+            buffer.append( LESS_THAN ).append( parser.getName() );
 
             int count = parser.getAttributeCount();
 
             for ( int i = 0; i < count; i++ )
             {
-                buffer.append( String.valueOf( SPACE ) ).append( parser.getAttributeName( i ) );
+                buffer.append( SPACE ).append( parser.getAttributeName( i ) );
 
-                buffer.append( String.valueOf( EQUAL ) ).append( String.valueOf( QUOTE ) );
+                buffer.append( EQUAL ).append( QUOTE );
 
                 // TODO: why are attribute values HTML-encoded?
                 buffer.append( HtmlTools.escapeHTML( parser.getAttributeValue( i ) ) );
 
-                buffer.append( String.valueOf( QUOTE ) );
+                buffer.append( QUOTE );
             }
 
-            buffer.append( String.valueOf( GREATER_THAN ) );
+            buffer.append( GREATER_THAN );
         }
     }
 
@@ -297,8 +288,7 @@ public class FmlParser
                     + parser.getLineNumber() + ":" + parser.getColumnNumber() + ")" );
             }
 
-            buffer.append( String.valueOf( LESS_THAN ) ).append( String.valueOf( SLASH ) )
-                .append( parser.getName() ).append( String.valueOf( GREATER_THAN ) );
+            buffer.append( LESS_THAN ).append( SLASH ).append( parser.getName() ).append( GREATER_THAN );
 
             currentFaq.setQuestion( buffer.toString() );
 
@@ -312,8 +302,7 @@ public class FmlParser
                     + parser.getLineNumber() + ":" + parser.getColumnNumber() + ")" );
             }
 
-            buffer.append( String.valueOf( LESS_THAN ) ).append( String.valueOf( SLASH ) )
-                .append( parser.getName() ).append( String.valueOf( GREATER_THAN ) );
+            buffer.append( LESS_THAN ).append( SLASH ).append( parser.getName() ).append( GREATER_THAN );
 
             currentFaq.setAnswer( buffer.toString() );
 
@@ -327,8 +316,7 @@ public class FmlParser
                     + parser.getLineNumber() + ":" + parser.getColumnNumber() + ")" );
             }
 
-            buffer.append( String.valueOf( LESS_THAN ) ).append( String.valueOf( SLASH ) )
-                .append( parser.getName() ).append( String.valueOf( GREATER_THAN ) );
+            buffer.append( LESS_THAN ).append( SLASH ).append( parser.getName() ).append( GREATER_THAN );
 
             currentPart.setTitle( buffer.toString() );
 
@@ -357,8 +345,7 @@ public class FmlParser
                 buffer.deleteCharAt( buffer.length() - 1 );
             }
 
-            buffer.append( String.valueOf( LESS_THAN ) ).append( String.valueOf( SLASH ) )
-                .append( parser.getName() ).append( String.valueOf( GREATER_THAN ) );
+            buffer.append( LESS_THAN ).append( SLASH ).append( parser.getName() ).append( GREATER_THAN );
         }
     }
 
@@ -437,7 +424,9 @@ public class FmlParser
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void init()
     {
         super.init();
@@ -465,7 +454,7 @@ public class FmlParser
 
             if ( macroParameters == null )
             {
-                macroParameters = new HashMap<String, Object>();
+                macroParameters = new HashMap<>();
             }
 
             if ( StringUtils.isEmpty( macroName ) )
@@ -550,7 +539,6 @@ public class FmlParser
     /**
      * Writes the faqs to the specified sink.
      *
-     * @param faqs The faqs to emit.
      * @param sink The sink to consume the event.
      * @throws ParseException if something goes wrong.
      */
@@ -583,9 +571,9 @@ public class FmlParser
             if ( StringUtils.isNotEmpty( part.getTitle() ) )
             {
                 sink.paragraph();
-                sink.bold();
+                sink.inline( SinkEventAttributeSet.Semantics.BOLD );
                 xdocParser.parse( part.getTitle(), sink );
-                sink.bold_();
+                sink.inline_();
                 sink.paragraph_();
             }
 
@@ -721,13 +709,13 @@ public class FmlParser
 
         if ( warnMessages == null )
         {
-            warnMessages = new HashMap<String, Set<String>>();
+            warnMessages = new HashMap<>();
         }
 
         Set<String> set = warnMessages.get( key );
         if ( set == null )
         {
-            set = new TreeSet<String>();
+            set = new TreeSet<>();
         }
         set.add( msg );
         warnMessages.put( key, set );

@@ -42,7 +42,6 @@ import org.xml.sax.helpers.XMLReaderFactory;
 /**
  * A class to validate xml documents.
  *
- * @version $Id$
  * @since 1.1.3
  */
 public class XmlValidator
@@ -107,11 +106,7 @@ public class XmlValidator
             getLog().debug( "Validating the content..." );
             getXmlReader( hasXsd && hasDoctype ).parse( new InputSource( new StringReader( content ) ) );
         }
-        catch ( IOException e )
-        {
-            throw new ParseException( "Error validating the model: " + e.getMessage(), e );
-        }
-        catch ( SAXException e )
+        catch ( IOException | SAXException e )
         {
             throw new ParseException( "Error validating the model: " + e.getMessage(), e );
         }

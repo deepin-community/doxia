@@ -28,7 +28,6 @@ import org.apache.maven.doxia.markup.XmlMarkup;
  * An abstract <code>Sink</code> for xml markup syntax.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: AbstractXmlSink.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public abstract class AbstractXmlSink
@@ -42,6 +41,11 @@ public abstract class AbstractXmlSink
 
     private boolean insertNewline = true;
 
+    /**
+     * <p>Setter for the field <code>insertNewline</code>.</p>
+     *
+     * @param insertNewline a boolean.
+     */
     public void setInsertNewline( boolean insertNewline )
     {
         this.insertNewline = insertNewline;
@@ -91,7 +95,7 @@ public abstract class AbstractXmlSink
      *
      * @param t a non null tag.
      * @param att a set of attributes. May be null.
-     * @see #writeStartTag(javax.swing.text.html.HTML.Tag, javax.swing.text.MutableAttributeSet, boolean).
+     * @see #writeStartTag(javax.swing.text.html.HTML.Tag, javax.swing.text.MutableAttributeSet, boolean)
      */
     protected void writeStartTag( Tag t, MutableAttributeSet att )
     {
@@ -203,7 +207,7 @@ public abstract class AbstractXmlSink
      *
      * @param t a non null tag.
      * @param att a set of attributes. May be null.
-     * @see #writeStartTag(javax.swing.text.html.HTML.Tag, javax.swing.text.MutableAttributeSet, boolean).
+     * @see #writeStartTag(javax.swing.text.html.HTML.Tag, javax.swing.text.MutableAttributeSet, boolean)
      */
     protected void writeSimpleTag( Tag t, MutableAttributeSet att )
     {

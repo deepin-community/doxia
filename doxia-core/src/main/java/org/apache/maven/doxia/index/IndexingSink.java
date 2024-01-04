@@ -19,7 +19,10 @@ package org.apache.maven.doxia.index;
  * under the License.
  */
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.maven.doxia.sink.impl.SinkAdapter;
 import org.apache.maven.doxia.util.HtmlTools;
@@ -29,7 +32,6 @@ import org.apache.maven.doxia.util.HtmlTools;
  *
  * @author <a href="mailto:trygvis@inamo.no">Trygve Laugst&oslash;l</a>
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: IndexingSink.java 1726411 2016-01-23 16:34:09Z hboutemy $
  */
 public class IndexingSink
     extends SinkAdapter
@@ -70,8 +72,11 @@ public class IndexingSink
     /** The stack. */
     private final Stack<IndexEntry> stack;
 
-    /** The current type. */
-    private IndexEntry currentEntry;
+    /** A map containing all used ids of index entries as key and how often they are used as value
+     * (0-based, i.e. 0 means used 1 time). {@link AtomicInteger} is only used here as it implements
+     * a mutable integer (not for its atomicity).
+     */
+    private final Map<String, AtomicInteger> usedIds;
 
     /**
      * Default constructor.
@@ -80,9 +85,10 @@ public class IndexingSink
      */
     public IndexingSink( IndexEntry sectionEntry )
     {
-        stack = new Stack<IndexEntry>();
+        stack = new Stack<>();
         stack.push( sectionEntry );
-
+        usedIds = new HashMap<>();
+        usedIds.put( sectionEntry.getId(), new AtomicInteger() );
         init();
     }
 
@@ -100,103 +106,177 @@ public class IndexingSink
     // Sink Overrides
     // ----------------------------------------------------------------------
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void title()
     {
         this.type = TITLE;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
+    public void section1()
+    {
+        pushNewEntry();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle1()
     {
-        this.currentEntry = null;
         this.type = TYPE_SECTION_1;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void title_()
     {
         this.type = 0;
     }
 
+    /**
+     * <p>sectionTitle1_.</p>
+     */
     public void sectionTitle1_()
     {
         this.type = 0;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section1_()
     {
         pop();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
+    public void section2()
+    {
+        pushNewEntry();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle2()
     {
-        this.currentEntry = null;
         this.type = TYPE_SECTION_2;
     }
 
+    /**
+     * <p>sectionTitle2_.</p>
+     */
     public void sectionTitle2_()
     {
         this.type = 0;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section2_()
     {
         pop();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
+    public void section3()
+    {
+        pushNewEntry();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle3()
     {
-        this.currentEntry = null;
         this.type = TYPE_SECTION_3;
     }
 
+    /**
+     * <p>sectionTitle3_.</p>
+     */
     public void sectionTitle3_()
     {
         this.type = 0;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section3_()
     {
         pop();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
+    public void section4()
+    {
+        pushNewEntry();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle4()
     {
-        this.currentEntry = null;
         this.type = TYPE_SECTION_4;
     }
 
+    /**
+     * <p>sectionTitle4_.</p>
+     */
     public void sectionTitle4_()
     {
         this.type = 0;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section4_()
     {
         pop();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
+    public void section5()
+    {
+        pushNewEntry();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle5()
     {
-        this.currentEntry = null;
         this.type = TYPE_SECTION_5;
     }
 
+    /**
+     * <p>sectionTitle5_.</p>
+     */
     public void sectionTitle5_()
     {
         this.type = 0;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section5_()
     {
         pop();
@@ -234,25 +314,14 @@ public class IndexingSink
                 // Sanitize the id. The most important step is to remove any blanks
                 // -----------------------------------------------------------------------
 
-                if ( this.currentEntry == null )
-                {
-                    this.currentEntry = new IndexEntry( peek(), HtmlTools.encodeId( text ) );
+                // append text to current entry
+                IndexEntry entry = stack.lastElement();
 
-                    this.currentEntry.setTitle( text );
+                String title = entry.getTitle() + text;
+                title = title.replaceAll( "[\\r\\n]+", "" );
+                entry.setTitle( title );
 
-                    push( currentEntry );
-                }
-                else
-                {
-                    IndexEntry entry = (IndexEntry) stack.lastElement();
-
-                    String title = currentEntry.getTitle() + text;
-                    title = title.replaceAll( "[\\r\\n]+", "" );
-
-                    entry.setId( HtmlTools.encodeId( title ) );
-
-                    entry.setTitle( title );
-                }
+                entry.setId( getUniqueId ( HtmlTools.encodeId( title ) ) );
 
                 break;
             // Dunno how to handle these yet
@@ -262,6 +331,40 @@ public class IndexingSink
             default:
                 break;
         }
+    }
+
+    /**
+     * Converts the given id into a unique one by potentially suffixing it with an index value.
+     *
+     * @param id
+     * @return the unique id
+     */
+    String getUniqueId( String id )
+    {
+        final String uniqueId;
+
+        if ( usedIds.containsKey( id ) )
+        {
+            uniqueId = id + "_" + usedIds.get( id ).incrementAndGet();
+        }
+        else
+        {
+            usedIds.put( id, new AtomicInteger() );
+            uniqueId = id;
+        }
+        return uniqueId;
+    }
+
+    /**
+     * Creates and pushes a new IndexEntry onto the top of this stack.
+     */
+    public void pushNewEntry()
+    {
+        IndexEntry entry = new IndexEntry( peek(), "" );
+
+        entry.setTitle( "" );
+
+        stack.push( entry );
     }
 
     /**
@@ -292,7 +395,9 @@ public class IndexingSink
         return stack.peek();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void close()
     {
         super.close();
@@ -300,7 +405,9 @@ public class IndexingSink
         init();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void init()
     {
         this.type = 0;

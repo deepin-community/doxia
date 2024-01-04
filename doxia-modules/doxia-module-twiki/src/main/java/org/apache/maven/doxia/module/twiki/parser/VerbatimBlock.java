@@ -26,7 +26,6 @@ import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
  * Represents a verbatim block
  *
  * @author Christian Nardi
- * @version $Id: VerbatimBlock.java 1726411 2016-01-23 16:34:09Z hboutemy $
  */
 class VerbatimBlock
     extends AbstractFatherBlock

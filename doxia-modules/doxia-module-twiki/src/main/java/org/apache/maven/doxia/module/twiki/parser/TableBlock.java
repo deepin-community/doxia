@@ -25,7 +25,6 @@ import org.apache.maven.doxia.sink.Sink;
  * Represents a table
  *
  * @author Juan F. Codagnone
- * @version $Id: TableBlock.java 709605 2008-10-31 23:57:03Z hboutemy $
  */
 class TableBlock
     extends AbstractFatherBlock
@@ -35,7 +34,7 @@ class TableBlock
      *
      * @param childBlocks child blocks
      */
-    public TableBlock( final Block[] childBlocks )
+    TableBlock( final Block[] childBlocks )
     {
         super( childBlocks );
     }

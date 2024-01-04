@@ -29,13 +29,13 @@ import java.util.Map;
  * Default implementation of <code>MacroManager</code>
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: DefaultMacroManager.java 1345590 2012-06-02 21:36:10Z hboutemy $
  * @since 1.0
  */
 @Component( role = MacroManager.class )
 public class DefaultMacroManager
     implements MacroManager
 {
+    @SuppressWarnings( "MismatchedQueryAndUpdateOfCollection" )
     @Requirement( role = Macro.class )
     private Map<String, Macro> macros;
 

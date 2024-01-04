@@ -23,12 +23,11 @@ import org.apache.maven.doxia.markup.HtmlMarkup;
 
 /**
  * List of <code>Xhtml</code> markups.
- * <br/>
+ * <br>
  * Xhtml uses all {@link javax.swing.text.html.HTML.Tag} and {@link javax.swing.text.html.HTML.Attribute}
  * as markups.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: XhtmlMarkup.java 1633964 2014-10-23 22:01:01Z hboutemy $
  * @since 1.0
  */
 @SuppressWarnings( "checkstyle:interfaceistype" )

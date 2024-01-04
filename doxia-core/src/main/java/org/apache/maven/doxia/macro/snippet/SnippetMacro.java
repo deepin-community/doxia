@@ -37,8 +37,6 @@ import java.util.Map;
 
 /**
  * A macro that prints out the content of a file or a URL.
- *
- * @version $Id: SnippetMacro.java 1726411 2016-01-23 16:34:09Z hboutemy $
  */
 @Component( role = Macro.class, hint = "snippet" )
 public class SnippetMacro
@@ -47,7 +45,7 @@ public class SnippetMacro
     /**
      * Holds the cache.
      */
-    private static Map<String, String> cache = new HashMap<String, String>();
+    private static Map<String, String> cache = new HashMap<>();
 
     private static final int HOUR = 60;
 
@@ -59,7 +57,7 @@ public class SnippetMacro
     /**
      * Holds the time cache.
      */
-    private static Map<String, Long> timeCached = new HashMap<String, Long>();
+    private static Map<String, Long> timeCached = new HashMap<>();
 
     /**
      * Debug.
@@ -69,11 +67,9 @@ public class SnippetMacro
     /**
      * in case of Exception during snippet download error will ignored and empty content returned.
      */
-    private boolean ignoreDownloadError;
+    private boolean ignoreDownloadError = true;
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void execute( Sink sink, MacroRequest request )
         throws MacroExecutionException
     {
@@ -103,7 +99,7 @@ public class SnippetMacro
 
         if ( verbatimParam != null && !"".equals( verbatimParam ) )
         {
-            verbatim = Boolean.valueOf( verbatimParam ).booleanValue();
+            verbatim = Boolean.valueOf( verbatimParam );
         }
 
         String encoding = (String) request.getParameter( "encoding" );
@@ -207,13 +203,18 @@ public class SnippetMacro
             }
             catch ( IOException e )
             {
-                getLog().debug( "IOException which reading " + url + ": " + e );
-                result = new StringBuffer( "Error during retrieving content skip as ignoreDownloadError activated." );
+                if ( ignoreDownloadError )
+                {
+                    getLog().debug( "IOException which reading " + url + ": " + e );
+                    result =
+                        new StringBuffer( "Error during retrieving content skip as ignoreDownloadError activated." );
+                }
+                else
+                {
+                    throw e;
+                }
             }
-
-
         }
-
         return result;
     }
 
@@ -269,7 +270,7 @@ public class SnippetMacro
     {
         String globalId = globalSnippetId( url, id );
 
-        return timeCached.containsKey( globalId ) ? timeCached.get( globalId ).longValue() : 0;
+        return timeCached.containsKey( globalId ) ? timeCached.get( globalId ) : 0;
     }
 
     /**
@@ -316,7 +317,7 @@ public class SnippetMacro
     {
         cache.put( globalSnippetId( url, id ), content );
 
-        timeCached.put( globalSnippetId( url, id ), Long.valueOf( System.currentTimeMillis() ) );
+        timeCached.put( globalSnippetId( url, id ), System.currentTimeMillis() );
     }
 
     /**

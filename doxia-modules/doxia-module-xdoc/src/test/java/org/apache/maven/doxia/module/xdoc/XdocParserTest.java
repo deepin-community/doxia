@@ -40,7 +40,6 @@ import org.codehaus.plexus.util.IOUtil;
 /**
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
  * @author <a href="mailto:evenisse@codehaus.org">Emmanuel Venisse</a>
- * @version $Id: XdocParserTest.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public class XdocParserTest
@@ -54,7 +53,7 @@ public class XdocParserTest
     {
         super.setUp();
 
-        parser = (XdocParser) lookup( Parser.ROLE, "xdoc" );
+        parser = (XdocParser) lookup( Parser.class, "xdoc" );
 
         // AbstractXmlParser.CachedFileEntityResolver downloads DTD/XSD files in ${java.io.tmpdir}
         // Be sure to delete them
@@ -101,83 +100,61 @@ public class XdocParserTest
     public void testSnippetMacro()
         throws Exception
     {
-        Writer output = null;
-        Reader reader = null;
-
-        try
+        try( Writer output = getTestWriter( "macro" );
+             Reader reader = getTestReader( "macro" ) )
         {
-            output = getTestWriter( "macro" );
-            reader = getTestReader( "macro" );
-
             Sink sink = new XdocSink( output );
             createParser().parse( reader, sink );
             sink.close();
-        }
-        finally
-        {
-            IOUtil.close( output );
-            IOUtil.close( reader );
         }
 
         File f = getTestFile( getBasedir(), outputBaseDir() + getOutputDir() + "macro.xml" );
         assertTrue( "The file " + f.getAbsolutePath() + " was not created", f.exists() );
 
         String content;
-        try
+        try( Reader reader = new FileReader( f ) )
         {
-            reader = new FileReader( f );
             content = IOUtil.toString( reader );
         }
-        finally
-        {
-            IOUtil.close( reader );
-        }
 
-        assertTrue( content.indexOf( "&lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;" ) != -1 );
+        assertTrue( content.contains( "&lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;" ) );
     }
 
-    /** @throws Exception  */
     public void testTocMacro()
         throws Exception
     {
-        Writer output = null;
-        Reader reader = null;
-
-        try
+        try( Writer output = getTestWriter( "toc" );
+             Reader reader = getTestReader( "toc" ) )
         {
-            output = getTestWriter( "toc" );
-            reader = getTestReader( "toc" );
-
             Sink sink = new XdocSink( output );
             createParser().parse( reader, sink );
             sink.close();
-        }
-        finally
-        {
-            IOUtil.close( output );
-            IOUtil.close( reader );
         }
 
         File f = getTestFile( getBasedir(), outputBaseDir() + getOutputDir() + "toc.xml" );
         assertTrue( "The file " + f.getAbsolutePath() + " was not created", f.exists() );
 
         String content;
-        try
+        try ( Reader reader = new FileReader( f ) )
         {
-            reader = new FileReader( f );
             content = IOUtil.toString( reader );
-        }
-        finally
-        {
-            IOUtil.close( reader );
         }
 
         // No section, only subsection 1 and 2
-        assertTrue( content.indexOf( "<a href=\"#Section_11\">Section 11</a>" ) != -1 );
-        assertTrue( content.indexOf( "<a href=\"#Section_1211\">Section 1211</a>" ) == -1 );
+        assertTrue( content.contains( "<a href=\"#Section_11\">Section 11</a>" ) );
+        assertFalse( content.contains( "<a href=\"#Section_1211\">Section 1211</a>" ) );
     }
 
-    /** @throws Exception  */
+    private Iterator<SinkEventElement> parseText( String text )
+        throws ParseException
+    {
+        SinkEventTestingSink sink = new SinkEventTestingSink();
+
+        parser.parse( text, sink );
+
+        return sink.getEventList().iterator();
+    }
+
     public void testHeadEventsList()
         throws Exception
     {
@@ -191,13 +168,9 @@ public class XdocParserTest
                 + "</head>"
                 + "<body></body></document>";
 
-        SinkEventTestingSink sink = new SinkEventTestingSink();
+        Iterator<SinkEventElement> it = parseText( text );
 
-        parser.parse( text, sink );
-
-        Iterator<SinkEventElement> it = sink.getEventList().iterator();
-
-        assertEquals( it, "head", "title", "text", "title_", "comment", "author", "text", "author_" );
+        assertStartsWith( it, "head", "title", "text", "title_", "comment", "author", "text", "author_" );
 
         SinkEventElement unknown = it.next();
         assertEquals( "unknown", unknown.getName() );
@@ -208,7 +181,6 @@ public class XdocParserTest
         assertEquals( "base", unknown.getArgs()[0] );
 
         assertEquals( it, "head_", "body", "body_" );
-        assertFalse( it.hasNext() );
 
         // DOXIA-359
         text = "<document>"
@@ -216,68 +188,47 @@ public class XdocParserTest
                 + "<head><title>head title</title></head>"
                 + "<body></body></document>";
 
-        sink.reset();
-        parser.parse( text, sink );
+        it = parseText( text );
 
-        it = sink.getEventList().iterator();
-
-        assertEquals( it, "head", "title" );
+        assertStartsWith( it, "head", "title" );
 
         SinkEventElement title = it.next();
         assertEquals( "text", title.getName() );
         assertEquals( "properties title", title.getArgs()[0] );
 
         assertEquals( it, "title_", "head_", "body",  "body_" );
-        assertFalse( it.hasNext() );
     }
 
-    /** @throws Exception  */
     public void testDocumentBodyEventsList()
         throws Exception
     {
         String text = "<document><body></body></document>";
 
-        SinkEventTestingSink sink = new SinkEventTestingSink();
-
-        parser.parse( text, sink );
-
-        Iterator<SinkEventElement> it = sink.getEventList().iterator();
+        Iterator<SinkEventElement> it = parseText( text );
 
         assertEquals( it, "body", "body_" );
-        assertFalse( it.hasNext() );
     }
 
-    /** @throws Exception  */
     public void testSectionEventsList()
         throws Exception
     {
         String text = "<section name=\"sec 1\"><subsection name=\"sub 1\"></subsection></section>";
 
-        SinkEventTestingSink sink = new SinkEventTestingSink();
-
-        parser.parse( text, sink );
-
-        Iterator<SinkEventElement> it = sink.getEventList().iterator();
+        Iterator<SinkEventElement> it = parseText( text );
 
         assertEquals( it, "section1", "sectionTitle1", "text", "sectionTitle1_", "section2", "sectionTitle2", "text",
                       "sectionTitle2_", "section2_", "section1_" );
-        assertFalse( it.hasNext() );
     }
 
-    /** @throws Exception  */
     public void testSectionAttributes()
         throws Exception
     {
         // DOXIA-448
         String text = "<section name=\"section name\" class=\"foo\" id=\"bar\"></section>";
 
-        SinkEventTestingSink sink = new SinkEventTestingSink();
+        Iterator<SinkEventElement> it = parseText( text );
 
-        parser.parse( text, sink );
-
-        Iterator<SinkEventElement> it = sink.getEventList().iterator();
-
-        assertEquals( it, "anchor", "anchor_" );
+        assertStartsWith( it, "anchor", "anchor_" );
 
         SinkEventElement next = it.next();
         assertEquals( "section1", next.getName() );
@@ -289,63 +240,44 @@ public class XdocParserTest
 
         next = it.next();
         assertEquals( "sectionTitle1", next.getName() );
-        assertNull( (SinkEventAttributeSet) next.getArgs()[0] );
+        assertNull( next.getArgs()[0] );
 
         assertEquals( it, "text", "sectionTitle1_", "section1_" );
-        assertFalse( it.hasNext() );
     }
 
-    /** @throws Exception  */
     public void testNestedSectionsEventsList()
         throws Exception
     {
         // DOXIA-241
         String text = "<section name=\"section\"><h6>h6</h6><subsection name=\"subsection\"></subsection></section>";
 
-        SinkEventTestingSink sink = new SinkEventTestingSink();
-
-        parser.parse( text, sink );
-
-        Iterator<SinkEventElement> it = sink.getEventList().iterator();
+        Iterator<SinkEventElement> it = parseText( text );
 
         assertEquals( it, "section1", "sectionTitle1", "text", "sectionTitle1_", "section2", "section3", "section4",
                       "section5", "sectionTitle5", "text", "sectionTitle5_", "section5_", "section4_", "section3_",
                       "section2_", "section2", "sectionTitle2", "text", "sectionTitle2_", "section2_", "section1_" );
-        assertFalse( it.hasNext() );
     }
 
-    /** @throws Exception  */
     public void testSourceEventsList()
         throws Exception
     {
         String text = "<source><a href=\"what.html\">what</a></source>";
 
-        SinkEventTestingSink sink = new SinkEventTestingSink();
+        Iterator<SinkEventElement> it = parseText( text );
 
-        parser.parse( text, sink );
-
-        Iterator<SinkEventElement> it = sink.getEventList().iterator();
         assertEquals( it, "verbatim", "link", "text", "link_", "verbatim_" );
-        assertFalse( it.hasNext() );
 
         text = "<source><![CDATA[<a href=\"what.html\">what</a>]]></source>";
-        sink.reset();
-        parser.parse( text, sink );
+        it = parseText( text );
 
-        it = sink.getEventList().iterator();
         assertEquals( it, "verbatim", "text", "verbatim_" );
-        assertFalse( it.hasNext() );
 
         text = "<source><![CDATA[<source>what</source>]]></source>";
-        sink.reset();
-        parser.parse( text, sink );
+        it = parseText( text );
 
-        it = sink.getEventList().iterator();
         assertEquals( it, "verbatim", "text", "verbatim_" );
-        assertFalse( it.hasNext() );
     }
 
-    /** @throws Exception  */
     public void testSourceContainingDTD()
         throws Exception
     {
@@ -355,17 +287,11 @@ public class XdocParserTest
                           " \"http://java.sun.com/j2ee/dtds/web-app_2.2.dtd\">" +
                       "]]></source>";
 
-        SinkEventTestingSink sink = new SinkEventTestingSink();
+        Iterator<SinkEventElement> it = parseText( text );
 
-        parser.parse( text, sink );
-
-        Iterator<SinkEventElement> it = sink.getEventList().iterator();
         assertEquals( it, "verbatim", "text", "verbatim_" );
-        assertFalse( it.hasNext() );
-
     }
 
-    /** @throws Exception  */
     public void testPreEOL()
         throws Exception
     {
@@ -373,19 +299,13 @@ public class XdocParserTest
         String text = "<source><a href=\"what.html\">what</a>" + EOL
                 + "<a href=\"what.html\">what</a></source>";
 
-        SinkEventTestingSink sink = new SinkEventTestingSink();
-
-        parser.parse( text, sink );
-
-        Iterator<SinkEventElement> it = sink.getEventList().iterator();
+        Iterator<SinkEventElement> it = parseText( text );
 
         assertEquals( it, "verbatim", "link", "text", "link_", "text", "link", "text", "link_", "verbatim_" );
     }
 
     /**
      * Test section with ids.
-     *
-     * @throws java.lang.Exception if any.
      */
     public void testSectionIdAnchor()
         throws Exception
@@ -393,59 +313,40 @@ public class XdocParserTest
         String text = "<section name=\"test\" id=\"test-id\">This is a test."
                 + "<subsection name=\"sub-test\" id=\"sub-id\">Sub-section</subsection></section>";
 
-        SinkEventTestingSink sink = new SinkEventTestingSink();
-
-        parser.parse( text, sink );
-
-        Iterator<SinkEventElement> it = sink.getEventList().iterator();
+        Iterator<SinkEventElement> it = parseText( text );
 
         assertEquals( it.next(), "anchor", "test-id" );
 
-        assertEquals( it, "anchor_", "section1", "sectionTitle1", "text", "sectionTitle1_", "text" );
+        assertStartsWith( it, "anchor_", "section1", "sectionTitle1", "text", "sectionTitle1_", "text" );
 
         assertEquals( it.next(), "anchor", "sub-id" );
 
         assertEquals( it, "anchor_", "section2", "sectionTitle2", "text", "sectionTitle2_", "text", "section2_",
                       "section1_" );
-        assertFalse( it.hasNext() );
     }
 
     /**
      * Test script block.
-     *
-     * @throws java.lang.Exception if any.
      */
     public void testJavaScript()
         throws Exception
     {
         String text = "<script type=\"text/javascript\"><![CDATA[alert(\"Hello!\");]]></script>";
 
-        SinkEventTestingSink sink = new SinkEventTestingSink();
-
-        parser.parse( text, sink );
-
-        Iterator<SinkEventElement> it = sink.getEventList().iterator();
+        Iterator<SinkEventElement> it = parseText( text );
         assertEquals( it, "unknown", "unknown", "unknown" );
-        assertFalse( it.hasNext() );
     }
 
     /**
      * Test unknown tags.
-     *
-     * @throws java.lang.Exception if any.
      */
     public void testUnknown()
         throws Exception
     {
         String text = "<applet><param name=\"name\" value=\"value\"/><unknown/></applet>";
 
-        SinkEventTestingSink sink = new SinkEventTestingSink();
-
-        parser.parse( text, sink );
-
-        Iterator<SinkEventElement> it = sink.getEventList().iterator();
+        Iterator<SinkEventElement> it = parseText( text );
         assertEquals( it, "unknown", "unknown", "unknown", "unknown", "unknown" );
-        assertFalse( it.hasNext() );
     }
 
     /**
@@ -477,7 +378,6 @@ public class XdocParserTest
         }
     }
 
-    /** @throws Exception  */
     public void testEntities()
         throws Exception
     {
@@ -491,11 +391,11 @@ public class XdocParserTest
 
         Iterator<SinkEventElement> it = sink.getEventList().iterator();
 
-        assertEquals( it, "section1", "sectionTitle1" );
+        assertStartsWith( it, "section1", "sectionTitle1" );
 
         assertEquals( it.next(), "text", "&\u0159\uD835\uDFED" );
 
-        assertEquals( it, "sectionTitle1_", "paragraph" );
+        assertStartsWith( it, "sectionTitle1_", "paragraph" );
 
         assertEquals( it.next(), "text", "&" );
 
@@ -504,7 +404,6 @@ public class XdocParserTest
         assertEquals( it.next(), "text", "\uD835\uDFED" );
 
         assertEquals( it, "paragraph_", "section1_" );
-        assertFalse( it.hasNext() );
     }
     
     public void testStyleWithCData() throws Exception

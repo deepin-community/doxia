@@ -29,7 +29,6 @@ import org.codehaus.plexus.util.StringUtils;
  * <p>IndexEntry class.</p>
  *
  * @author <a href="mailto:trygvis@inamo.no">Trygve Laugst&oslash;l</a>
- * @version $Id: IndexEntry.java 1438266 2013-01-24 23:34:44Z olamy $
  */
 public class IndexEntry
 {
@@ -51,7 +50,7 @@ public class IndexEntry
     /**
      * The child entries.
      */
-    private List<IndexEntry> childEntries = new ArrayList<IndexEntry>();
+    private List<IndexEntry> childEntries = new ArrayList<>();
 
     /**
      * System-dependent EOL.
@@ -108,6 +107,7 @@ public class IndexEntry
     /**
      * Set the id.
      *
+     * @param id the id
      * @since 1.1.2
      */
     protected void setId( String id )
@@ -154,7 +154,7 @@ public class IndexEntry
     {
         if ( entries == null )
         {
-            childEntries = new ArrayList<IndexEntry>();
+            childEntries = new ArrayList<>();
         }
 
         this.childEntries = entries;
@@ -274,9 +274,9 @@ public class IndexEntry
     // -----------------------------------------------------------------------
 
     /**
-     * {@inheritDoc}
-     * <p/>
      * Returns a string representation of the object.
+     *
+     * @return Returns a string representation of all objects
      */
     public String toString()
     {
@@ -302,7 +302,7 @@ public class IndexEntry
 
         message.append( EOL );
 
-        StringBuilder indent = new StringBuilder( "" );
+        StringBuilder indent = new StringBuilder();
 
         for ( int i = 0; i < depth; i++ )
         {

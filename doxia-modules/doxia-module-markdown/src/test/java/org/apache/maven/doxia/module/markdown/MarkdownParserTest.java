@@ -1,5 +1,10 @@
 package org.apache.maven.doxia.module.markdown;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.util.Iterator;
+import java.util.List;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,17 +27,15 @@ package org.apache.maven.doxia.module.markdown;
 import org.apache.maven.doxia.parser.AbstractParserTest;
 import org.apache.maven.doxia.parser.ParseException;
 import org.apache.maven.doxia.parser.Parser;
+import org.apache.maven.doxia.sink.SinkEventAttributes;
+import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
 import org.apache.maven.doxia.sink.impl.SinkEventElement;
 import org.apache.maven.doxia.sink.impl.SinkEventTestingSink;
-import org.codehaus.plexus.util.IOUtil;
-
-import java.io.Reader;
-import java.util.Iterator;
 
 /**
  * Tests for {@link MarkdownParser}.
  *
- * @author Julien Nicoulaud <julien.nicoulaud@gmail.com>
+ * @author <a href="mailto:julien.nicoulaud@gmail.com">Julien Nicoulaud</a>
  * @since 1.3
  */
 public class MarkdownParserTest
@@ -52,7 +55,7 @@ public class MarkdownParserTest
         throws Exception
     {
         super.setUp();
-        parser = (MarkdownParser) lookup( Parser.ROLE, MarkdownParser.ROLE_HINT );
+        parser = (MarkdownParser) lookup( Parser.class, MarkdownParser.ROLE_HINT );
     }
 
     /**
@@ -76,7 +79,7 @@ public class MarkdownParserTest
     /**
      * Assert the paragraph sink event is fired when parsing "paragraph.md".
      *
-     * @throws Exception if the event list is not correct when parsing the document.
+     * @throws Exception if the event list is not correct when parsing the document
      */
     public void testParagraphSinkEvent()
         throws Exception
@@ -89,54 +92,119 @@ public class MarkdownParserTest
     }
 
     /**
-     * Assert the bold sink event is fired when parsing "bold.md".
+     * Assert the bold sink event is fired when parsing "font-bold.md".
      *
-     * @throws Exception if the event list is not correct when parsing the document.
+     * @throws Exception if the event list is not correct when parsing the document
      */
-    public void testBoldSinkEvent()
+    public void testFontBoldSinkEvent()
         throws Exception
     {
-        Iterator<SinkEventElement> it = parseFileToEventTestingSink( "bold" ).getEventList().iterator();
+        //System.out.println( parseFileToHtml( "font-bold" ) );
+        List<SinkEventElement> eventList = parseFileToEventTestingSink( "font-bold" ).getEventList();
+        Iterator<SinkEventElement> it = eventList.iterator();
 
-        assertEquals( it, "head", "head_", "body", "paragraph", "bold", "text", "bold_", "paragraph_", "body_" );
+        assertEquals( it, "head", "head_", "body", "paragraph", "inline", "text", "inline_", "paragraph_", "body_" );
 
         assertFalse( it.hasNext() );
+
+        SinkEventElement inline = eventList.get( 4 );
+        assertEquals( "inline", inline.getName() );
+        SinkEventAttributeSet atts = (SinkEventAttributeSet) inline.getArgs()[0];
+        assertTrue( atts.containsAttribute( SinkEventAttributes.SEMANTICS, "bold" ) );
     }
 
     /**
-     * Assert the italic sink event is fired when parsing "italic.md".
+     * Assert the italic sink event is fired when parsing "font-italic.md".
      *
-     * @throws Exception if the event list is not correct when parsing the document.
+     * @throws Exception if the event list is not correct when parsing the document
      */
-    public void testItalicSinkEvent()
+    public void testFontItalicSinkEvent()
         throws Exception
     {
-        Iterator<SinkEventElement> it = parseFileToEventTestingSink( "italic" ).getEventList().iterator();
+        //System.out.println( parseFileToHtml( "font-italic" ) );
+        List<SinkEventElement> eventList = parseFileToEventTestingSink( "font-italic" ).getEventList();
+        Iterator<SinkEventElement> it = eventList.iterator();
 
-        assertEquals( it, "head", "head_", "body", "paragraph", "italic", "text", "italic_", "paragraph_", "body_" );
+        assertEquals( it, "head", "head_", "body", "paragraph", "inline", "text", "inline_", "paragraph_", "body_" );
 
         assertFalse( it.hasNext() );
+        SinkEventElement inline = eventList.get( 4 );
+        assertEquals( "inline", inline.getName() );
+        SinkEventAttributeSet atts = (SinkEventAttributeSet) inline.getArgs()[0];
+        assertTrue( atts.containsAttribute( SinkEventAttributes.SEMANTICS, "italic" ) );
     }
 
     /**
-     * Assert the code sink event is fired when parsing "code.md".
+     * Assert the monospaced/code sink event is fired when parsing "font-monospaced.md".
      *
-     * @throws Exception if the event list is not correct when parsing the document.
+     * @throws Exception if the event list is not correct when parsing the document
+     */
+    public void testFontMonospacedSinkEvent()
+        throws Exception
+    {
+        //System.out.println( parseFileToHtml( "font-monospaced" ) );
+        List<SinkEventElement> eventList = parseFileToEventTestingSink( "font-monospaced" ).getEventList();
+        Iterator<SinkEventElement> it = eventList.iterator();
+
+        assertEquals( it, "head", "head_", "body", "paragraph", "inline", "text", "inline_", "paragraph_", "body_" );
+
+        assertFalse( it.hasNext() );
+        SinkEventElement inline = eventList.get( 4 );
+        assertEquals( "inline", inline.getName() );
+        SinkEventAttributeSet atts = (SinkEventAttributeSet) inline.getArgs()[0];
+        assertTrue( atts.containsAttribute( SinkEventAttributes.SEMANTICS, "code" ) );
+    }
+
+    /**
+     * Assert the verbatim sink event is fired when parsing "code.md".
+     *
+     * @throws Exception if the event list is not correct when parsing the document
      */
     public void testCodeSinkEvent()
         throws Exception
     {
         Iterator<SinkEventElement> it = parseFileToEventTestingSink( "code" ).getEventList().iterator();
 
-        assertEquals( it, "head", "head_", "body", "paragraph", "text", "paragraph_", "text", "unknown", "verbatim", "text", "verbatim_", "unknown", "body_" );
+        assertEquals( it, "head", "head_", "body", "paragraph", "text", "paragraph_", "text", "verbatim", "inline", "text", "inline_", "verbatim_", "body_" );
 
         assertFalse( it.hasNext() );
     }
 
     /**
-     * Assert the image sink event is fired when parsing "image.md".
+     * Assert the verbatim sink event is fired when parsing "fenced-code-block.md".
      *
-     * @throws Exception if the event list is not correct when parsing the document.
+     * @throws Exception if the event list is not correct when parsing the document
+     */
+    public void testFencedCodeBlockSinkEvent()
+        throws Exception
+    {
+        List<SinkEventElement> eventList = parseFileToEventTestingSink( "fenced-code-block" ).getEventList();
+        Iterator<SinkEventElement> it = eventList.iterator();
+
+        assertEquals( it, "head", "head_", "body", "paragraph", "text", "paragraph_", "text", "verbatim", "inline", "text", "inline_", "verbatim_", "body_" );
+
+        assertFalse( it.hasNext() );
+
+        // PRE element must be a "verbatim" Sink event that specifies
+        // BOXED = true
+        SinkEventElement pre = eventList.get( 7 );
+        assertEquals( "verbatim", pre.getName() );
+        SinkEventAttributeSet preAtts = (SinkEventAttributeSet) pre.getArgs()[0];
+        assertTrue( preAtts.containsAttribute( SinkEventAttributes.DECORATION, "boxed" ) );
+
+        // * CODE element must be an "inline" Sink event that specifies:
+        // * SEMANTICS = "code" and CLASS = "language-java"
+        SinkEventElement code = eventList.get( 8 );
+        assertEquals( "inline", code.getName() );
+        SinkEventAttributeSet codeAtts = (SinkEventAttributeSet) code.getArgs()[0];
+        assertTrue( codeAtts.containsAttribute( SinkEventAttributes.SEMANTICS, "code" ) );
+        assertTrue( codeAtts.containsAttribute( SinkEventAttributes.CLASS, "language-java" ) );
+    }
+
+    /**
+     * Assert the figureGraphics sink event is fired when parsing "image.md".
+     *
+     * @throws Exception if the event list is not correct when parsing the document
      */
     public void testImageSinkEvent()
         throws Exception
@@ -151,7 +219,7 @@ public class MarkdownParserTest
     /**
      * Assert the link sink event is fired when parsing "link.md".
      *
-     * @throws Exception if the event list is not correct when parsing the document.
+     * @throws Exception if the event list is not correct when parsing the document
      */
     public void testLinkSinkEvent()
         throws Exception
@@ -164,16 +232,45 @@ public class MarkdownParserTest
     }
 
     /**
+     * Assert the link sink event is fired when parsing "link.md".
+     *
+     * @throws Exception if the event list is not correct when parsing the document
+     */
+    public void testLinkRewriteSinkEvent()
+        throws Exception
+    {
+        List<SinkEventElement> eventList = parseFileToEventTestingSink( "link_rewrite" ).getEventList();
+
+        Iterator<SinkEventElement> it = eventList.iterator();
+        assertEquals( it, "head", "head_", "body", "paragraph", "text", "link", "text", "link_", "text", "link", "text",
+                      "link_", "text", "paragraph_", "body_" );
+
+        assertFalse( it.hasNext() );
+
+        assertEquals( "doc.html", eventList.get( 5 ).getArgs()[0] );
+        assertEquals( "ftp://doc.md", eventList.get( 9 ).getArgs()[0] );
+    }
+
+    public void testLinkWithAnchorAndQuery() throws Exception
+    {
+        Iterator<SinkEventElement> it = parseFileToEventTestingSink( "link_anchor_query" ).getEventList().iterator();
+
+        assertEquals( it, "head", "head_", "body", "paragraph", "link", "text", "link_", "paragraph_", "body_" );
+
+        assertFalse( it.hasNext() );
+    }
+
+    /**
      * Assert the list sink event is fired when parsing "list.md".
      *
-     * @throws Exception if the event list is not correct when parsing the document.
+     * @throws Exception if the event list is not correct when parsing the document
      */
     public void testListSinkEvent()
         throws Exception
     {
         Iterator<SinkEventElement> it = parseFileToEventTestingSink( "list" ).getEventList().iterator();
 
-        assertEquals( it, "head", "head_", "body", "list", "text", "listItem", "text", "listItem_", "text", "listItem", "text",
+        assertEquals( it, "head", "head_", "body", "list", "text", "listItem", "text", "listItem_", "listItem", "text",
                       "listItem_", "text", "list_", "body_" );
 
         assertFalse( it.hasNext() );
@@ -182,14 +279,14 @@ public class MarkdownParserTest
     /**
      * Assert the numbered list sink event is fired when parsing "numbered-list.md".
      *
-     * @throws Exception if the event list is not correct when parsing the document.
+     * @throws Exception if the event list is not correct when parsing the document
      */
     public void testNumberedListSinkEvent()
         throws Exception
     {
         Iterator<SinkEventElement> it = parseFileToEventTestingSink( "numbered-list" ).getEventList().iterator();
 
-        assertEquals( it, "head", "head_", "body", "numberedList", "text", "numberedListItem", "text", "numberedListItem_", "text",
+        assertEquals( it, "head", "head_", "body", "numberedList", "text", "numberedListItem", "text", "numberedListItem_",
                       "numberedListItem", "text", "numberedListItem_", "text", "numberedList_", "body_" );
 
         assertFalse( it.hasNext() );
@@ -198,25 +295,64 @@ public class MarkdownParserTest
     /**
      * Assert the metadata is passed through when parsing "metadata.md".
      *
-     * @throws Exception if the event list is not correct when parsing the document.
+     * @throws Exception if the event list is not correct when parsing the document
      */
     public void testMetadataSinkEvent()
         throws Exception
     {
-        Iterator<SinkEventElement> it = parseFileToEventTestingSink( "metadata" ).getEventList().iterator();
+        testMetadataSinkEvent( "metadata" );
+    }
 
-        assertEquals( it, "head", "title", "text", "title_", "author", "text", "author_", "date", "text", "date_",
-                      "head_", "body", "unknown", "text", "unknown", "paragraph", "text", "paragraph_", "section1",
+    /**
+     * Assert the metadata is passed through when parsing "metadata-yaml.md".
+     *
+     * @throws Exception if the event list is not correct when parsing the document
+     */
+    public void testMetadataYamlSinkEvent()
+        throws Exception
+    {
+        testMetadataSinkEvent( "metadata-yaml" );
+    }
+
+    private void testMetadataSinkEvent( String doc )
+        throws Exception
+    {
+        List<SinkEventElement> eventList = parseFileToEventTestingSink( doc ).getEventList();
+        Iterator<SinkEventElement> it = eventList.iterator();
+
+        assertEquals( it, "head", "title", "text", "text", "text", "title_", "author", "text", "author_", "date", "text", "date_",
+                      "unknown", "head_", "body", "unknown", "text", "unknown", "paragraph", "text", "paragraph_", "section1",
                       "sectionTitle1", "text", "sectionTitle1_", "paragraph", "text", "paragraph_", "section1_",
                       "body_" );
 
         assertFalse( it.hasNext() );
+
+        // Title must be "A Title & a Test"
+        assertEquals( "A Title ", eventList.get( 2 ).getArgs()[0]);
+        assertEquals( "&", eventList.get( 3 ).getArgs()[0]);
+        assertEquals( " a 'Test'", eventList.get( 4 ).getArgs()[0]);
+
+        // Author must be "Somebody <somebody@somewhere.org>"
+        assertEquals( "Somebody 'Nickname' Great <somebody@somewhere.org>", eventList.get( 7 ).getArgs()[0]);
+
+        // Date must be "2013 © Copyleft"
+        assertEquals( "2013 \u00A9 Copyleft", eventList.get( 10 ).getArgs()[0]);
+
+        // * META element must be an "unknown" Sink event that specifies:
+        // * name = "keywords" and content = "maven,doxia,markdown"
+        SinkEventElement meta = eventList.get( 12 );
+        assertEquals( "unknown", meta.getName() );
+        assertEquals( "meta", meta.getArgs()[0] );
+        SinkEventAttributeSet metaAtts = (SinkEventAttributeSet) meta.getArgs()[2];
+        assertTrue( metaAtts.containsAttribute( SinkEventAttributes.NAME, "keywords" ) );
+        assertTrue( metaAtts.containsAttribute( "content", "maven,doxia,markdown" ) );
+
     }
 
     /**
      * Assert the first header is passed as title event when parsing "first-heading.md".
      *
-     * @throws Exception if the event list is not correct when parsing the document.
+     * @throws Exception if the event list is not correct when parsing the document
      */
     public void testFirstHeadingSinkEvent()
         throws Exception
@@ -224,8 +360,9 @@ public class MarkdownParserTest
         Iterator<SinkEventElement> it = parseFileToEventTestingSink( "first-heading" ).getEventList().iterator();
 
         // NOTE: H1 is rendered as "unknown" and H2 is "section1" (see DOXIA-203)
-        assertEquals( it, "head", "title", "text", "title_", "head_", "body", "section1", "sectionTitle1", "text",
-                      "sectionTitle1_", "paragraph", "text", "paragraph_", "section1_", "body_" );
+        assertEquals( it, "head", "title", "text", "title_", "head_", "body", "comment", "text",
+                "section1", "sectionTitle1", "text", "sectionTitle1_", "paragraph", "text",
+                "paragraph_", "section1_", "body_" );
 
         assertFalse( it.hasNext() );
     }
@@ -233,7 +370,7 @@ public class MarkdownParserTest
     /**
      * Assert the first header is passed as title event when parsing "comment-before-heading.md".
      *
-     * @throws Exception if the event list is not correct when parsing the document.
+     * @throws Exception if the event list is not correct when parsing the document
      */
     public void testCommentBeforeHeadingSinkEvent()
         throws Exception
@@ -241,7 +378,7 @@ public class MarkdownParserTest
         Iterator<SinkEventElement> it = parseFileToEventTestingSink( "comment-before-heading" ).getEventList().iterator();
 
         // NOTE: H1 is rendered as "unknown" and H2 is "section1" (see DOXIA-203)
-        assertEquals( it, "head", "title", "text", "title_", "head_", "body", "comment", "unknown", "text",
+        assertEquals( it, "head", "title", "text", "title_", "head_", "body", "comment", "text", "unknown", "text",
                       "unknown", "paragraph", "text", "link", "text", "link_", "text", "paragraph_", "body_" );
 
         assertFalse( it.hasNext() );
@@ -250,7 +387,7 @@ public class MarkdownParserTest
     /**
      * Assert the first header is passed as title event when parsing "comment-before-heading.md".
      *
-     * @throws Exception if the event list is not correct when parsing the document.
+     * @throws Exception if the event list is not correct when parsing the document
      */
     public void testHtmlContent()
         throws Exception
@@ -258,8 +395,8 @@ public class MarkdownParserTest
         Iterator<SinkEventElement> it = parseFileToEventTestingSink( "html-content" ).getEventList().iterator();
 
         // NOTE: H1 and DIV are rendered as "unknown" and H2 is "section1" (see DOXIA-203)
-        assertEquals( it, "head", "head_", "body", "unknown", "text", "paragraph", "bold", "text",
-                      "bold_", "text", "bold", "text", "bold_", "text", "paragraph_", "text", "unknown", "text", "horizontalRule", "unknown",
+        assertEquals( it, "head", "head_", "body", "unknown", "text", "paragraph", "inline", "text",
+                      "inline_", "text", "inline", "text", "inline_", "text", "paragraph_", "text", "unknown", "text", "horizontalRule", "unknown",
                 "text", "unknown", "paragraph", "text", "paragraph_", "text", "table", "tableRows", "text", "tableRow",
                 "tableHeaderCell", "text", "tableHeaderCell_", "tableRow_", "text", "tableRow",
                                 "tableCell", "text", "tableCell_", "tableRow_", "text", "tableRows_", "table_",
@@ -271,39 +408,109 @@ public class MarkdownParserTest
     /**
      * Parse the file and return a {@link SinkEventTestingSink}.
      *
-     * @param file the file to parse with {@link #parser}.
-     * @return a sink to test parsing events.
-     * @throws ParseException if the document parsing failed.
+     * @param file the file to parse with {@link #parser}
+     * @return a sink to test parsing events
+     * @throws ParseException if the document parsing failed
+     * @throws IOException if an I/O error occurs while closing test reader
      */
-    protected SinkEventTestingSink parseFileToEventTestingSink( String file )
-        throws ParseException
+    protected SinkEventTestingSink parseFileToEventTestingSink( String file ) throws ParseException, IOException
     {
-        Reader reader = null;
-        SinkEventTestingSink sink = null;
-        try
+        SinkEventTestingSink sink;
+        try ( Reader reader = getTestReader( file ) )
         {
-            reader = getTestReader( file );
             sink = new SinkEventTestingSink();
             parser.parse( reader, sink );
-        }
-        finally
-        {
-            IOUtil.close( reader );
         }
 
         return sink;
     }
 
-    /** @throws Exception  */
+    protected String parseFileToHtml( String file ) throws ParseException, IOException
+    {
+        try ( Reader reader = getTestReader( file ) )
+        {
+            return parser.toHtml( reader ).toString();
+        }
+    }
+
     public void testTocMacro()
         throws Exception
     {
         Iterator<SinkEventElement> it = parseFileToEventTestingSink( "macro-toc" ).getEventList().iterator();
 
         assertEquals( it, "head", "title", "text", "title_", "head_",
-                      "body", "list",
-                      "listItem", "link", "text", "link_", "listItem_",
-                      "listItem", "link", "text", "link_", "listItem_",
-                      "list_", "section1", "section2" );
+                      "body",
+                      "list", // TOC start
+                      "listItem", "link", "text", "link_", // emtpy section 2 TOC entry
+                      "list", // sections 3 list start
+                      "listItem", "link", "text", "link_", "listItem_", // first section 3 TOC entry
+                      "listItem", "link", "text", "link_", "listItem_", // second section 3 TOC entry
+                      "list_", // sections 3 list end
+                      "listItem_", // emtpy section 2 TOC entry end
+                      "list_", // TOC end
+                      "text",
+                      "section1",
+                      "section2", "sectionTitle2", "text", "sectionTitle2_", "section2_",
+                      "section2", "sectionTitle2", "text", "sectionTitle2_", "section2_",
+                      "section1_",
+                      "body_" );
     }
+
+    // TOC macro fails with EmptyStackException when title 2 followed by title 4 then title 2
+    public void testTocMacroDoxia559()
+        throws Exception
+    {
+        Iterator<SinkEventElement> it = parseFileToEventTestingSink( "macro-toc-DOXIA-559" ).getEventList().iterator();
+
+        assertEquals( it, "head", "title", "text", "title_", "head_",
+                      "body",
+                      "list", // TOC start
+                      "listItem", "link", "text", "link_", // first section 2 TOC entry
+                      "list", // sections 3 list start
+                      "listItem", "link", "text", "link_", "listItem_", // empty section 3 TOC entry
+                      "list_", // sections 3 list end
+                      "listItem_", // first section 2 TOC entry end
+                      "listItem", "link", "text", "link_", "listItem_", // second section 2 TOC entry
+                      "list_", // TOC end
+                      "text",
+                      "section1", "sectionTitle1", "text", "sectionTitle1_",
+                      "section2",
+                      "section3", "sectionTitle3", "text", "sectionTitle3_",
+                      "section3_",
+                      "section2_",
+                      "section1_",
+                      "section1", "sectionTitle1", "text", "sectionTitle1_",
+                      "section1_",
+                      "body_" );
+    }
+
+    // test fix for https://github.com/vsch/flexmark-java/issues/384
+    public void testFlexIssue384()
+        throws Exception
+    {
+        parseFileToEventTestingSink( "flex-384" );
+    }
+
+    // Apostrophe versus single quotes
+    // Simple apostrophes (like in Sophie's Choice) must not be replaced with a single quote
+    public void testQuoteVsApostrophe()
+        throws Exception
+    {
+        List<SinkEventElement> eventList = parseFileToEventTestingSink( "quote-vs-apostrophe" ).getEventList();
+
+        StringBuilder content = new StringBuilder();
+        for ( SinkEventElement element : eventList )
+        {
+            if ( "text".equals(element.getName()) )
+            {
+                content.append( element.getArgs()[0] );
+            }
+        }
+        assertEquals(
+                "This apostrophe isn't a quote."
+                + "This \u2018quoted text\u2019 isn't surrounded by apostrophes.",
+                content.toString() );
+
+    }
+
 }

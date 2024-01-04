@@ -24,7 +24,7 @@ import org.apache.maven.doxia.sink.Sink;
 import java.util.List;
 
 /**
- * @version $Id: ItalicBlock.java 1090706 2011-04-09 23:15:28Z hboutemy $
+ * ItalicBlock
  */
 class ItalicBlock
     extends AbstractFatherBlock

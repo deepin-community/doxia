@@ -23,7 +23,6 @@ package org.apache.maven.doxia.parser;
  * Encapsulate a Doxia parse error.
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: ParseException.java 747780 2009-02-25 13:55:23Z vsiveton $
  * @since 1.0
  */
 public class ParseException
@@ -43,7 +42,7 @@ public class ParseException
 
     /**
      * Construct a new <code>ParseException</code> with the specified detail message.
-     * <br/>
+     * <br>
      * <b>Note</b>: no line or column number will be used.
      *
      * @param message The detailed message.
@@ -56,7 +55,7 @@ public class ParseException
 
     /**
      * Construct a new <code>ParseException</code> with the specified detail message and cause.
-     * <br/>
+     * <br>
      * <b>Note</b>: no line or column number will be used.
      *
      * @param message The detailed message.

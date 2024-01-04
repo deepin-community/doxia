@@ -28,7 +28,6 @@ package org.apache.maven.doxia.module.twiki.parser;
  * </pre>
  *
  * @author Juan F. Codagnone
- * @version $Id: ListBlock.java 763762 2009-04-09 18:19:56Z ltheussl $
  */
 abstract class ListBlock
     extends AbstractFatherBlock

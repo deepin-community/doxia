@@ -28,7 +28,6 @@ import org.apache.maven.doxia.parser.ParseException;
  * <p>ListBlockParser class.</p>
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: ListBlockParser.java 1633964 2014-10-23 22:01:01Z hboutemy $
  */
 public class ListBlockParser
     implements BlockParser
@@ -77,7 +76,7 @@ public class ListBlockParser
             }
             else
             {
-                text.append( " " + line.trim() );
+                text.append( " " ).append( line.trim() );
             }
 
         }

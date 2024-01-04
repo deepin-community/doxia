@@ -32,10 +32,10 @@ import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.impl.AbstractSinkTest;
 import org.apache.maven.doxia.sink.impl.SinkTestDocument;
 
+import static org.apache.maven.doxia.util.HtmlTools.escapeHTML;
+
 /**
  * <code>FO Sink</code> Test case.
- *
- * @version $Id: FoSinkTest.java 1726411 2016-01-23 16:34:09Z hboutemy $
  */
 public class FoSinkTest
     extends AbstractSinkTest
@@ -199,6 +199,21 @@ public class FoSinkTest
         return EOL + "</fo:flow>" + EOL + "</fo:page-sequence>" + EOL + "</fo:root>" + EOL;
     }
 
+    protected String getArticleBlock()
+    {
+        return "";
+    }
+
+    protected String getNavigationBlock()
+    {
+        return "";
+    }
+
+    protected String getSidebarBlock()
+    {
+        return "";
+    }
+
     /** {@inheritDoc} */
     protected String getSectionTitleBlock( String title )
     {
@@ -250,6 +265,22 @@ public class FoSinkTest
             + "</fo:block>" + EOL + "</fo:block>" + EOL;
     }
 
+    protected String getHeaderBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
+    protected String getContentBlock()
+    {
+        return "";
+    }
+
+    protected String getFooterBlock()
+    {
+        return "";
+    }
+
     /** {@inheritDoc} */
     protected String getListBlock( String item )
     {
@@ -290,8 +321,8 @@ public class FoSinkTest
         String dtAtts = getConfig().getAttributeString( "figure.graphics" );
         String ddAtts = getConfig().getAttributeString( "figure.caption" );
 
-        String figureBlock = EOL + EOL + "<fo:block" + dlAtts + "><fo:external-graphic" + " src=\"" + source + "\"" + dtAtts
-            + "/>" + EOL;
+        String figureBlock = EOL + EOL + "<fo:block" + dlAtts + ">" +
+                "<fo:external-graphic" + " src=\"" + escapeHTML( source ) + "\"" + dtAtts + "/>" + EOL;
         if ( caption != null )
         {
             figureBlock += EOL + "<fo:block" + ddAtts + ">" + caption + "</fo:block>" + EOL;
@@ -332,6 +363,36 @@ public class FoSinkTest
     }
 
     /** {@inheritDoc} */
+    protected String getDataBlock( String value, String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getTimeBlock( String datetime, String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getAddressBlock( String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getBlockquoteBlock( String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getDivisionBlock( String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
     protected String getVerbatimBlock( String text )
     {
         String attribs = getConfig().getAttributeString( "body.source" );
@@ -367,6 +428,33 @@ public class FoSinkTest
     }
 
     /** {@inheritDoc} */
+    protected String getInlineBlock( String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getInlineItalicBlock( String text )
+    {
+        String attribs = getConfig().getAttributeString( "italic" );
+        return EOL + "<fo:inline" + attribs + ">" + text + "</fo:inline>";
+    }
+
+    /** {@inheritDoc} */
+    protected String getInlineBoldBlock( String text )
+    {
+        String attribs = getConfig().getAttributeString( "bold" );
+        return EOL + "<fo:inline" + attribs + ">" + text + "</fo:inline>";
+    }
+
+    /** {@inheritDoc} */
+    protected String getInlineCodeBlock( String text )
+    {
+        String attribs = getConfig().getAttributeString( "monospace" );
+        return EOL + "<fo:inline" + attribs + ">" + text + "</fo:inline>";
+    }
+
+    /** {@inheritDoc} */
     protected String getItalicBlock( String text )
     {
         String attribs = getConfig().getAttributeString( "italic" );
@@ -391,6 +479,12 @@ public class FoSinkTest
     protected String getLineBreakBlock()
     {
         return EOL + EOL + "<fo:block />";
+    }
+
+    /** {@inheritDoc} */
+    protected String getLineBreakOpportunityBlock()
+    {
+        return "";
     }
 
     /** {@inheritDoc} */

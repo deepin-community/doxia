@@ -30,7 +30,6 @@ import org.codehaus.plexus.component.annotations.Component;
  * Confluence implementation of the Sink factory.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: ConfluenceSinkFactory.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 @Component( role = SinkFactory.class, hint = "confluence" )

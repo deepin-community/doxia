@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.Date;
 
 import javax.xml.transform.Result;
@@ -38,42 +39,24 @@ import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.FopFactoryBuilder;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.maven.doxia.document.DocumentModel;
-import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
  * <code>FO Sink</code> utilities.
  *
  * @author ltheussl
- * @version $Id: FoUtils.java 785531 2009-06-17 09:47:59Z ltheussl $
  * @since 1.1
  */
 public class FoUtils
 {
-    /** To reuse the FopFactory **/
-    private static final FopFactory FOP_FACTORY = FopFactory.newInstance();
-
     /** To reuse the TransformerFactory **/
     private static final TransformerFactory TRANSFORMER_FACTORY = TransformerFactory.newInstance();
 
-    /**
-     * Converts an FO file to a PDF file using FOP.
-     *
-     * @param fo the FO file, not null.
-     * @param pdf the target PDF file, not null.
-     * @param resourceDir The base directory for relative path resolution, could be null.
-     * If null, defaults to the parent directory of fo.
-     * @param documentModel the document model to add PDF metadatas like author, title and keywords, could be null.
-     * @throws javax.xml.transform.TransformerException In case of a conversion problem.
-     * @since 1.1.1
-     */
-    public static void convertFO2PDF( File fo, File pdf, String resourceDir, DocumentModel documentModel )
-        throws TransformerException
+    private static void prepareUserAgent( FOUserAgent foUserAgent, DocumentModel documentModel )
     {
-        FOUserAgent foUserAgent = getDefaultUserAgent( fo, resourceDir );
-
         if ( documentModel != null && documentModel.getMeta() != null )
         {
             // http://xmlgraphics.apache.org/fop/embedding.html#user-agent
@@ -113,8 +96,6 @@ public class FoUtils
         {
             foUserAgent.setCreationDate( new Date() );
         }
-
-        convertFO2PDF( fo, pdf, resourceDir, foUserAgent );
     }
 
     /**
@@ -124,55 +105,29 @@ public class FoUtils
      * @param pdf the target PDF file, not null.
      * @param resourceDir The base directory for relative path resolution, could be null.
      * If null, defaults to the parent directory of fo.
-     * @param foUserAgent the FOUserAgent to use.
-     *      May be null, in which case a default user agent will be used.
+     * @param documentModel the document model to add PDF metadatas like author, title and keywords, could be null.
      * @throws javax.xml.transform.TransformerException In case of a conversion problem.
      * @since 1.1.1
      */
-    public static void convertFO2PDF( File fo, File pdf, String resourceDir, FOUserAgent foUserAgent )
+    public static void convertFO2PDF( File fo, File pdf, String resourceDir, DocumentModel documentModel )
         throws TransformerException
     {
-        FOUserAgent userAgent = ( foUserAgent == null ? getDefaultUserAgent( fo, resourceDir ) : foUserAgent );
-
-        OutputStream out = null;
-        try
+        try ( OutputStream out = new BufferedOutputStream( new FileOutputStream( pdf ) ) )
         {
-            try
-            {
-                out = new BufferedOutputStream( new FileOutputStream( pdf ) );
-            }
-            catch ( IOException e )
-            {
-                throw new TransformerException( e );
-            }
+            URI baseURI = getBaseURI( fo, resourceDir );
+            FopFactory fopFactory = new FopFactoryBuilder( baseURI ).build();
+            FOUserAgent userAgent = fopFactory.newFOUserAgent();
+            prepareUserAgent( userAgent, documentModel );
+            Fop fop = fopFactory.newFop( MimeConstants.MIME_PDF, userAgent, out );
+            Result res = new SAXResult( fop.getDefaultHandler() );
 
-            Result res = null;
-            try
-            {
-                Fop fop = FOP_FACTORY.newFop( MimeConstants.MIME_PDF, userAgent, out );
-                res = new SAXResult( fop.getDefaultHandler() );
-            }
-            catch ( FOPException e )
-            {
-                throw new TransformerException( e );
-            }
-
-            Transformer transformer = null;
-            try
-            {
-                // identity transformer
-                transformer = TRANSFORMER_FACTORY.newTransformer();
-            }
-            catch ( TransformerConfigurationException e )
-            {
-                throw new TransformerException( e );
-            }
-
+            // identity transformer
+            Transformer transformer = TRANSFORMER_FACTORY.newTransformer();
             transformer.transform( new StreamSource( fo ), res );
         }
-        finally
+        catch ( FOPException | TransformerConfigurationException | IOException e )
         {
-            IOUtil.close( out );
+            throw new TransformerException( e );
         }
     }
 
@@ -189,38 +144,26 @@ public class FoUtils
     public static void convertFO2PDF( File fo, File pdf, String resourceDir )
         throws TransformerException
     {
-        convertFO2PDF( fo, pdf, resourceDir, (DocumentModel) null );
+        convertFO2PDF( fo, pdf, resourceDir, null );
     }
 
     /**
-     * Returns a base URL to be used by the FOUserAgent.
+     * Returns a base URI.
      *
      * @param fo the FO file.
      * @param resourceDir the resource directory.
-     * @return String.
+     * @return URI.
      */
-    private static String getBaseURL( File fo, String resourceDir )
+    private static URI getBaseURI( File fo, String resourceDir )
     {
-        String url = null;
-
         if ( resourceDir == null )
         {
-            url = "file:///" + fo.getParent() + "/";
+            return fo.getParentFile().toURI();
         }
         else
         {
-            url = "file:///" + resourceDir + "/";
+            return new File( resourceDir + "/" ).toURI();
         }
-
-        return url;
-    }
-
-    private static FOUserAgent getDefaultUserAgent( File fo, String resourceDir )
-    {
-        FOUserAgent foUserAgent = FOP_FACTORY.newFOUserAgent();
-        foUserAgent.setBaseURL( getBaseURL( fo, resourceDir ) );
-
-        return foUserAgent;
     }
 
     private FoUtils()

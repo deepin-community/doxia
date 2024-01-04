@@ -29,10 +29,12 @@ import org.apache.maven.doxia.parser.XhtmlBaseParser;
 import org.apache.maven.doxia.sink.impl.SinkEventElement;
 import org.apache.maven.doxia.sink.impl.SinkEventTestingSink;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class SsiMacroTest
-    extends TestCase
 {
 
     /**
@@ -40,11 +42,12 @@ public class SsiMacroTest
      *
      * @throws MacroExecutionException if a macro fails during testing.
      */
+    @Test
     public void testExecute()
         throws MacroExecutionException
     {
 
-        Map<String, Object> macroParameters = new HashMap<String, Object>();
+        Map<String, Object> macroParameters = new HashMap<>();
         macroParameters.put( "function", "include" );
         macroParameters.put( "file", "include-file.html" );
 

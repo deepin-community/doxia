@@ -22,31 +22,34 @@ package org.apache.maven.doxia.module.docbook;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 
+import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.SinkEventAttributes;
 import org.apache.maven.doxia.sink.impl.AbstractXmlSink;
-import org.apache.maven.doxia.sink.Sink;
+import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
 import org.apache.maven.doxia.util.DoxiaUtils;
-import org.apache.maven.doxia.util.HtmlTools;
-
 import org.codehaus.plexus.util.FileUtils;
+
+import static org.apache.maven.doxia.util.HtmlTools.escapeHTML;
 
 /**
  * <a href="http://www.oasis-open.org/docbook">Docbook</a> Sink implementation.
- * <br/>
+ * <br>
  * It uses the Docbook v4.4 DTD <a href="http://www.oasis-open.org/docbook/sgml/4.4/docbookx.dtd">
  * http://www.oasis-open.org/docbook/sgml/4.4/docbookx.dtd</a>.
  *
- * @version $Id: DocBookSink.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public class DocBookSink
@@ -150,6 +153,9 @@ public class DocBookSink
 
     private String encoding;
 
+    /** Keep track of the closing tags for inline events. */
+    protected Stack<List<String>> inlineStack = new Stack<>();
+
     /** Map of warn messages with a String as key to describe the error type and a Set as value.
      * Using to reduce warn messages. */
     private Map<String, Set<String>> warnMessages;
@@ -211,9 +217,9 @@ public class DocBookSink
      * @return The escaped text.
      * @deprecated Use HtmlTools#escapeHTML(String,boolean).
      */
-    public static final String escapeSGML( String text, boolean xmlMode )
+    public static String escapeSGML( String text, boolean xmlMode )
     {
-        return HtmlTools.escapeHTML( text, xmlMode );
+        return escapeHTML( text, xmlMode );
     }
 
     /**
@@ -385,7 +391,7 @@ public class DocBookSink
     /**
      * Returns the current italicBeginTag.
      *
-     * @return the current italicBeginTag. Defaults to "<emphasis>".
+     * @return the current italicBeginTag. Defaults to {@code <emphasis>}.
      */
     public String getItalicElement()
     {
@@ -410,7 +416,7 @@ public class DocBookSink
     /**
      * Returns the current boldBeginTag.
      *
-     * @return the current boldBeginTag. Defaults to "<emphasis role=\"bold\">".
+     * @return the current boldBeginTag. Defaults to {@code <emphasis role=\"bold\">}.
      */
     public String getBoldElement()
     {
@@ -435,7 +441,7 @@ public class DocBookSink
     /**
      * Returns the current monospacedBeginTag.
      *
-     * @return the current monospacedBeginTag. Defaults to "<literal>>".
+     * @return the current monospacedBeginTag. Defaults to {@code <literal>}.
      */
     public String getMonospacedElement()
     {
@@ -512,7 +518,9 @@ public class DocBookSink
        init();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void init()
     {
         hasTitle = false;
@@ -532,6 +540,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#DEFAULT_XML_PUBLIC_ID
      * @see SimplifiedDocbookMarkup#DEFAULT_XML_SYSTEM_ID
      * @see SimplifiedDocbookMarkup#ARTICLE_TAG
@@ -598,6 +607,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#ARTICLEINFO_TAG
      */
     public void head_()
@@ -611,6 +621,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#ARTICLEINFO_TAG
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
@@ -623,6 +634,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
     public void title_()
@@ -632,6 +644,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#CORPAUTHOR_TAG
      */
     public void author()
@@ -642,6 +655,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#CORPAUTHOR_TAG
      */
     public void author_()
@@ -652,6 +666,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#DATE_TAG
      */
     public void date()
@@ -662,6 +677,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#DATE_TAG
      */
     public void date_()
@@ -672,6 +688,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#ARTICLE_TAG
      */
     public void body_()
@@ -683,6 +700,27 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
+     * @see SimplifiedDocbookMarkup#SIDEBAR_TAG
+     */
+    public void sidebar()
+    {
+        writeStartTag( SimplifiedDocbookMarkup.SIDEBAR_TAG );
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see SimplifiedDocbookMarkup#SIDEBAR_TAG
+     */
+    public void sidebar_()
+    {
+        writeEndTag( SimplifiedDocbookMarkup.SIDEBAR_TAG );
+    }
+
+    /**
+     * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#SECTION_TAG
      */
     public void section1()
@@ -692,6 +730,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#SECTION_TAG
      */
     public void section1_()
@@ -701,6 +740,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#SECTION_TAG
      */
     public void section2()
@@ -710,6 +750,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#SECTION_TAG
      */
     public void section2_()
@@ -719,6 +760,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#SECTION_TAG
      */
     public void section3()
@@ -728,6 +770,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#SECTION_TAG
      */
     public void section3_()
@@ -737,6 +780,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#SECTION_TAG
      */
     public void section4()
@@ -746,6 +790,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#SECTION_TAG
      */
     public void section4_()
@@ -755,6 +800,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#SECTION_TAG
      */
     public void section5()
@@ -764,6 +810,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#SECTION_TAG
      */
     public void section5_()
@@ -773,6 +820,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
     public void sectionTitle()
@@ -782,6 +830,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
     public void sectionTitle_()
@@ -791,6 +840,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
     public void sectionTitle1()
@@ -800,6 +850,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
     public void sectionTitle1_()
@@ -809,6 +860,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
     public void sectionTitle2()
@@ -818,6 +870,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
     public void sectionTitle2_()
@@ -827,6 +880,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
     public void sectionTitle3()
@@ -836,6 +890,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
     public void sectionTitle3_()
@@ -845,6 +900,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
     public void sectionTitle4()
@@ -854,6 +910,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
     public void sectionTitle4_()
@@ -863,6 +920,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
     public void sectionTitle5()
@@ -872,6 +930,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
     public void sectionTitle5_()
@@ -881,6 +940,27 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
+     * @see SimplifiedDocbookMarkup#SECTIONINFO_TAG
+     */
+    public void header()
+    {
+        writeStartTag( SimplifiedDocbookMarkup.SECTIONINFO_TAG );
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see SimplifiedDocbookMarkup#SECTIONINFO_TAG
+     */
+    public void header_()
+    {
+        writeEndTag( SimplifiedDocbookMarkup.SECTIONINFO_TAG );
+    }
+
+    /**
+     * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#ITEMIZEDLIST_TAG
      */
     public void list()
@@ -891,6 +971,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#ITEMIZEDLIST_TAG
      */
     public void list_()
@@ -900,6 +981,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#LISTITEM_TAG
      */
     public void listItem()
@@ -910,6 +992,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#LISTITEM_TAG
      */
     public void listItem_()
@@ -937,6 +1020,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#ORDEREDLIST_TAG
      */
     public void numberedList_()
@@ -946,6 +1030,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#LISTITEM_TAG
      */
     public void numberedListItem()
@@ -956,6 +1041,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#LISTITEM_TAG
      */
     public void numberedListItem_()
@@ -966,6 +1052,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#VARIABLELIST_TAG
      */
     public void definitionList()
@@ -976,6 +1063,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#VARIABLELIST_TAG
      */
     public void definitionList_()
@@ -985,6 +1073,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#VARLISTENTRY_TAG
      */
     public void definitionListItem()
@@ -994,6 +1083,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#VARLISTENTRY_TAG
      */
     public void definitionListItem_()
@@ -1003,6 +1093,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TERM_TAG
      */
     public void definedTerm()
@@ -1012,6 +1103,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TERM_TAG
      */
     public void definedTerm_()
@@ -1021,6 +1113,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#LISTITEM_TAG
      */
     public void definition()
@@ -1031,6 +1124,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#LISTITEM_TAG
      */
     public void definition_()
@@ -1041,6 +1135,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#PARA_TAG
      */
     public void paragraph()
@@ -1054,6 +1149,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#PARA_TAG
      */
     public void paragraph_()
@@ -1078,6 +1174,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#PROGRAMLISTING_TAG
      */
     public void verbatim_()
@@ -1086,25 +1183,33 @@ public class DocBookSink
         verbatimFlag = false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void horizontalRule()
     {
         markup( horizontalRuleElement );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void pageBreak()
     {
         markup( pageBreakElement );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void figure()
     {
         writeStartTag( SimplifiedDocbookMarkup.MEDIAOBJECT_TAG );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void figure_()
     {
         writeEndTag( SimplifiedDocbookMarkup.MEDIAOBJECT_TAG );
@@ -1134,9 +1239,8 @@ public class DocBookSink
             writeStartTag( SimplifiedDocbookMarkup.IMAGEOBJECT_TAG );
 
             MutableAttributeSet att = new SimpleAttributeSet();
-            att.addAttribute( SimplifiedDocbookMarkup.FORMAT_ATTRIBUTE, format );
-            att.addAttribute( SimplifiedDocbookMarkup.FILEREF_ATTRIBUTE,
-                    HtmlTools.escapeHTML( graphicsFileName, true ) );
+            att.addAttribute( SimplifiedDocbookMarkup.FORMAT_ATTRIBUTE, escapeHTML( format, true ) );
+            att.addAttribute( SimplifiedDocbookMarkup.FILEREF_ATTRIBUTE, escapeHTML( graphicsFileName, true ) );
 
             writeSimpleTag( SimplifiedDocbookMarkup.IMAGEDATA_TAG, att );
 
@@ -1154,8 +1258,8 @@ public class DocBookSink
         writeStartTag( SimplifiedDocbookMarkup.IMAGEOBJECT_TAG );
 
         MutableAttributeSet att = new SimpleAttributeSet();
-        att.addAttribute( SimplifiedDocbookMarkup.FORMAT_ATTRIBUTE, format );
-        att.addAttribute( SimplifiedDocbookMarkup.FILEREF_ATTRIBUTE, HtmlTools.escapeHTML( name, true ) );
+        att.addAttribute( SimplifiedDocbookMarkup.FORMAT_ATTRIBUTE, escapeHTML( format, true ) );
+        att.addAttribute( SimplifiedDocbookMarkup.FILEREF_ATTRIBUTE, escapeHTML( name, true ) );
 
         writeSimpleTag( SimplifiedDocbookMarkup.IMAGEDATA_TAG, att );
 
@@ -1164,6 +1268,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#FIGURE_TAG
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
@@ -1175,6 +1280,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#FIGURE_TAG
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
@@ -1184,7 +1290,9 @@ public class DocBookSink
         writeEndTag( SimplifiedDocbookMarkup.CAPTION_TAG );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void table()
     {
         tableHasCaption = false;
@@ -1192,6 +1300,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#INFORMALTABLE_TAG
      * @see SimplifiedDocbookMarkup#FRAME_ATTRIBUTE
      * @see SimplifiedDocbookMarkup#ROWSEP_ATTRIBUTE
@@ -1255,10 +1364,10 @@ public class DocBookSink
 
         writeStartTag( SimplifiedDocbookMarkup.TGROUP_TAG, att );
 
-        for ( int i = 0; i < justification.length; ++i )
+        for ( int i1 : justification )
         {
             String justif;
-            switch ( justification[i] )
+            switch ( i1 )
             {
                 case Sink.JUSTIFY_LEFT:
                     justif = "left";
@@ -1283,6 +1392,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TGROUP_TAG
      * @see SimplifiedDocbookMarkup#TBODY_TAG
      */
@@ -1306,6 +1416,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#ROW_TAG
      */
     public void tableRow()
@@ -1315,6 +1426,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#ROW_TAG
      */
     public void tableRow_()
@@ -1324,6 +1436,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#ENTRY_TAG
      */
     public void tableCell()
@@ -1333,6 +1446,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#ENTRY_TAG
      */
     public void tableCell_()
@@ -1342,6 +1456,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#ENTRY_TAG
      */
     public void tableHeaderCell()
@@ -1351,6 +1466,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#ENTRY_TAG
      */
     public void tableHeaderCell_()
@@ -1360,6 +1476,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TABLE_TAG
      * @see SimplifiedDocbookMarkup#FRAME_ATTRIBUTE
      * @see SimplifiedDocbookMarkup#ROWSEP_ATTRIBUTE
@@ -1395,6 +1512,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#TITLE_TAG
      */
     public void tableCaption_()
@@ -1436,6 +1554,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#ANCHOR_TAG
      */
     public void anchor_()
@@ -1461,7 +1580,7 @@ public class DocBookSink
         {
             String linkend = name.substring( 1 );
             MutableAttributeSet att = new SimpleAttributeSet();
-            att.addAttribute( SimplifiedDocbookMarkup.LINKEND_ATTRIBUTE, HtmlTools.escapeHTML( linkend ) );
+            att.addAttribute( SimplifiedDocbookMarkup.LINKEND_ATTRIBUTE, escapeHTML( linkend ) );
 
             writeStartTag( SimplifiedDocbookMarkup.LINK_TAG, att );
         }
@@ -1469,7 +1588,7 @@ public class DocBookSink
         {
             externalLinkFlag = true;
             MutableAttributeSet att = new SimpleAttributeSet();
-            att.addAttribute( SimplifiedDocbookMarkup.URL_ATTRIBUTE, HtmlTools.escapeHTML( name, true ) );
+            att.addAttribute( SimplifiedDocbookMarkup.URL_ATTRIBUTE, escapeHTML( name, true ) );
 
             writeStartTag( SimplifiedDocbookMarkup.ULINK_TAG, att );
         }
@@ -1477,6 +1596,7 @@ public class DocBookSink
 
     /**
      * {@inheritDoc}
+     *
      * @see SimplifiedDocbookMarkup#ULINK_TAG
      * @see SimplifiedDocbookMarkup#LINK_TAG
      */
@@ -1493,55 +1613,118 @@ public class DocBookSink
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public void inline()
+    {
+        inline( null );
+    }
+
     /** {@inheritDoc} */
+    public void inline( SinkEventAttributes attributes )
+    {
+        List<String> tags = new ArrayList<>();
+
+        if ( attributes != null )
+        {
+
+            if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "italic" ) )
+            {
+                markup( italicBeginTag );
+                tags.add( 0, italicEndTag );
+            }
+
+            if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "bold" ) )
+            {
+                write( boldBeginTag );
+                tags.add( 0, boldEndTag );
+            }
+
+            if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "code" ) )
+            {
+                if ( !authorDateFlag )
+                {
+                    write( monospacedBeginTag );
+                    tags.add( 0, monospacedEndTag );
+                }
+            }
+
+        }
+
+        inlineStack.push( tags );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void inline_()
+    {
+        for ( String tag: inlineStack.pop() )
+        {
+            markup( tag );
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void italic()
     {
-        markup( italicBeginTag );
+        inline( SinkEventAttributeSet.Semantics.ITALIC );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void italic_()
     {
-        markup( italicEndTag );
+        inline_();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void bold()
     {
-        markup( boldBeginTag );
+        inline( SinkEventAttributeSet.Semantics.BOLD );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void bold_()
     {
-        markup( boldEndTag );
+        inline_();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void monospaced()
     {
-        if ( !authorDateFlag )
-        {
-            markup( monospacedBeginTag );
-        }
+        inline( SinkEventAttributeSet.Semantics.CODE );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void monospaced_()
     {
-        if ( !authorDateFlag )
-        {
-            markup( monospacedEndTag );
-        }
+        inline_();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void lineBreak()
     {
         markup( lineBreakElement );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void nonBreakingSpace()
     {
         markup( "&#x00A0;" );
@@ -1631,7 +1814,7 @@ public class DocBookSink
     {
         if ( !skip )
         {
-            out.write( HtmlTools.escapeHTML( text, true ) );
+            out.write( escapeHTML( text, true ) );
         }
     }
 
@@ -1644,19 +1827,23 @@ public class DocBookSink
     {
         if ( !skip )
         {
-            out.write( HtmlTools.escapeHTML( text, true ) );
+            out.write( escapeHTML( text, true ) );
         }
     }
 
     // -----------------------------------------------------------------------
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void flush()
     {
         out.flush();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void close()
     {
         out.close();
@@ -1712,13 +1899,13 @@ public class DocBookSink
 
         if ( warnMessages == null )
         {
-            warnMessages = new HashMap<String, Set<String>>();
+            warnMessages = new HashMap<>();
         }
 
         Set<String> set = warnMessages.get( key );
         if ( set == null )
         {
-            set = new TreeSet<String>();
+            set = new TreeSet<>();
         }
         set.add( msg );
         warnMessages.put( key, set );

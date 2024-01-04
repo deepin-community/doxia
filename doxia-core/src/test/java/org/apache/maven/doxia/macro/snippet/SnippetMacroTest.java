@@ -19,18 +19,19 @@ package org.apache.maven.doxia.macro.snippet;
  * under the License.
  */
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.apache.maven.doxia.macro.MacroExecutionException;
 import org.apache.maven.doxia.macro.MacroRequest;
 import org.apache.maven.doxia.sink.impl.SinkEventElement;
 import org.apache.maven.doxia.sink.impl.SinkEventTestingSink;
 import org.codehaus.plexus.PlexusTestCase;
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Test snippet macro.
@@ -48,7 +49,7 @@ public class SnippetMacroTest
     public void testExecute()
         throws MacroExecutionException
     {
-        Map<String, Object> macroParameters = new HashMap<String, Object>();
+        Map<String, Object> macroParameters = new HashMap<>();
         macroParameters.put( "file", "src/test/resources/macro/snippet/testSnippet.txt" );
         macroParameters.put( "encoding", "UTF-8" );
 
@@ -119,13 +120,28 @@ public class SnippetMacroTest
         assertFalse( it.hasNext() );
 
         // no need to verify the absence of the first and second snippets if tests above were successful
-        Assert.assertThat( snippet, CoreMatchers.containsString( "Этот сниппет в формате Unicode (UTF-8)" ) );
+        assertThat( snippet, CoreMatchers.containsString( "Этот сниппет в формате Unicode (UTF-8)" ) );
+        
+        // again
+        // Shouldn't work because no snippet called "first" exists, only "firstId"
+        macroParameters.put( "id", "first" );
+        macroParameters.put( "verbatim", "" );
+        macroParameters.put( "ignoreDownloadError", "false" );
+        try
+        {
+            executeSnippetMacro( macroParameters );
+            fail();
+        }
+        catch ( Exception e )
+        {
+            // good
+        }
     }
 
     public void testIgnoreDownloadError()
         throws Exception
     {
-        Map<String, Object> macroParameters = new HashMap<String, Object>();
+        Map<String, Object> macroParameters = new HashMap<>();
         macroParameters.put( "debug", "true" );
         macroParameters.put( "ignoreDownloadError", "true" );
         macroParameters.put( "url", "http://foo.bar.com/wine.txt" );
@@ -137,7 +153,7 @@ public class SnippetMacroTest
         SinkEventElement event = it.next();
         assertEquals( "text", event.getName() );
         String snippet = (String) event.getArgs()[0];
-        Assert.assertThat( snippet, CoreMatchers.containsString( "Error during retrieving content" ) );
+        assertThat( snippet, CoreMatchers.containsString( "Error during retrieving content" ) );
     }
 
     private SinkEventTestingSink executeSnippetMacro( Map<String, Object> macroParameters )

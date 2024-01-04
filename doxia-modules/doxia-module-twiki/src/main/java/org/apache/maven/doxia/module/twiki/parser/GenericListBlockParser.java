@@ -32,7 +32,6 @@ import java.util.regex.Pattern;
  * Generic list parser
  *
  * @author Juan F. Codagnone
- * @version $Id: GenericListBlockParser.java 1438269 2013-01-24 23:47:50Z olamy $
  */
 public class GenericListBlockParser
     implements BlockParser
@@ -73,9 +72,7 @@ public class GenericListBlockParser
         return ret;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public final Block visit( final String line, final ByLineSource source )
         throws ParseException
     {
@@ -260,7 +257,6 @@ public class GenericListBlockParser
  * It helps to build
  *
  * @author Juan F. Codagnone
- * @version $Id: GenericListBlockParser.java 1438269 2013-01-24 23:47:50Z olamy $
  */
 class TreeListBuilder
 {
@@ -375,7 +371,7 @@ class TreeListBuilder
      */
     private List<ListItemBlock> getListItems( final TreeComponent tc )
     {
-        final List<ListItemBlock> blocks = new ArrayList<ListItemBlock>();
+        final List<ListItemBlock> blocks = new ArrayList<>();
 
         for ( int i = 0; i < tc.getChildren().length; i++ )
         {
@@ -404,14 +400,13 @@ class TreeListBuilder
      * A bidirectional tree node
      *
      * @author Juan F. Codagnone
-     * @version $Id: GenericListBlockParser.java 1438269 2013-01-24 23:47:50Z olamy $
      */
-    class TreeComponent
+    static class TreeComponent
     {
         /**
          * childrens
          */
-        private List<TreeComponent> children = new ArrayList<TreeComponent>();
+        private List<TreeComponent> children = new ArrayList<>();
 
         /**
          * node text
@@ -447,7 +442,7 @@ class TreeListBuilder
          */
         TreeComponent[] getChildren()
         {
-            return (TreeComponent[]) children.toArray( new TreeComponent[] {} );
+            return children.toArray( new TreeComponent[] {} );
         }
 
         /**

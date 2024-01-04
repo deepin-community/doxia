@@ -25,7 +25,6 @@ import org.apache.maven.doxia.sink.Sink;
  * Block that represents the monospaced text format
  *
  * @author Juan F. Codagnone
- * @version $Id: MonospaceBlock.java 705065 2008-10-15 21:46:08Z vsiveton $
  */
 class MonospaceBlock
     extends AbstractFatherBlock

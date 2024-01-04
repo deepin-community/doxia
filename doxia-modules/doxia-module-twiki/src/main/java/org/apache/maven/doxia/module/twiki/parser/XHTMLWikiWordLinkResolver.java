@@ -23,7 +23,6 @@ package org.apache.maven.doxia.module.twiki.parser;
  * Transform WikiWord to HTML links
  *
  * @author Christian Nardi
- * @version $Id: XHTMLWikiWordLinkResolver.java 746991 2009-02-23 12:35:46Z vsiveton $
  * @since 1.1
  */
 public class XHTMLWikiWordLinkResolver

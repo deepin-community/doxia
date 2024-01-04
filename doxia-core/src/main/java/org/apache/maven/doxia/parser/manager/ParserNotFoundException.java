@@ -24,7 +24,6 @@ package org.apache.maven.doxia.parser.manager;
  * does not exist or could not be found.
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: ParserNotFoundException.java 662767 2008-06-03 12:25:07Z ltheussl $
  * @since 1.0
  */
 public class ParserNotFoundException

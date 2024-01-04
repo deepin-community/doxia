@@ -26,7 +26,6 @@ import org.apache.maven.doxia.parser.ParseException;
  * <p>VerbatimBlockParser class.</p>
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: VerbatimBlockParser.java 1438269 2013-01-24 23:47:50Z olamy $
  */
 public class VerbatimBlockParser
     implements BlockParser

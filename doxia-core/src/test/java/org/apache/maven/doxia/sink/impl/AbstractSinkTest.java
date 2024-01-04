@@ -27,16 +27,14 @@ import org.apache.maven.doxia.AbstractModuleTest;
 import org.apache.maven.doxia.logging.PlexusLoggerWrapper;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.SinkEventAttributes;
-import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
+import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.util.IOUtil;
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.XMLUnit;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.xmlunit.matchers.CompareMatcher.isIdenticalTo;
 
 /**
  * Abstract base class to test sinks.
- *
- * @version $Id: AbstractSinkTest.java 1726411 2016-01-23 16:34:09Z hboutemy $
- * @since 1.0
  */
 public abstract class AbstractSinkTest
     extends AbstractModuleTest
@@ -59,13 +57,13 @@ public abstract class AbstractSinkTest
 
         testWriter.reset();
         sink = createSink( testWriter );
-        sink.enableLogging( new PlexusLoggerWrapper( getContainer().getLogger() ) );
+        sink.enableLogging( new PlexusLoggerWrapper( ( ( DefaultPlexusContainer )getContainer() ).getLogger() ) );
     }
 
     /**
      * Ability to wrap the xmlFragment with a roottag and namespaces, when required
      *
-     * @param xmlFragment
+     * @param xmlFragment XML fragment to wrap
      * @return valid XML
      */
     protected String wrapXml( String xmlFragment )
@@ -80,7 +78,8 @@ public abstract class AbstractSinkTest
      *
      * @return The given string transformed to be compatible to XML comments.
      *
-     * @see http://www.w3.org/TR/2000/REC-xml-20001006#sec-comments
+     * @see <a href="http://www.w3.org/TR/2000/REC-xml-20001006#sec-comments">
+     *   http://www.w3.org/TR/2000/REC-xml-20001006#sec-comments</a>
      * @since 1.7
      */
     protected static String toXmlComment( final String comment )
@@ -206,8 +205,8 @@ public abstract class AbstractSinkTest
         sink.flush();
         sink.close();
 
-        String actual = testWriter.toString();
-        String expected = getHeadBlock();
+        String actual = normalizeLineEnds( testWriter.toString() );
+        String expected = normalizeLineEnds( getHeadBlock() );
 
         assertEquals( "Wrong head!", expected, actual );
     }
@@ -228,6 +227,60 @@ public abstract class AbstractSinkTest
         String expected = getBodyBlock();
 
         assertEquals( "Wrong body!", expected, actual );
+    }
+
+    /**
+     * Checks that the sequence <code>[article(), article_()]</code>,
+     * invoked on the current sink, produces the same result as
+     * {@link #getArticleBlock getArticleBlock()}.
+     */
+    public void testArticle()
+    {
+        sink.article();
+        sink.article_();
+        sink.flush();
+        sink.close();
+
+        String actual = testWriter.toString();
+        String expected = getArticleBlock();
+
+        assertEquals( "Wrong article!", expected, actual );
+    }
+
+    /**
+     * Checks that the sequence <code>[navigation(), navigation_()]</code>,
+     * invoked on the current sink, produces the same result as
+     * {@link #getNavigationBlock getNavigationBlock()}.
+     */
+    public void testNavigation()
+    {
+        sink.navigation();
+        sink.navigation_();
+        sink.flush();
+        sink.close();
+
+        String actual = testWriter.toString();
+        String expected = getNavigationBlock();
+
+        assertEquals( "Wrong navigation!", expected, actual );
+    }
+
+    /**
+     * Checks that the sequence <code>[sidebar(), sidebar_()]</code>,
+     * invoked on the current sink, produces the same result as
+     * {@link #getSidebarBlock getSidebarBlock()}.
+     */
+    public void testSidebar()
+    {
+        sink.sidebar();
+        sink.sidebar_();
+        sink.flush();
+        sink.close();
+
+        String actual = testWriter.toString();
+        String expected = getSidebarBlock();
+
+        assertEquals( "Wrong sidebar!", expected, actual );
     }
 
     /**
@@ -261,9 +314,11 @@ public abstract class AbstractSinkTest
     {
         String title = "Title1";
         sink.section1();
+        sink.header();
         sink.sectionTitle1();
         sink.text( title );
         sink.sectionTitle1_();
+        sink.header_();
         sink.section1_();
         sink.flush();
         sink.close();
@@ -284,9 +339,11 @@ public abstract class AbstractSinkTest
     {
         String title = "Title2";
         sink.section2();
+        sink.header();
         sink.sectionTitle2();
         sink.text( title );
         sink.sectionTitle2_();
+        sink.header_();
         sink.section2_();
         sink.flush();
         sink.close();
@@ -307,9 +364,11 @@ public abstract class AbstractSinkTest
     {
         String title = "Title3";
         sink.section3();
+        sink.header();
         sink.sectionTitle3();
         sink.text( title );
         sink.sectionTitle3_();
+        sink.header_();
         sink.section3_();
         sink.flush();
         sink.close();
@@ -331,9 +390,11 @@ public abstract class AbstractSinkTest
     {
         String title = "Title4";
         sink.section4();
+        sink.header();
         sink.sectionTitle4();
         sink.text( title );
         sink.sectionTitle4_();
+        sink.header_();
         sink.section4_();
         sink.flush();
         sink.close();
@@ -354,9 +415,11 @@ public abstract class AbstractSinkTest
     {
         String title = "Title5";
         sink.section5();
+        sink.header();
         sink.sectionTitle5();
         sink.text( title );
         sink.sectionTitle5_();
+        sink.header_();
         sink.section5_();
         sink.flush();
         sink.close();
@@ -365,6 +428,62 @@ public abstract class AbstractSinkTest
         String expected = getSection5Block( title );
 
         assertEquals( "Wrong section5 block!", expected, actual );
+    }
+
+    /**
+     * Checks that the sequence <code>[header(), header_()]</code>,
+     * invoked on the current sink, produces the same result as
+     * {@link #getHeaderBlock getHeaderBlock()}.
+     */
+    public void testHeader()
+    {
+        sink.header();
+        sink.header_();
+        sink.flush();
+        sink.close();
+
+        String actual = testWriter.toString();
+        String expected = getHeaderBlock();
+
+        assertEquals( "Wrong header!", expected, actual );
+    }
+
+    /**
+     * Checks that the sequence <code>[content(), content(), content_(), content_()]</code>,
+     * invoked on the current sink, produces the same result as
+     * {@link #getContentBlock getContentBlock()}.
+     */
+    public void testContent()
+    {
+        sink.content();
+        sink.content();
+        sink.content_();
+        sink.content_();
+        sink.flush();
+        sink.close();
+
+        String actual = testWriter.toString();
+        String expected = getContentBlock();
+
+        assertEquals( "Wrong content!", expected, actual );
+    }
+
+    /**
+     * Checks that the sequence <code>[footer(), footer_()]</code>,
+     * invoked on the current sink, produces the same result as
+     * {@link #getHeaderBlock getHeaderBlock()}.
+     */
+    public void testFooter()
+    {
+        sink.footer();
+        sink.footer_();
+        sink.flush();
+        sink.close();
+
+        String actual = testWriter.toString();
+        String expected = getFooterBlock();
+
+        assertEquals( "Wrong footer!", expected, actual );
     }
 
     /**
@@ -451,7 +570,7 @@ public abstract class AbstractSinkTest
      * invoked on the current sink, produces the same result as
      * {@link #getFigureBlock getFigureBlock}( source, caption ).
      */
-    public void testFigure() throws Exception
+    public void testFigure()
     {
         String source = "figure.jpg";
         String caption = "Figure_caption";
@@ -469,17 +588,16 @@ public abstract class AbstractSinkTest
 
         if ( isXmlSink() )
         {
-            Diff diff = XMLUnit.compareXML( wrapXml( expected ), wrapXml( actual ) );
-            assertTrue( "Wrong figure!", diff.identical() );
+            assertThat ( wrapXml( actual ), isIdenticalTo( wrapXml( expected ) ));
         }
         else
         {
-            assertEquals( "Wrong figure!", expected, actual );
+            assertEquals( actual, expected );
         }
     }
 
 
-    public void testFigureWithoutCaption() throws Exception
+    public void testFigureWithoutCaption()
     {
         String source = "figure.jpg";
         sink.figure();
@@ -493,12 +611,32 @@ public abstract class AbstractSinkTest
 
         if ( isXmlSink() )
         {
-            Diff diff = XMLUnit.compareXML( wrapXml( expected ), wrapXml( actual ) );
-            assertTrue( "Wrong figure!", diff.identical() );
+            assertThat ( wrapXml( actual ), isIdenticalTo( wrapXml( expected ) ));
         }
         else
         {
-            assertEquals( "Wrong figure!", expected, actual );
+            assertEquals( actual, expected );
+        }
+    }
+    public void testFigureFromUrl()
+    {
+        String source = "http://www.gravatar.com/avatar/cdbe99fe3d6af6a18dd8c35b0687a50b?d=mm&s=60";
+        sink.figure();
+        sink.figureGraphics( source );
+        sink.figure_();
+        sink.flush();
+        sink.close();
+
+        String actual = testWriter.toString();
+        String expected = getFigureBlock( source, null );
+
+        if ( isXmlSink() )
+        {
+            assertThat ( wrapXml( actual ), isIdenticalTo( wrapXml( expected ) ));
+        }
+        else
+        {
+            assertEquals( actual, expected );
         }
     }
 
@@ -510,7 +648,7 @@ public abstract class AbstractSinkTest
      * invoked on the current sink, produces the same result as
      * {@link #getTableBlock getTableBlock}( cell, caption ).
      */
-    public void testTable() throws Exception
+    public void testTable()
     {
         String cell = "cell";
         String caption = "Table_caption";
@@ -535,12 +673,11 @@ public abstract class AbstractSinkTest
 
         if ( isXmlSink() )
         {
-            Diff diff = XMLUnit.compareXML( wrapXml( expected ), wrapXml( actual ) );
-            assertTrue( "Wrong table!", diff.identical() );
+            assertThat ( wrapXml( actual ), isIdenticalTo( wrapXml( expected ) ));
         }
         else
         {
-            assertEquals( "Wrong table!", expected, actual );
+            assertEquals( actual, expected );
         }
     }
 
@@ -562,6 +699,108 @@ public abstract class AbstractSinkTest
         String expected = getParagraphBlock( text );
 
         assertEquals( "Wrong paragraph!", expected, actual );
+    }
+
+    /**
+     * Checks that the sequence <code>[data(), text( text ),
+     * data_()]</code>, invoked on the current sink, produces
+     * the same result as {@link #getDataBlock getDataBlock}( text ).
+     */
+    public void testData()
+    {
+        String value = "Value";
+        String text = "Text";
+        sink.data( value );
+        sink.text( text );
+        sink.data_();
+        sink.flush();
+        sink.close();
+
+        String actual = testWriter.toString();
+        String expected = getDataBlock( value, text );
+
+        assertEquals( "Wrong data!", expected, actual );
+    }
+
+    /**
+     * Checks that the sequence <code>[time(), text( text ),
+     * time_()]</code>, invoked on the current sink, produces
+     * the same result as {@link #getTimeBlock getTimeBlock}( text ).
+     */
+    public void testTime()
+    {
+        String datetime = "DateTime";
+        String text = "Text";
+        sink.time( datetime );
+        sink.text( text );
+        sink.time_();
+        sink.flush();
+        sink.close();
+
+        String actual = testWriter.toString();
+        String expected = getTimeBlock( datetime, text );
+
+        assertEquals( "Wrong time!", expected, actual );
+    }
+
+    /**
+     * Checks that the sequence <code>[address(), text( text ),
+     * address_()]</code>, invoked on the current sink, produces
+     * the same result as {@link #getAddressBlock getAddressBlock}( text ).
+     */
+    public void testAddress()
+    {
+        String text = "Text";
+        sink.address();
+        sink.text( text );
+        sink.address_();
+        sink.flush();
+        sink.close();
+
+        String actual = testWriter.toString();
+        String expected = getAddressBlock( text );
+
+        assertEquals( "Wrong address!", expected, actual );
+    }
+
+    /**
+     * Checks that the sequence <code>[blockquote(), text( text ),
+     * blockquote_()]</code>, invoked on the current sink, produces
+     * the same result as {@link #getBlockquoteBlock}( text ).
+     */
+    public void testBlockquote()
+    {
+        String text = "Text";
+        sink.blockquote();
+        sink.text( text );
+        sink.blockquote_();
+        sink.flush();
+        sink.close();
+
+        String actual = testWriter.toString();
+        String expected = getBlockquoteBlock( text );
+
+        assertEquals( "Wrong blockquote!", expected, actual );
+    }
+
+    /**
+     * Checks that the sequence <code>[division(), text( text ),
+     * division_()]</code>, invoked on the current sink, produces
+     * the same result as {@link #getDivisionBlock getDivisionBlock}( text ).
+     */
+    public void testDivider()
+    {
+        String text = "Text";
+        sink.division();
+        sink.text( text );
+        sink.division_();
+        sink.flush();
+        sink.close();
+
+        String actual = testWriter.toString();
+        String expected = getDivisionBlock( text );
+
+        assertEquals( "Wrong division!", expected, actual );
     }
 
     /**
@@ -660,63 +899,83 @@ public abstract class AbstractSinkTest
     }
 
     /**
-     * Checks that the sequence <code>[italic(), text( text ), italic_()]</code>,
+     * Checks that the sequence <code>[inline(), text( text ), inline_()]</code>,
      * invoked on the current sink, produces the same result as
-     * {@link #getItalicBlock getItalicBlock}( text ).
+     * {@link #getInlineBlock getInlineBlock}( text ).
      */
-    public void testItalic()
+    public void testInline()
     {
-        String text = "Italic";
-        sink.italic();
+        String text = "Inline";
+        sink.inline();
         sink.text( text );
-        sink.italic_();
+        sink.inline_();
         sink.flush();
         sink.close();
 
         String actual = testWriter.toString();
-        String expected = getItalicBlock( text );
+        String expected = getInlineBlock( text );
 
-        assertEquals( "Wrong italic!", expected, actual );
+        assertEquals( "Wrong inline!", expected, actual );
     }
 
     /**
-     * Checks that the sequence <code>[bold(), text( text ), bold_()]</code>,
+     * Checks that the sequence <code>[inline(bold), text( text ), inline_()]</code>,
      * invoked on the current sink, produces the same result as
-     * {@link #getBoldBlock getBoldBlock}( text ).
+     * {@link #getInlineBoldBlock getInlineBoldBlock}( text ).
      */
-    public void testBold()
+    public void testInlineBold()
     {
-        String text = "Bold";
-        sink.bold();
+        String text = "InlineBold";
+        sink.inline( SinkEventAttributeSet.Semantics.BOLD );
         sink.text( text );
-        sink.bold_();
+        sink.inline_();
         sink.flush();
         sink.close();
 
         String actual = testWriter.toString();
-        String expected = getBoldBlock( text );
+        String expected = getInlineBoldBlock( text );
 
-        assertEquals( "Wrong bold!", expected, actual );
+        assertEquals( "Wrong inline bold!", expected, actual );
     }
 
     /**
-     * Checks that the sequence <code>[monospaced(), text( text ),
-     * monospaced_()]</code>, invoked on the current sink, produces the same
-     * result as {@link #getMonospacedBlock getMonospacedBlock}( text ).
+     * Checks that the sequence <code>[inline(italic), text( text ), inline_()]</code>,
+     * invoked on the current sink, produces the same result as
+     * {@link #getInlineBoldBlock getInlineBoldBlock}( text ).
      */
-    public void testMonospaced()
+    public void testInlineItalic()
     {
-        String text = "Monospaced";
-        sink.monospaced();
+        String text = "InlineItalic";
+        sink.inline( SinkEventAttributeSet.Semantics.ITALIC );
         sink.text( text );
-        sink.monospaced_();
+        sink.inline_();
         sink.flush();
         sink.close();
 
         String actual = testWriter.toString();
-        String expected = getMonospacedBlock( text );
+        String expected = getInlineItalicBlock( text );
 
-        assertEquals( "Wrong monospaced!", expected, actual );
+        assertEquals( "Wrong inline italic!", expected, actual );
+    }
+
+    /**
+     * Checks that the sequence <code>[inline(code), text( text ), inline_()]</code>,
+     * invoked on the current sink, produces the same result as
+     * {@link #getInlineBoldBlock getInlineBoldBlock}( text ).
+     */
+    public void testInlineCode()
+    {
+        String text = "InlineCode";
+        sink.inline( SinkEventAttributeSet.Semantics.CODE );
+        sink.text( text );
+        sink.inline_();
+        sink.flush();
+        sink.close();
+
+        String actual = testWriter.toString();
+        String expected = getInlineCodeBlock( text );
+
+        assertEquals( "Wrong inline code!", expected, actual );
     }
 
     /**
@@ -734,6 +993,23 @@ public abstract class AbstractSinkTest
         String expected = getLineBreakBlock();
 
         assertEquals( "Wrong lineBreak!", expected, actual );
+    }
+
+    /**
+     * Checks that the sequence <code>[lineBreakOpportunity()]</code>,
+     * invoked on the current sink, produces the same result as
+     * {@link #getLineBreakOpportunityBlock getLineBreakOpportunityBlock()}.
+     */
+    public void testLineBreakOpportunity()
+    {
+        sink.lineBreakOpportunity();
+        sink.flush();
+        sink.close();
+
+        String actual = testWriter.toString();
+        String expected = getLineBreakOpportunityBlock();
+
+        assertEquals( "Wrong lineBreakOpportunity!", expected, actual );
     }
 
     /**
@@ -809,7 +1085,7 @@ public abstract class AbstractSinkTest
 
         testWriter.reset();
         sink = createSink( testWriter );
-        sink.enableLogging( new PlexusLoggerWrapper( getContainer().getLogger() ) );
+        sink.enableLogging( new PlexusLoggerWrapper( ( ( DefaultPlexusContainer )getContainer() ).getLogger() ) );
 
         comment = "-";
         sink.comment( comment );
@@ -911,6 +1187,27 @@ public abstract class AbstractSinkTest
     protected abstract String getBodyBlock();
 
     /**
+     * Returns an article block generated by this sink.
+     * @return The result of invoking an article block on the current sink.
+     * @see #testArticle()
+     */
+    protected abstract String getArticleBlock();
+
+    /**
+     * Returns an navigation block generated by this sink.
+     * @return The result of invoking an navigation block on the current sink.
+     * @see #testNavigation()
+     */
+    protected abstract String getNavigationBlock();
+
+    /**
+     * Returns a sidebar block generated by this sink.
+     * @return The result of invoking an sidebar block on the current sink.
+     * @see #testSidebar()
+     */
+    protected abstract String getSidebarBlock();
+
+    /**
      * Returns a SectionTitle block generated by this sink.
      * @param title The title to use.
      * @return The result of invoking a SectionTitle block on the current sink.
@@ -957,6 +1254,27 @@ public abstract class AbstractSinkTest
      * @see #testSection5()
      */
     protected abstract String getSection5Block( String title );
+
+    /**
+     * Returns a header block generated by this sink.
+     * @return The result of invoking a header block on the current sink.
+     * @see #testHeader()
+     */
+    protected abstract String getHeaderBlock();
+
+    /**
+     * Returns a content block generated by this sink.
+     * @return The result of invoking a content block on the current sink.
+     * @see #testContent()
+     */
+    protected abstract String getContentBlock();
+
+    /**
+     * Returns a footer block generated by this sink.
+     * @return The result of invoking a footer block on the current sink.
+     * @see #testFooter()
+     */
+    protected abstract String getFooterBlock();
 
     /**
      * Returns a list block generated by this sink.
@@ -1011,6 +1329,48 @@ public abstract class AbstractSinkTest
     protected abstract String getParagraphBlock( String text );
 
     /**
+     * Returns a Data block generated by this sink.
+     * @param value The value to use.
+     * @param text The text to use.
+     * @return The result of invoking a Data block on the current sink.
+     * @see #testData()
+     */
+    protected abstract String getDataBlock( String value, String text );
+
+    /**
+     * Returns a Time block generated by this sink.
+     * @param datetime The datetime to use.
+     * @param text The text to use.
+     * @return The result of invoking a Time block on the current sink.
+     * @see #testTime()
+     */
+    protected abstract String getTimeBlock( String datetime, String text );
+
+    /**
+     * Returns an Address block generated by this sink.
+     * @param text The text to use.
+     * @return The result of invoking an Address block on the current sink.
+     * @see #testAddress()
+     */
+    protected abstract String getAddressBlock( String text );
+
+    /**
+     * Returns a Blockquote block generated by this sink.
+     * @param text The text to use.
+     * @return The result of invoking a Blockquote block on the current sink.
+     * @see #testBlockquote()
+     */
+    protected abstract String getBlockquoteBlock( String text );
+
+    /**
+     * Returns a Division block generated by this sink.
+     * @param text The text to use.
+     * @return The result of invoking a Division block on the current sink.
+     * @see #testDivider()
+     */
+    protected abstract String getDivisionBlock( String text );
+
+    /**
      * Returns a Verbatim block generated by this sink.
      * @param text The text to use.
      * @return The result of invoking a Verbatim block on the current sink.
@@ -1050,28 +1410,36 @@ public abstract class AbstractSinkTest
     protected abstract String getLinkBlock( String link, String text );
 
     /**
-     * Returns a Italic block generated by this sink.
+     * Returns an Inline block generated by this sink.
      * @param text The text to use.
-     * @return The result of invoking a Italic block on the current sink.
-     * @see #testItalic()
+     * @return The result of invoking a Inline block on the current sink.
+     * @see #testInline()
      */
-    protected abstract String getItalicBlock( String text );
+    protected abstract String getInlineBlock( String text );
 
     /**
-     * Returns a Bold block generated by this sink.
+     * Returns an Inline italic block generated by this sink.
      * @param text The text to use.
-     * @return The result of invoking a Bold block on the current sink.
-     * @see #testBold()
+     * @return The result of invoking a Inline italic block on the current sink.
+     * @see #testInlineItalic()
      */
-    protected abstract String getBoldBlock( String text );
+    protected abstract String getInlineItalicBlock( String text );
 
     /**
-     * Returns a Monospaced block generated by this sink.
+     * Returns an Inline bold block generated by this sink.
      * @param text The text to use.
-     * @return The result of invoking a Monospaced block on the current sink.
-     * @see #testMonospaced()
+     * @return The result of invoking a Inline bold block on the current sink.
+     * @see #testInlineBold()
      */
-    protected abstract String getMonospacedBlock( String text );
+    protected abstract String getInlineBoldBlock( String text );
+
+    /**
+     * Returns an Inline code block generated by this sink.
+     * @param text The text to use.
+     * @return The result of invoking a Inline code block on the current sink.
+     * @see #testInlineBold()
+     */
+    protected abstract String getInlineCodeBlock( String text );
 
     /**
      * Returns a LineBreak block generated by this sink.
@@ -1079,6 +1447,14 @@ public abstract class AbstractSinkTest
      * @see #testLineBreak()
      */
     protected abstract String getLineBreakBlock();
+
+    /**
+     * Returns a LineBreakOpportunity block generated by this sink.
+     * @return The result of invoking a LineBreakOpportunity block on the
+     * current sink.
+     * @see #testLineBreakOpportunity()
+     */
+    protected abstract String getLineBreakOpportunityBlock();
 
     /**
      * Returns a NonBreakingSpace block generated by this sink.

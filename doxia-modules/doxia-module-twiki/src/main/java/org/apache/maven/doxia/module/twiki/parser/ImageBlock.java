@@ -25,7 +25,6 @@ import org.apache.maven.doxia.sink.Sink;
  * Block that represents an image.
  *
  * @author Christian Nardi
- * @version $Id: ImageBlock.java 705065 2008-10-15 21:46:08Z vsiveton $
  */
 class ImageBlock
     implements Block
@@ -76,7 +75,11 @@ class ImageBlock
         return ret;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a int.
+     */
     public final int hashCode()
     {
         final int magic1 = 17;

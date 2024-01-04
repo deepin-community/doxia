@@ -25,7 +25,6 @@ import org.apache.maven.doxia.sink.Sink;
  * Block that represents the italic text format
  *
  * @author Juan F. Codagnone
- * @version $Id: ItalicBlock.java 705065 2008-10-15 21:46:08Z vsiveton $
  */
 class ItalicBlock
     extends AbstractFatherBlock

@@ -26,9 +26,9 @@ import org.codehaus.plexus.logging.Logger;
  * Based on org.apache.maven.plugin.logging.Log.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: PlexusLoggerWrapper.java 785531 2009-06-17 09:47:59Z ltheussl $
  * @since 1.1
  */
+@Deprecated
 public class PlexusLoggerWrapper
     implements Log
 {
@@ -69,7 +69,11 @@ public class PlexusLoggerWrapper
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param content a {@link java.lang.CharSequence} object.
+     */
     public void debug( CharSequence content )
     {
         logger.debug( toString( content ) );
@@ -99,13 +103,21 @@ public class PlexusLoggerWrapper
         logger.info( toString( content ), error );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param error a {@link java.lang.Throwable} object.
+     */
     public void info( Throwable error )
     {
         logger.info( "", error );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param content a {@link java.lang.CharSequence} object.
+     */
     public void warn( CharSequence content )
     {
         logger.warn( toString( content ) );
@@ -135,31 +147,51 @@ public class PlexusLoggerWrapper
         logger.error( toString( content ), error );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param error a {@link java.lang.Throwable} object.
+     */
     public void error( Throwable error )
     {
         logger.error( "", error );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a boolean.
+     */
     public boolean isDebugEnabled()
     {
         return logger.isDebugEnabled();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a boolean.
+     */
     public boolean isInfoEnabled()
     {
         return logger.isInfoEnabled();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a boolean.
+     */
     public boolean isWarnEnabled()
     {
         return logger.isWarnEnabled();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a boolean.
+     */
     public boolean isErrorEnabled()
     {
         return logger.isErrorEnabled();

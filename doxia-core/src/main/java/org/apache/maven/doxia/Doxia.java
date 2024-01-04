@@ -30,7 +30,6 @@ import java.io.Reader;
  * Basic interface of the Doxia framework.
  *
  * @author Jason van Zyl
- * @version $Id: Doxia.java 708880 2008-10-29 11:29:48Z vsiveton $
  * @since 1.0
  */
 public interface Doxia
@@ -42,24 +41,35 @@ public interface Doxia
      * Parses the given source model using a parser with given id,
      * and emits Doxia events into the given sink.
      *
-     * @param source not null reader that provides the source document.
-     * You could use <code>newReader</code> methods from {@link org.codehaus.plexus.util.ReaderFactory}.
-     * @param parserId Identifier for the parser to use.
-     * @param sink A sink that consumes the Doxia events.
-     * @throws org.apache.maven.doxia.parser.manager.ParserNotFoundException
-     * if no parser could be found for the given id.
-     * @throws org.apache.maven.doxia.parser.ParseException if the model could not be parsed.
+     * @param source not null reader that provides the source document
+     * @param parserId identifier for the parser to use
+     * @param sink a sink that consumes the Doxia events
+     * @throws ParserNotFoundException if no parser could be found for the given id
+     * @throws ParseException if the model could not be parsed
      */
     void parse( Reader source, String parserId, Sink sink )
         throws ParserNotFoundException, ParseException;
 
     /**
+     * Parses the given source model using a parser with given id,
+     * and emits Doxia events into the given sink.
+     *
+     * @param source not null reader that provides the source document
+     * @param parserId identifier for the parser to use
+     * @param sink a sink that consumes the Doxia events
+     * @param reference string containing the reference to the source (e.g. filename)
+     * @throws ParserNotFoundException if no parser could be found for the given id
+     * @throws ParseException if the model could not be parsed
+     */
+    void parse( Reader source, String parserId, Sink sink, String reference )
+        throws ParserNotFoundException, ParseException;
+
+    /**
      * Return a parser for the given <code>parserId</code>.
      *
-     * @param parserId Identifier for the parser to use.
-     * @return the parser defining by parserId.
-     * @throws org.apache.maven.doxia.parser.manager.ParserNotFoundException
-     * if no parser could be found for the given id.
+     * @param parserId identifier for the parser to use
+     * @return the parser identified by parserId
+     * @throws ParserNotFoundException if no parser could be found for the given id
      */
     Parser getParser( String parserId )
         throws ParserNotFoundException;

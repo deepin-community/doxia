@@ -22,13 +22,13 @@ package org.apache.maven.doxia.logging;
 
 /**
  * An interface for <code>Doxia</code> components (mainly Sink, Parser and Macro) that need the ability to log.
- * <br/>
+ * <br>
  * Based on <code>org.codehaus.plexus.logging.LogEnabled</code>.
  *
  * @author ltheussl
- * @version $Id: LogEnabled.java 733395 2009-01-10 23:09:40Z ltheussl $
  * @since 1.1
  */
+@Deprecated
 public interface LogEnabled
 {
     /**

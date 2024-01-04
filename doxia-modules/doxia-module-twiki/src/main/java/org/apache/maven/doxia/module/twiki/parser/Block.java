@@ -22,12 +22,14 @@ package org.apache.maven.doxia.module.twiki.parser;
 import org.apache.maven.doxia.sink.Sink;
 
 /**
- * Document objet model: we parse the document to a bunch of these.
- * <p/>
+ * <p>
+ * Document object model: we parse the document to a bunch of these.
+ * </p>
+ * <p>
  * Implementators should implement equals() and hashCode() to ease testing
+ * </p>
  *
  * @author Juan F. Codagnone
- * @version $Id: Block.java 705065 2008-10-15 21:46:08Z vsiveton $
  */
 public interface Block
 {

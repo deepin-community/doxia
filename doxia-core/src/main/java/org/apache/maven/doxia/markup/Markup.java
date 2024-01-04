@@ -23,7 +23,6 @@ package org.apache.maven.doxia.markup;
  * List of constants used by all markup syntax.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: Markup.java 1719653 2015-12-12 11:23:49Z schulte $
  * @since 1.0
  */
 @SuppressWarnings( "checkstyle:interfaceistype" )
@@ -39,7 +38,7 @@ public interface Markup
     /** equal character: '=' */
     char EQUAL = '=';
 
-    /** end character: '>' */
+    /** end character: '&lt;' */
     char GREATER_THAN = '>';
 
     /** left curly bracket character: '{' */
@@ -48,7 +47,7 @@ public interface Markup
     /** left square bracket character: '[' */
     char LEFT_SQUARE_BRACKET = '[';
 
-    /** start character: '<' */
+    /** start character: '&gt;' */
     char LESS_THAN = '<';
 
     /** minus character: '-' */

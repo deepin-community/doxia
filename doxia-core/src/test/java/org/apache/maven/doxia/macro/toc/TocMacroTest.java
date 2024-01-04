@@ -26,8 +26,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.apache.maven.doxia.macro.MacroExecutionException;
 import org.apache.maven.doxia.macro.MacroRequest;
 import org.apache.maven.doxia.parser.XhtmlBaseParser;
@@ -35,21 +33,23 @@ import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
 import org.apache.maven.doxia.sink.impl.SinkEventElement;
 import org.apache.maven.doxia.sink.impl.SinkEventTestingSink;
 import org.apache.maven.doxia.sink.impl.XhtmlBaseSink;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * Test toc macro.
  *
  * @author ltheussl
- * @version $Id: TocMacroTest.java 1726411 2016-01-23 16:34:09Z hboutemy $
  */
 public class TocMacroTest
-    extends TestCase
 {
     /**
      * Test of execute method, of class TocMacro.
      *
      * @throws MacroExecutionException if a macro fails during testing.
      */
+    @Test
     public void testExecute()
         throws MacroExecutionException
     {
@@ -58,7 +58,7 @@ public class TocMacroTest
         XhtmlBaseParser parser = new XhtmlBaseParser();
         parser.setSecondParsing( true );
 
-        Map<String, Object> macroParameters = new HashMap<String, Object>();
+        Map<String, Object> macroParameters = new HashMap<>();
         macroParameters.put( "parser", parser );
         macroParameters.put( "sourceContent", sourceContent );
         macroParameters.put( "section", "sec1" );
@@ -129,14 +129,14 @@ public class TocMacroTest
         assertEquals( "link", ( it.next() ).getName() );
         event = it.next();
         assertEquals( "text", event.getName() );
-        assertEquals( "h22", (String) event.getArgs()[0] );
+        assertEquals( "h22", event.getArgs()[0] );
         assertEquals( "link_", ( it.next() ).getName() );
         assertEquals( "list", ( it.next() ).getName() );
         assertEquals( "listItem", ( it.next() ).getName() );
         assertEquals( "link", ( it.next() ).getName() );
         event = it.next();
         assertEquals( "text", event.getName() );
-        assertEquals( "h3", (String) event.getArgs()[0] );
+        assertEquals( "h3", event.getArgs()[0] );
         assertEquals( "link_", ( it.next() ).getName() );
         assertEquals( "listItem_", ( it.next() ).getName() );
         assertEquals( "list_", ( it.next() ).getName() );
@@ -150,6 +150,7 @@ public class TocMacroTest
      *
      * @throws MacroExecutionException if a macro fails during testing.
      */
+    @Test
     public void testTocStyle()
         throws MacroExecutionException
     {
@@ -159,7 +160,7 @@ public class TocMacroTest
         XhtmlBaseParser parser = new XhtmlBaseParser();
         parser.setSecondParsing( true );
 
-        Map<String, Object> macroParameters = new HashMap<String, Object>();
+        Map<String, Object> macroParameters = new HashMap<>();
         macroParameters.put( "parser", parser );
         macroParameters.put( "sourceContent", sourceContent );
         macroParameters.put( "section", "sec1" );
