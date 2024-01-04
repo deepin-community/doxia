@@ -26,7 +26,6 @@ import org.apache.maven.doxia.parser.ParseException;
  *
  * @author Juan F. Codagnone
  * @since Nov 4, 2005
- * @version $Id: ByLineSource.java 785531 2009-06-17 09:47:59Z ltheussl $
  */
 public interface ByLineSource
 {

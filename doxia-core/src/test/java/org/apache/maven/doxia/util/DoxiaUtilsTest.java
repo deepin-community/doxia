@@ -21,6 +21,7 @@ package org.apache.maven.doxia.util;
 
 import java.text.ParseException;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -30,7 +31,6 @@ import org.codehaus.plexus.PlexusTestCase;
  * Test case for <code>DoxiaUtils</code>.
  *
  * @author ltheussl
- * @version $Id: DoxiaUtilsTest.java 781180 2009-06-02 21:40:15Z vsiveton $
  */
 public class DoxiaUtilsTest
     extends PlexusTestCase
@@ -149,7 +149,7 @@ public class DoxiaUtilsTest
      */
     public void testEncodeId()
     {
-        assertEquals( DoxiaUtils.encodeId( null ), null );
+        assertNull( DoxiaUtils.encodeId( null ) );
         assertEquals( DoxiaUtils.encodeId( "" ), "a" );
         assertEquals( DoxiaUtils.encodeId( " " ), "a" );
         assertEquals( DoxiaUtils.encodeId( " _ " ), "a_" );
@@ -159,10 +159,10 @@ public class DoxiaUtilsTest
         assertEquals( DoxiaUtils.encodeId( "a b-c123 " ), "a_b-c123" );
         assertEquals( DoxiaUtils.encodeId( "   anchor" ), "anchor" );
         assertEquals( DoxiaUtils.encodeId( "myAnchor" ), "myAnchor" );
-        assertEquals( DoxiaUtils.encodeId( "my&Anchor" ), "my%26Anchor" );
-        assertEquals( DoxiaUtils.encodeId( "H\u00E5kon" ), "H%c3%a5kon" );
+        assertEquals( DoxiaUtils.encodeId( "my&Anchor" ), "my.26Anchor" );
+        assertEquals( DoxiaUtils.encodeId( "H\u00E5kon" ), "H.C3.A5kon" );
         assertEquals( DoxiaUtils.encodeId( "H\u00E5kon", true ), "Hkon" );
-        assertEquals( DoxiaUtils.encodeId( "Theu\u00DFl" ), "Theu%c3%9fl" );
+        assertEquals( DoxiaUtils.encodeId( "Theu\u00DFl" ), "Theu.C3.9Fl" );
         assertEquals( DoxiaUtils.encodeId( "Theu\u00DFl", true ), "Theul" );
     }
 
@@ -188,6 +188,8 @@ public class DoxiaUtilsTest
         assertTrue( DoxiaUtils.isValidId( "a." ) );
         assertTrue( DoxiaUtils.isValidId( "index.html" ) );
         assertFalse( DoxiaUtils.isValidId( "Theu\u00DFl" ) );
+        assertTrue( DoxiaUtils.isValidId( "Theu.C3.9Fl" ) );
+        assertFalse( DoxiaUtils.isValidId( "Theu%C3%9Fl" ) );
     }
 
     /**
@@ -196,7 +198,7 @@ public class DoxiaUtilsTest
     public void testParseDate()
     {
         final int year = 1973;
-        final int month = 1;
+        final int month = Calendar.FEBRUARY;
         final int day = 27;
 
         try
@@ -213,9 +215,9 @@ public class DoxiaUtilsTest
             assertEquals( feb27, DoxiaUtils.parseDate( "February 27, 1973" ) );
             assertEquals( feb27, DoxiaUtils.parseDate( "19730227" ) );
 
-            assertEquals( new GregorianCalendar( year, 0, 1 ).getTime(), DoxiaUtils.parseDate( "1973" ) );
+            assertEquals( new GregorianCalendar( year, Calendar.JANUARY, 1 ).getTime(), DoxiaUtils.parseDate( "1973" ) );
 
-            final Date feb1 = new GregorianCalendar( year, 1, 1 ).getTime();
+            final Date feb1 = new GregorianCalendar( year, Calendar.FEBRUARY, 1 ).getTime();
             assertEquals( feb1, DoxiaUtils.parseDate( "February 1973" ) );
             assertEquals( feb1, DoxiaUtils.parseDate( "Feb. 1973" ) );
             assertEquals( feb1, DoxiaUtils.parseDate( "February '73" ) );

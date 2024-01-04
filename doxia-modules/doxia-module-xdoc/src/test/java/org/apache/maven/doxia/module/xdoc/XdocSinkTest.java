@@ -22,14 +22,14 @@ package org.apache.maven.doxia.module.xdoc;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.impl.AbstractSinkTest;
 import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
-import org.apache.maven.doxia.util.HtmlTools;
 
 import java.io.StringWriter;
 import java.io.Writer;
 
+import static org.apache.maven.doxia.util.HtmlTools.escapeHTML;
+
 /**
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: XdocSinkTest.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public class XdocSinkTest
@@ -77,7 +77,7 @@ public class XdocSinkTest
         return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             + "<document xmlns=\"http://maven.apache.org/XDOC/2.0\" "
             + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
-            + "xsi:schemaLocation=\"http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd\">"
+            + "xsi:schemaLocation=\"http://maven.apache.org/XDOC/2.0 https://maven.apache.org/xsd/xdoc-2.0.xsd\">"
             + "<properties></properties>";
     }
 
@@ -85,6 +85,24 @@ public class XdocSinkTest
     protected String getBodyBlock()
     {
         return "<body></body></document>";
+    }
+
+    /** {@inheritDoc} */
+    protected String getArticleBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
+    protected String getNavigationBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
+    protected String getSidebarBlock()
+    {
+        return "";
     }
 
     /** {@inheritDoc} */
@@ -124,6 +142,24 @@ public class XdocSinkTest
     }
 
     /** {@inheritDoc} */
+    protected String getHeaderBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
+    protected String getContentBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
+    protected String getFooterBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
     protected String getListBlock( String item )
     {
         return "<ul>\n<li>" + item + "</li></ul>";
@@ -144,7 +180,7 @@ public class XdocSinkTest
     /** {@inheritDoc} */
     protected String getFigureBlock( String source, String caption )
     {
-        String figureBlock = "<img src=\"" + source + "\"";
+        String figureBlock = "<img src=\"" + escapeHTML( source ) + "\"";
         if ( caption != null )
         {
             figureBlock += " alt=\"" + caption + "\"";
@@ -161,13 +197,43 @@ public class XdocSinkTest
     protected String getTableBlock( String cell, String caption )
     {
         return "<table border=\"0\"><caption>" + caption
-                + "</caption>\n<tr valign=\"top\">\n<td>" + cell + "</td></tr></table>";
+                + "</caption>\n<tr valign=\"top\">\n<td align=\"center\">" + cell + "</td></tr></table>";
     }
 
     /** {@inheritDoc} */
     protected String getParagraphBlock( String text )
     {
         return "<p>" + text + "</p>";
+    }
+
+    /** {@inheritDoc} */
+    protected String getDataBlock( String value, String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getTimeBlock( String datetime, String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getAddressBlock( String text )
+    {
+        return "<address>" + text + "</address>";
+    }
+
+    /** {@inheritDoc} */
+    protected String getBlockquoteBlock( String text )
+    {
+        return "<blockquote>" + text + "</blockquote>";
+    }
+
+    /** {@inheritDoc} */
+    protected String getDivisionBlock( String text )
+    {
+        return "<div>" + text + "</div>";
     }
 
     /** {@inheritDoc} */
@@ -201,6 +267,30 @@ public class XdocSinkTest
     }
 
     /** {@inheritDoc} */
+    protected String getInlineBlock( String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getInlineItalicBlock( String text )
+    {
+        return "<i>" + text + "</i>";
+    }
+
+    /** {@inheritDoc} */
+    protected String getInlineBoldBlock( String text )
+    {
+        return "<b>" + text + "</b>";
+    }
+
+    /** {@inheritDoc} */
+    protected String getInlineCodeBlock( String text )
+    {
+        return "<code>" + text + "</code>";
+    }
+
+    /** {@inheritDoc} */
     protected String getItalicBlock( String text )
     {
         return "<i>" + text + "</i>";
@@ -225,6 +315,12 @@ public class XdocSinkTest
     }
 
     /** {@inheritDoc} */
+    protected String getLineBreakOpportunityBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
     protected String getNonBreakingSpaceBlock()
     {
         return "&#160;";
@@ -234,7 +330,7 @@ public class XdocSinkTest
     protected String getTextBlock( String text )
     {
         // TODO: need to be able to retreive those from outside the sink
-        return HtmlTools.escapeHTML( text );
+        return escapeHTML( text );
     }
 
     /** {@inheritDoc} */
@@ -259,7 +355,7 @@ public class XdocSinkTest
             sink.verbatim_();
             sink.verbatim( SinkEventAttributeSet.BOXED );
             sink.verbatim_();
-            sink.verbatim( new SinkEventAttributeSet( new String[] {SinkEventAttributeSet.WIDTH, "20%"} ) );
+            sink.verbatim( new SinkEventAttributeSet( SinkEventAttributeSet.WIDTH, "20%" ) );
             sink.verbatim_();
         }
         finally

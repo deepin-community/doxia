@@ -20,7 +20,7 @@ package org.apache.maven.doxia.module.rtf;
  */
 
 /**
- * @version $Id: SansSerifItalic.java 1633964 2014-10-23 22:01:01Z hboutemy $
+ * SansSerifItalic
  */
 class SansSerifItalic
     extends FontMetrics

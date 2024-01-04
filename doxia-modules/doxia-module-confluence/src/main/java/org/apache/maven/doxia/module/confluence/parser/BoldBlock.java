@@ -25,8 +25,6 @@ import java.util.List;
 
 /**
  * <p>BoldBlock class.</p>
- *
- * @version $Id: BoldBlock.java 1090706 2011-04-09 23:15:28Z hboutemy $
  */
 public class BoldBlock
     extends AbstractFatherBlock

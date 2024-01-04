@@ -35,7 +35,6 @@ import java.io.InputStreamReader;
 
 /**
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: RtfSinkTest.java 1726411 2016-01-23 16:34:09Z hboutemy $
  */
 public class RtfSinkTest
     extends AbstractSinkTestCase
@@ -63,13 +62,10 @@ public class RtfSinkTest
 
     /** {@inheritDoc} */
     protected Reader getTestReader()
-        throws Exception
     {
         InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream( "test.apt" );
 
-        InputStreamReader reader = new InputStreamReader( is );
-
-        return reader;
+        return new InputStreamReader( is );
     }
 
     public void testDocument()

@@ -25,7 +25,7 @@ import org.apache.maven.doxia.sink.Sink;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
- * @version $Id: DefinitionListBlock.java 1090706 2011-04-09 23:15:28Z hboutemy $
+ * DefinitionListBlock
  */
 class DefinitionListBlock
     implements Block

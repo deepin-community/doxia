@@ -32,7 +32,6 @@ import org.apache.maven.doxia.sink.SinkEventAttributes;
  * Implementation of MutableAttributeSet using a LinkedHashMap.
  *
  * @author ltheussl
- * @version $Id: SinkEventAttributeSet.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.1
  */
 public class SinkEventAttributeSet
@@ -96,19 +95,19 @@ public class SinkEventAttributeSet
 
     static
     {
-        UNDERLINE = new SinkEventAttributeSet( new String[] {DECORATION, "underline"} ).unmodifiable();
-        OVERLINE = new SinkEventAttributeSet( new String[] {DECORATION, "overline"} ).unmodifiable();
-        LINETHROUGH = new SinkEventAttributeSet( new String[] {DECORATION, "line-through"} ).unmodifiable();
-        BOXED = new SinkEventAttributeSet( new String[] {DECORATION, "boxed"} ).unmodifiable();
+        UNDERLINE = new SinkEventAttributeSet( DECORATION, "underline" ).unmodifiable();
+        OVERLINE = new SinkEventAttributeSet( DECORATION, "overline" ).unmodifiable();
+        LINETHROUGH = new SinkEventAttributeSet( DECORATION, "line-through" ).unmodifiable();
+        BOXED = new SinkEventAttributeSet( DECORATION, "boxed" ).unmodifiable();
 
-        BOLD = new SinkEventAttributeSet( new String[] {STYLE, "bold"} ).unmodifiable();
-        ITALIC = new SinkEventAttributeSet( new String[] {STYLE, "italic"} ).unmodifiable();
-        MONOSPACED = new SinkEventAttributeSet( new String[] {STYLE, "monospaced"} ).unmodifiable();
+        BOLD = new SinkEventAttributeSet( STYLE, "bold" ).unmodifiable();
+        ITALIC = new SinkEventAttributeSet( STYLE, "italic" ).unmodifiable();
+        MONOSPACED = new SinkEventAttributeSet( STYLE, "monospaced" ).unmodifiable();
 
-        LEFT = new SinkEventAttributeSet( new String[] {ALIGN, "left"} ).unmodifiable();
-        RIGHT = new SinkEventAttributeSet( new String[] {ALIGN, "right"} ).unmodifiable();
-        CENTER = new SinkEventAttributeSet( new String[] {ALIGN, "center"} ).unmodifiable();
-        JUSTIFY = new SinkEventAttributeSet( new String[] {ALIGN, "justify"} ).unmodifiable();
+        LEFT = new SinkEventAttributeSet( ALIGN, "left" ).unmodifiable();
+        RIGHT = new SinkEventAttributeSet( ALIGN, "right" ).unmodifiable();
+        CENTER = new SinkEventAttributeSet( ALIGN, "center" ).unmodifiable();
+        JUSTIFY = new SinkEventAttributeSet( ALIGN, "justify" ).unmodifiable();
     }
 
     private Map<String, Object> attribs;
@@ -130,7 +129,7 @@ public class SinkEventAttributeSet
      */
     public SinkEventAttributeSet( int size )
     {
-        attribs = new LinkedHashMap<String, Object>( size );
+        attribs = new LinkedHashMap<>( size );
     }
 
     /**
@@ -149,7 +148,7 @@ public class SinkEventAttributeSet
             throw new IllegalArgumentException( "Missing attribute!" );
         }
 
-        attribs = new LinkedHashMap<String, Object>( n / 2 );
+        attribs = new LinkedHashMap<>( n / 2 );
 
         for ( int i = 0; i < n; i += 2 )
         {
@@ -165,7 +164,7 @@ public class SinkEventAttributeSet
      */
     public SinkEventAttributeSet( AttributeSet attributes )
     {
-        attribs = new LinkedHashMap<String, Object>( attributes.getAttributeCount() );
+        attribs = new LinkedHashMap<>( attributes.getAttributeCount() );
 
         Enumeration<?> names = attributes.getAttributeNames();
 
@@ -183,7 +182,6 @@ public class SinkEventAttributeSet
      * will result in an UnsupportedOperationException.
      *
      * @return an unmodifiable view of this AttributeSet.
-     *
      * @since 1.1.1
      */
     public SinkEventAttributeSet unmodifiable()
@@ -203,7 +201,11 @@ public class SinkEventAttributeSet
         return attribs.isEmpty();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a int.
+     */
     public int getAttributeCount()
     {
         return attribs.size();
@@ -222,13 +224,21 @@ public class SinkEventAttributeSet
                 && containsAttributes( attr ) );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a {@link javax.swing.text.AttributeSet} object.
+     */
     public AttributeSet copyAttributes()
     {
         return ( (AttributeSet) clone() );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a {@link java.util.Enumeration} object.
+     */
     public Enumeration<String> getAttributeNames()
     {
         return Collections.enumeration( attribs.keySet() );
@@ -317,7 +327,11 @@ public class SinkEventAttributeSet
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param attributes a {@link javax.swing.text.AttributeSet} object.
+     */
     public void removeAttributes( AttributeSet attributes  )
     {
         if ( attributes == null )
@@ -345,7 +359,11 @@ public class SinkEventAttributeSet
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a {@link javax.swing.text.AttributeSet} object.
+     */
     public AttributeSet getResolveParent()
     {
         return this.resolveParent;
@@ -362,7 +380,7 @@ public class SinkEventAttributeSet
     public Object clone()
     {
         SinkEventAttributeSet attr = new SinkEventAttributeSet( attribs.size() );
-        attr.attribs = new LinkedHashMap<String, Object>( attribs );
+        attr.attribs = new LinkedHashMap<>( attribs );
 
         if ( resolveParent != null )
         {
@@ -416,4 +434,187 @@ public class SinkEventAttributeSet
         return s.toString();
     }
 
+    /**
+     * Attribute sets for the semantic attribute.
+     */
+    public static class Semantics
+    {
+        /**
+         * An unmodifiable attribute set containing only an emphasis attribute.
+         */
+        public static final SinkEventAttributes EMPHASIS;
+
+        /**
+         * An unmodifiable attribute set containing only a strong attribute.
+         */
+        public static final SinkEventAttributes STRONG;
+
+        /**
+         * An unmodifiable attribute set containing only a small attribute.
+         */
+        public static final SinkEventAttributes SMALL;
+
+        /**
+         * An unmodifiable attribute set containing only a line-through attribute.
+         */
+        public static final SinkEventAttributes LINE_THROUGH;
+
+        /**
+         * An unmodifiable attribute set containing only a citation attribute.
+         */
+        public static final SinkEventAttributes CITATION;
+
+        /**
+         * An unmodifiable attribute set containing only a quote attribute.
+         */
+        public static final SinkEventAttributes QUOTE;
+
+        /**
+         * An unmodifiable attribute set containing only a definition attribute.
+         */
+        public static final SinkEventAttributes DEFINITION;
+
+        /**
+         * An unmodifiable attribute set containing only an abbreviation attribute.
+         */
+        public static final SinkEventAttributes ABBREVIATION;
+
+        /**
+         * An unmodifiable attribute set containing only an italic attribute.
+         */
+        public static final SinkEventAttributes ITALIC;
+
+        /**
+         * An unmodifiable attribute set containing only a bold attribute.
+         */
+        public static final SinkEventAttributes BOLD;
+
+        /**
+         * An unmodifiable attribute set containing only a monospaced attribute.
+         */
+        public static final SinkEventAttributes MONOSPACED;
+
+        /**
+         * An unmodifiable attribute set containing only a code attribute.
+         */
+        public static final SinkEventAttributes CODE;
+
+        /**
+         * An unmodifiable attribute set containing only a variable attribute.
+         */
+        public static final SinkEventAttributes VARIABLE;
+
+        /**
+         * An unmodifiable attribute set containing only a sample attribute.
+         */
+        public static final SinkEventAttributes SAMPLE;
+
+        /**
+         * An unmodifiable attribute set containing only a keyboard attribute.
+         */
+        public static final SinkEventAttributes KEYBOARD;
+
+        /**
+         * An unmodifiable attribute set containing only a superscript attribute.
+         */
+        public static final SinkEventAttributes SUPERSCRIPT;
+
+        /**
+         * An unmodifiable attribute set containing only a subscript attribute.
+         */
+        public static final SinkEventAttributes SUBSCRIPT;
+
+        /**
+         * An unmodifiable attribute set containing only an annotation attribute.
+         */
+        public static final SinkEventAttributes ANNOTATION;
+
+        /**
+         * An unmodifiable attribute set containing only a highlight attribute.
+         */
+        public static final SinkEventAttributes HIGHLIGHT;
+
+        /**
+         * An unmodifiable attribute set containing only a ruby attribute.
+         */
+        public static final SinkEventAttributes RUBY;
+
+        /**
+         * An unmodifiable attribute set containing only a rubyBase attribute.
+         */
+        public static final SinkEventAttributes RUBY_BASE;
+
+        /**
+         * An unmodifiable attribute set containing only a rubyText attribute.
+         */
+        public static final SinkEventAttributes RUBY_TEXT;
+
+        /**
+         * An unmodifiable attribute set containing only a rubyTextContainer attribute.
+         */
+        public static final SinkEventAttributes RUBY_TEXT_CONTAINER;
+
+        /**
+         * An unmodifiable attribute set containing only a rubyParentheses attribute.
+         */
+        public static final SinkEventAttributes RUBY_PARANTHESES;
+
+        /**
+         * An unmodifiable attribute set containing only a bidirectionalIsolation attribute.
+         */
+        public static final SinkEventAttributes BIDIRECTIONAL_ISOLATION;
+
+        /**
+         * An unmodifiable attribute set containing only a bidirectionalOverride attribute.
+         */
+        public static final SinkEventAttributes BIDIRECTIONAL_OVERRIDE;
+
+        /**
+         * An unmodifiable attribute set containing only a phrase attribute.
+         */
+        public static final SinkEventAttributes PHRASE;
+
+        /**
+         * An unmodifiable attribute set containing only an insert attribute.
+         */
+        public static final SinkEventAttributes INSERT;
+
+        /**
+         * An unmodifiable attribute set containing only a delete attribute.
+         */
+        public static final SinkEventAttributes DELETE;
+
+        static
+        {
+            EMPHASIS = new SinkEventAttributeSet( SEMANTICS, "emphasis" ).unmodifiable();
+            STRONG = new SinkEventAttributeSet( SEMANTICS, "strong" ).unmodifiable();
+            SMALL = new SinkEventAttributeSet( SEMANTICS, "small" ).unmodifiable();
+            LINE_THROUGH = new SinkEventAttributeSet( SEMANTICS, "line-through" ).unmodifiable();
+            CITATION = new SinkEventAttributeSet( SEMANTICS, "citation" ).unmodifiable();
+            QUOTE = new SinkEventAttributeSet( SEMANTICS, "quote" ).unmodifiable();
+            DEFINITION = new SinkEventAttributeSet( SEMANTICS, "definition" ).unmodifiable();
+            ABBREVIATION = new SinkEventAttributeSet( SEMANTICS, "abbreviation" ).unmodifiable();
+            ITALIC = new SinkEventAttributeSet( SEMANTICS, "italic" ).unmodifiable();
+            BOLD = new SinkEventAttributeSet( SEMANTICS, "bold" ).unmodifiable();
+            MONOSPACED = new SinkEventAttributeSet( SEMANTICS, "monospaced" ).unmodifiable();
+            CODE = new SinkEventAttributeSet( SEMANTICS, "code" ).unmodifiable();
+            VARIABLE = new SinkEventAttributeSet( SEMANTICS, "variable" ).unmodifiable();
+            SAMPLE = new SinkEventAttributeSet( SEMANTICS, "sample" ).unmodifiable();
+            KEYBOARD = new SinkEventAttributeSet( SEMANTICS, "keyboard" ).unmodifiable();
+            SUPERSCRIPT = new SinkEventAttributeSet( SEMANTICS, "superscript" ).unmodifiable();
+            SUBSCRIPT = new SinkEventAttributeSet( SEMANTICS, "subscript" ).unmodifiable();
+            ANNOTATION = new SinkEventAttributeSet( SEMANTICS, "annotation" ).unmodifiable();
+            HIGHLIGHT = new SinkEventAttributeSet( SEMANTICS, "highlight" ).unmodifiable();
+            RUBY = new SinkEventAttributeSet( SEMANTICS, "ruby" ).unmodifiable();
+            RUBY_BASE = new SinkEventAttributeSet( SEMANTICS, "rubyBase" ).unmodifiable();
+            RUBY_TEXT = new SinkEventAttributeSet( SEMANTICS, "rubyText" ).unmodifiable();
+            RUBY_TEXT_CONTAINER = new SinkEventAttributeSet( SEMANTICS, "rubyTextContainer" ).unmodifiable();
+            RUBY_PARANTHESES = new SinkEventAttributeSet( SEMANTICS, "rubyParentheses" ).unmodifiable();
+            BIDIRECTIONAL_ISOLATION = new SinkEventAttributeSet( SEMANTICS, "bidirectionalIsolation" ).unmodifiable();
+            BIDIRECTIONAL_OVERRIDE = new SinkEventAttributeSet( SEMANTICS, "bidirectionalOverride" ).unmodifiable();
+            PHRASE = new SinkEventAttributeSet( SEMANTICS, "phrase" ).unmodifiable();
+            INSERT = new SinkEventAttributeSet( SEMANTICS, "insert" ).unmodifiable();
+            DELETE = new SinkEventAttributeSet( SEMANTICS, "delete" ).unmodifiable();
+        }
+    }
 }

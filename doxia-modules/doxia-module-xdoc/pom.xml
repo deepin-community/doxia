@@ -19,13 +19,13 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <artifactId>doxia-modules</artifactId>
     <groupId>org.apache.maven.doxia</groupId>
-    <version>1.7</version>
+    <version>1.12.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -47,6 +47,16 @@ under the License.
     <dependency>
       <groupId>org.apache.maven.doxia</groupId>
       <artifactId>doxia-test-docs</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xmlunit</groupId>
+      <artifactId>xmlunit-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xmlunit</groupId>
+      <artifactId>xmlunit-matchers</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -78,22 +88,13 @@ under the License.
               <execution>
                 <phase>site</phase>
                 <configuration>
-                  <tasks>
+                  <target>
                     <taskdef name="xsddoc" classname="net.sf.xframe.xsddoc.Task" />
 
-                    <condition property="dir" value="${project.reporting.outputDirectory}/xsddoc">
-                      <matches string="${project.reporting.outputDirectory}" pattern="^${basedir}" />
-                    </condition>
-                    <condition property="dir" value="${project.reporting.outputDirectory}/xsddoc">
-                      <not>
-                        <isset property="dir" />
-                      </not>
-                    </condition>
+                    <mkdir dir="${project.reporting.outputDirectory}/xsddoc" />
 
-                    <mkdir dir="${dir}" />
-
-                    <xsddoc file="${basedir}/src/main/resources/xdoc-2.0.xsd" out="${dir}" doctitle="Reference of Schema Xdoc 2.0" verbose="true" />
-                  </tasks>
+                    <xsddoc file="${basedir}/src/main/resources/xdoc-2.0.xsd" out="${project.reporting.outputDirectory}/xsddoc" doctitle="Reference of Schema Xdoc 2.0" verbose="true" />
+                  </target>
                 </configuration>
                 <goals>
                   <goal>run</goal>
@@ -115,12 +116,12 @@ under the License.
               <dependency>
                 <groupId>org.apache.ant</groupId>
                 <artifactId>ant-apache-regexp</artifactId>
-                <version>1.7.1</version>
+                <version>1.10.11</version>
               </dependency>
               <dependency>
                 <groupId>xalan</groupId>
                 <artifactId>xalan</artifactId>
-                <version>2.7.1</version>
+                <version>2.7.2</version>
               </dependency>
             </dependencies>
           </plugin>

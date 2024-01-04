@@ -45,7 +45,6 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
  * Parse an xhtml model and emit events into a Doxia Sink.
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: XhtmlParser.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 @Component( role = Parser.class, hint = "xhtml" )
@@ -54,7 +53,7 @@ public class XhtmlParser
     implements XhtmlMarkup
 {
     /** For boxed verbatim. */
-    private boolean boxed;
+    protected boolean boxed;
 
     /** Empty elements don't write a closing tag. */
     private boolean isEmptyElement;
@@ -108,7 +107,7 @@ public class XhtmlParser
             }
             else
             {
-                sink.unknown( "meta", new Object[] { Integer.valueOf( TAG_TYPE_SIMPLE ) }, attribs );
+                sink.unknown( "meta", new Object[] { TAG_TYPE_SIMPLE }, attribs );
             }
         }
         /*
@@ -118,7 +117,7 @@ public class XhtmlParser
          */
         else if ( parser.getName().equals( ADDRESS.toString() ) )
         {
-            sink.author( attribs );
+            sink.address( attribs );
         }
         else if ( parser.getName().equals( BODY.toString() ) )
         {
@@ -203,7 +202,7 @@ public class XhtmlParser
         }
         else if ( parser.getName().equals( ADDRESS.toString() ) )
         {
-            sink.author_();
+            sink.address_();
         }
         else if ( parser.getName().equals( DIV.toString() ) )
         {
@@ -230,7 +229,7 @@ public class XhtmlParser
 
         if ( text.startsWith( "MACRO" ) && !isSecondParsing() )
         {
-            processMacro( text, sink );
+            processMacro( parser, text, sink );
         }
         else
         {
@@ -239,7 +238,7 @@ public class XhtmlParser
     }
 
     /** process macro embedded in XHTML commment */
-    private void processMacro( String text, Sink sink )
+    private void processMacro( XmlPullParser parser, String text, Sink sink )
         throws XmlPullParserException
     {
         String s = text.substring( text.indexOf( '{' ) + 1, text.indexOf( '}' ) );
@@ -247,13 +246,14 @@ public class XhtmlParser
         String[] params = StringUtils.split( s, "|" );
         String macroName = params[0];
 
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         for ( int i = 1; i < params.length; i++ )
         {
             String[] param = StringUtils.split( params[i], "=" );
             if ( param.length == 1 )
             {
-                throw new XmlPullParserException( "Missing 'key=value' pair for macro parameter: " + params[i] );
+                throw new XmlPullParserException( "Invalid 'key=value' pair for macro " + macroName + " parameter: "
+                    + params[i], parser, null );
             }
 
             String key = unescapeForMacro( param[0] );
@@ -269,11 +269,11 @@ public class XhtmlParser
         }
         catch ( MacroExecutionException e )
         {
-            throw new XmlPullParserException( "Unable to execute macro in the document: " + macroName );
+            throw new XmlPullParserException( "Unable to execute macro in the document: " + macroName, parser, e );
         }
         catch ( MacroNotFoundException me )
         {
-            throw new XmlPullParserException( "Macro not found: " + macroName );
+            throw new XmlPullParserException( "Macro not found: " + macroName, parser, null );
         }
     }
 
@@ -321,7 +321,9 @@ public class XhtmlParser
         return result;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void init()
     {
         super.init();
@@ -331,7 +333,7 @@ public class XhtmlParser
     }
 
     /** {@inheritDoc} */
-    public void parse( Reader source, Sink sink )
+    public void parse( Reader source, Sink sink, String reference )
         throws ParseException
     {
         this.sourceContent = null;
@@ -353,7 +355,7 @@ public class XhtmlParser
 
         try
         {
-            super.parse( new StringReader( sourceContent ), sink );
+            super.parse( new StringReader( sourceContent ), sink, reference );
         }
         finally
         {

@@ -20,7 +20,6 @@ package org.apache.maven.doxia.module.twiki.parser;
  */
 
 import java.lang.reflect.Method;
-import java.util.Collections;
 
 import org.apache.maven.doxia.sink.Sink;
 
@@ -28,7 +27,6 @@ import org.apache.maven.doxia.sink.Sink;
  * Block that represents a section
  *
  * @author Juan F. Codagnone
- * @version $Id: SectionBlock.java 1438269 2013-01-24 23:47:50Z olamy $
  */
 public class SectionBlock
     extends AbstractFatherBlock
@@ -41,12 +39,10 @@ public class SectionBlock
 
     /**
      * Creates the SectionBlock.
-     * <p/>
-     * No parameter can be <code>null</code>
      *
-     * @param title  the section title.
-     * @param level  the section level: 0 < level < 6
-     * @param blocks child blocks
+     * @param title  the section title, cannot be {@code null}
+     * @param level  the section level: 0 &lt; level &lt; 6
+     * @param blocks child blocks, cannot be {@code null}
      */
     public SectionBlock( final String title, final int level, final Block[] blocks )
     {
@@ -112,8 +108,8 @@ public class SectionBlock
     {
         try
         {
-            final Method m = sink.getClass().getMethod( name, new Class[] {} );
-            m.invoke( sink, Collections.EMPTY_LIST.toArray() );
+            final Method m = sink.getClass().getMethod( name );
+            m.invoke( sink );
         }
         catch ( Exception e )
         {
@@ -142,7 +138,11 @@ public class SectionBlock
         return title;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public final String toString()
     {
         final StringBuilder sb = new StringBuilder();

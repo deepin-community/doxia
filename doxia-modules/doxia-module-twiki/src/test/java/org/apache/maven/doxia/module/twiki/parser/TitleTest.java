@@ -19,14 +19,18 @@
 package org.apache.maven.doxia.module.twiki.parser;
 
 import java.io.StringReader;
+import java.util.List;
 
 import org.apache.maven.doxia.module.twiki.TWikiParser;
 import org.apache.maven.doxia.parser.ParseException;
 import org.apache.maven.doxia.util.ByLineReaderSource;
 import org.apache.maven.doxia.util.ByLineSource;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- * Tests for {@link TWikiParser#getTitle(java.util.List)}
+ * Tests for {@link TWikiParser#getTitle(List, ByLineSource)}
  *
  *
  * @author Juan F. Codagnone
@@ -35,9 +39,8 @@ import org.apache.maven.doxia.util.ByLineSource;
 public class TitleTest
     extends AbstractBlockTestCase
 {
-
-    public void testSectionTitle()
-        throws Exception
+    @Test
+    public void testSectionTitle() throws Exception
     {
         final ByLineSource source = new ByLineReaderSource( new StringReader( "---++ Test\n hello world" ) );
 
@@ -46,86 +49,79 @@ public class TitleTest
         assertEquals( "Test", parser.getTitle( parser.parse( source ), source ) );
     }
 
-    public void testNoSectionTitle()
-        throws Exception
+    @Test
+    public void testNoSectionTitle() throws Exception
     {
-        final ByLineSource source =
-            new NamedByLineSource( new ByLineReaderSource( new StringReader( "hello world" ) ), "testpage" );
+        final ByLineSource source = new NamedByLineSource( new ByLineReaderSource( new StringReader( "hello world" ) ),
+                "testpage" );
 
         final TWikiParser parser = new TWikiParser();
 
         assertEquals( "testpage", parser.getTitle( parser.parse( source ), source ) );
     }
 
-    public void testNoSectionTwikiExtensionTitle()
-        throws Exception
+    @Test
+    public void testNoSectionTwikiExtensionTitle() throws Exception
     {
-        final ByLineSource source =
-            new NamedByLineSource( new ByLineReaderSource( new StringReader( "hello world" ) ), "testpage.twiki" );
+        final ByLineSource source = new NamedByLineSource( new ByLineReaderSource( new StringReader( "hello world" ) ),
+                "testpage.twiki" );
 
         final TWikiParser parser = new TWikiParser();
 
         assertEquals( "testpage", parser.getTitle( parser.parse( source ), source ) );
     }
 
-}
-
-class NamedByLineSource
-    implements ByLineSource
-{
-    /** reader */
-    private final ByLineReaderSource reader;
-
-    /** reader's name */
-    private final String name;
-
-    public NamedByLineSource( final ByLineReaderSource reader, final String name )
+    static class NamedByLineSource implements ByLineSource
     {
-        if ( reader == null || name == null )
+        /**
+         * reader
+         */
+        private final ByLineReaderSource reader;
+
+        /**
+         * reader's name
+         */
+        private final String name;
+
+        public NamedByLineSource( final ByLineReaderSource reader, final String name )
         {
-            throw new IllegalArgumentException( "null arguments are not allowed" );
+            if ( reader == null || name == null )
+            {
+                throw new IllegalArgumentException( "null arguments are not allowed" );
+            }
+
+            this.reader = reader;
+            this.name = name;
         }
 
-        this.reader = reader;
-        this.name = name;
-    }
+        public final void close()
+        {
+            reader.close();
+        }
 
-    /** @see ByLineReaderSource#close() */
-    public final void close()
-    {
-        reader.close();
-    }
+        public final int getLineNumber()
+        {
+            return reader.getLineNumber();
+        }
 
-    /** @see ByLineReaderSource#getLineNumber() */
-    public final int getLineNumber()
-    {
-        return reader.getLineNumber();
-    }
+        public final String getName()
+        {
+            return name;
+        }
 
-    /** @see ByLineReaderSource#getName() */
-    public final String getName()
-    {
-        return name;
-    }
+        public final String getNextLine() throws ParseException
+        {
+            return reader.getNextLine();
+        }
 
-    /** @see ByLineReaderSource#getNextLine() */
-    public final String getNextLine()
-        throws ParseException
-    {
-        return reader.getNextLine();
-    }
+        public final void unget( final String s ) throws IllegalStateException
+        {
+            reader.unget( s );
+        }
 
-    /** @see ByLineReaderSource#unget(java.lang.String) */
-    public final void unget( final String s )
-        throws IllegalStateException
-    {
-        reader.unget( s );
-    }
-
-    /** @see ByLineReaderSource#ungetLine() */
-    public final void ungetLine()
-        throws IllegalStateException
-    {
-        reader.ungetLine();
+        public final void ungetLine() throws IllegalStateException
+        {
+            reader.ungetLine();
+        }
     }
 }

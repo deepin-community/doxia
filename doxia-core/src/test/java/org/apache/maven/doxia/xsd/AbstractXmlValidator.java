@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +30,7 @@ import junit.framework.AssertionFailedError;
 
 import org.apache.maven.doxia.parser.Parser;
 
+import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.logging.Logger;
 
@@ -59,7 +59,10 @@ public abstract class AbstractXmlValidator
     /** XMLReader to validate xml file */
     private XMLReader xmlReader;
 
-    /**
+    /** HTML5 does not have a DTD or XSD, include option to disable validation */
+    private boolean validate = true;
+
+	/**
      * Filter fail message.
      *
      * @param message not null
@@ -96,23 +99,20 @@ public abstract class AbstractXmlValidator
     public void testValidateFiles()
         throws Exception
     {
-        final Logger logger = getContainer().getLoggerManager().getLoggerForComponent( Parser.ROLE );
+        final Logger logger =
+            ( (DefaultPlexusContainer) getContainer() ).getLoggerManager().getLoggerForComponent( Parser.ROLE );
 
-        for ( Iterator<Map.Entry<String, String>> it = getTestDocuments().entrySet().iterator(); it.hasNext(); )
+        for ( Map.Entry<String, String> entry : getTestDocuments().entrySet() )
         {
-            Map.Entry<String, String> entry = it.next();
-
             if ( logger.isDebugEnabled() )
             {
                 logger.debug( "Validate '" + entry.getKey() + "'" );
             }
 
-            List<ErrorMessage> errors = parseXML( entry.getValue().toString() );
+            List<ErrorMessage> errors = parseXML( entry.getValue() );
 
-            for ( Iterator<ErrorMessage> it2 = errors.iterator(); it2.hasNext(); )
+            for ( ErrorMessage error : errors )
             {
-                ErrorMessage error = it2.next();
-
                 if ( isFailErrorMessage( error.getMessage() ) )
                 {
                     fail( entry.getKey() + EOL + error.toString() );
@@ -148,6 +148,22 @@ public abstract class AbstractXmlValidator
      */
     protected abstract EntityResolver getEntityResolver();
 
+    /**
+     * Returns whether the XMLReader should validate XML.
+     * @return true if validation should be performed, false otherwise.
+     */
+    protected boolean isValidate() {
+		return validate;
+	}
+
+    /**
+     * Sets whether the XMLReader should validate XML.
+     * @param validate true if validation should be performed, false otherwise.
+     */
+    protected void setValidate(boolean validate) {
+		this.validate = validate;
+	}
+
     // ----------------------------------------------------------------------
     // Private methods
     // ----------------------------------------------------------------------
@@ -159,8 +175,8 @@ public abstract class AbstractXmlValidator
             try
             {
                 xmlReader = XMLReaderFactory.createXMLReader( "org.apache.xerces.parsers.SAXParser" );
-                xmlReader.setFeature( "http://xml.org/sax/features/validation", true );
-                xmlReader.setFeature( "http://apache.org/xml/features/validation/schema", true );
+                xmlReader.setFeature( "http://xml.org/sax/features/validation", validate );
+                xmlReader.setFeature( "http://apache.org/xml/features/validation/schema", validate );
                 xmlReader.setErrorHandler( new MessagesErrorHandler() );
                 xmlReader.setEntityResolver( getEntityResolver() );
             }
@@ -378,7 +394,7 @@ public abstract class AbstractXmlValidator
 
         MessagesErrorHandler()
         {
-            messages = new ArrayList<ErrorMessage>( 8 );
+            messages = new ArrayList<>( 8 );
         }
 
         /** {@inheritDoc} */

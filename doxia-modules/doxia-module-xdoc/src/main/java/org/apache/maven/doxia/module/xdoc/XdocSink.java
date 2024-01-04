@@ -33,13 +33,12 @@ import org.apache.maven.doxia.util.HtmlTools;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
- * <a href="http://maven.apache.org/doxia/references/xdoc-format.html">Xdoc</a> Sink implementation.
- * <br/>
- * It uses the Xdoc XSD <a href="http://maven.apache.org/xsd/xdoc-2.0.xsd">
- * http://maven.apache.org/xsd/xdoc-2.0.xsd</a>.
+ * <a href="https://maven.apache.org/doxia/references/xdoc-format.html">Xdoc</a> Sink implementation.
+ * <br>
+ * It uses the Xdoc XSD <a href="https://maven.apache.org/xsd/xdoc-2.0.xsd">
+ * https://maven.apache.org/xsd/xdoc-2.0.xsd</a>.
  *
  * @author <a href="mailto:james@jamestaylor.org">James Taylor</a>
- * @version $Id: XdocSink.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public class XdocSink
@@ -108,7 +107,9 @@ public class XdocSink
     // Public protected methods
     // ----------------------------------------------------------------------
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void init()
     {
         super.init();
@@ -118,6 +119,7 @@ public class XdocSink
 
     /**
      * {@inheritDoc}
+     *
      * @see #head(org.apache.maven.doxia.sink.SinkEventAttributes)
      */
     public void head()
@@ -166,6 +168,7 @@ public class XdocSink
 
     /**
      * {@inheritDoc}
+     *
      * @see XdocMarkup#DOCUMENT_TAG
      * @see XdocMarkup#PROPERTIES_TAG
      */
@@ -178,6 +181,7 @@ public class XdocSink
 
     /**
      * {@inheritDoc}
+     *
      * @see javax.swing.text.html.HTML.Tag#TITLE
      */
     public void title()
@@ -187,6 +191,7 @@ public class XdocSink
 
     /**
      * {@inheritDoc}
+     *
      * @see javax.swing.text.html.HTML.Tag#TITLE
      */
     public void title_()
@@ -200,6 +205,7 @@ public class XdocSink
 
     /**
      * {@inheritDoc}
+     *
      * @see XdocMarkup#AUTHOR_TAG
      */
     public void author_()
@@ -219,6 +225,7 @@ public class XdocSink
 
     /**
      * {@inheritDoc}
+     *
      * @see XdocMarkup#DATE_TAG
      */
     public void date_()
@@ -234,6 +241,7 @@ public class XdocSink
 
     /**
      * {@inheritDoc}
+     *
      * @see #body(org.apache.maven.doxia.sink.SinkEventAttributes)
      */
     public void body()
@@ -252,6 +260,7 @@ public class XdocSink
 
     /**
      * {@inheritDoc}
+     *
      * @see javax.swing.text.html.HTML.Tag#BODY
      * @see XdocMarkup#DOCUMENT_TAG
      */
@@ -281,17 +290,17 @@ public class XdocSink
     {
         if ( depth == SECTION_LEVEL_1 )
         {
-            write( String.valueOf( LESS_THAN ) + SECTION_TAG.toString()
+            write( LESS_THAN + SECTION_TAG.toString()
                     + SinkUtils.getAttributeString(
                         SinkUtils.filterAttributes( attributes, SinkUtils.SINK_BASE_ATTRIBUTES ) )
-                    + String.valueOf( SPACE ) + Attribute.NAME + String.valueOf( EQUAL ) + String.valueOf( QUOTE ) );
+                    + SPACE + Attribute.NAME + EQUAL + QUOTE );
         }
         else if ( depth == SECTION_LEVEL_2 )
         {
-            write( String.valueOf( LESS_THAN ) + SUBSECTION_TAG.toString()
+            write( LESS_THAN + SUBSECTION_TAG.toString()
                     + SinkUtils.getAttributeString(
                         SinkUtils.filterAttributes( attributes, SinkUtils.SINK_BASE_ATTRIBUTES  ) )
-                    + String.valueOf( SPACE ) + Attribute.NAME + String.valueOf( EQUAL ) + String.valueOf( QUOTE ) );
+                    + SPACE + Attribute.NAME + EQUAL + QUOTE );
         }
     }
 
@@ -353,7 +362,7 @@ public class XdocSink
     {
         if ( depth == SECTION_LEVEL_1 || depth == SECTION_LEVEL_2 )
         {
-            write( String.valueOf( QUOTE ) + String.valueOf( GREATER_THAN ) );
+            write( String.valueOf( QUOTE ) + GREATER_THAN );
         }
         else if ( depth == SECTION_LEVEL_3 )
         {
@@ -375,8 +384,10 @@ public class XdocSink
 
     /**
      * {@inheritDoc}
+     *
      * @see XdocMarkup#SOURCE_TAG
      * @see javax.swing.text.html.HTML.Tag#PRE
+     * @param attributes a {@link org.apache.maven.doxia.sink.SinkEventAttributes} object.
      */
     public void verbatim( SinkEventAttributes attributes )
     {
@@ -395,8 +406,7 @@ public class XdocSink
 
         if ( atts.isDefined( SinkEventAttributes.DECORATION ) )
         {
-            boxed = "boxed".equals(
-                (String) atts.getAttribute( SinkEventAttributes.DECORATION ) );
+            boxed = "boxed".equals( atts.getAttribute( SinkEventAttributes.DECORATION ) );
         }
 
         boxedFlag = boxed;
@@ -415,6 +425,7 @@ public class XdocSink
 
     /**
      * {@inheritDoc}
+     *
      * @see XdocMarkup#SOURCE_TAG
      * @see javax.swing.text.html.HTML.Tag#PRE
      */
@@ -471,6 +482,7 @@ public class XdocSink
      * The default valign is <code>top</code>.
      *
      * {@inheritDoc}
+     *
      * @see javax.swing.text.html.HTML.Tag#TR
      */
     public void tableRow()
@@ -483,6 +495,9 @@ public class XdocSink
         setCellCount( 0 );
     }
 
+    /**
+     * <p>close.</p>
+     */
     public void close()
     {
         super.close();

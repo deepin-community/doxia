@@ -23,8 +23,6 @@ import org.apache.maven.doxia.sink.Sink;
 
 /**
  * <p>Block interface.</p>
- *
- * @version $Id: Block.java 785531 2009-06-17 09:47:59Z ltheussl $
  */
 public interface Block
 {

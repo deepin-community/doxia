@@ -20,7 +20,6 @@ package org.apache.maven.doxia.util;
  */
 
 import java.net.URLEncoder;
-import java.util.Locale;
 
 import org.codehaus.plexus.PlexusTestCase;
 
@@ -28,7 +27,6 @@ import org.codehaus.plexus.PlexusTestCase;
  * Test case for <code>HtmlTools</code>.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: HtmlToolsTest.java 1091043 2011-04-11 11:44:39Z ltheussl $
  */
 public class HtmlToolsTest
     extends PlexusTestCase
@@ -93,7 +91,7 @@ public class HtmlToolsTest
      */
     public void testEncodeId()
     {
-        assertEquals( HtmlTools.encodeId( null ), null );
+        assertNull( HtmlTools.encodeId( null ) );
         assertEquals( HtmlTools.encodeId( "" ), "a" );
         assertEquals( HtmlTools.encodeId( " " ), "a" );
         assertEquals( HtmlTools.encodeId( " _ " ), "a_" );
@@ -103,8 +101,8 @@ public class HtmlToolsTest
         assertEquals( HtmlTools.encodeId( "a b-c123 " ), "a_b-c123" );
         assertEquals( HtmlTools.encodeId( "   anchor" ), "anchor" );
         assertEquals( HtmlTools.encodeId( "myAnchor" ), "myAnchor" );
-        assertEquals( HtmlTools.encodeId( "H\u00E5kon" ), "Hkon" );
-        assertEquals( HtmlTools.encodeId( "Theu\u00DFl" ), "Theul" );
+        assertEquals( HtmlTools.encodeId( "H\u00E5kon" ), "H.C3.A5kon" );
+        assertEquals( HtmlTools.encodeId( "Theu\u00DFl" ), "Theu.C3.9Fl" );
     }
 
     /**
@@ -124,7 +122,7 @@ public class HtmlToolsTest
                       "http://www.example.com/?This%20is%20a%20simple%20&%20short%20test." );
 
         String url = "\uD808\uDF45";
-        assertEquals( HtmlTools.encodeURL( url ), URLEncoder.encode( url, "UTF-8" ).toLowerCase( Locale.ENGLISH ) );
+        assertEquals( HtmlTools.encodeURL( url ), URLEncoder.encode( url, "UTF-8" ) );
     }
 
     /**

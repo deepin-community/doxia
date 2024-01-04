@@ -25,7 +25,6 @@ import org.apache.maven.doxia.util.ByLineSource;
 /**
  * <p>FigureBlockParser class.</p>
  *
- * @version $Id: FigureBlockParser.java 1438269 2013-01-24 23:47:50Z olamy $
  * @since 1.1
  */
 public class FigureBlockParser
@@ -42,7 +41,7 @@ public class FigureBlockParser
         throws ParseException
     {
         String image = line.substring( 1, line.lastIndexOf( "!" ) );
-        if ( image.indexOf( "|" ) >= 0 )
+        if ( image.contains( "|" ) )
         {
             // DOXIA-303: handle figure attributes
             image = image.substring( 0, image.indexOf( "|" ) );
@@ -95,7 +94,7 @@ public class FigureBlockParser
             }
             else
             {
-                text.append( " " + line.trim() );
+                text.append( " " ).append( line.trim() );
             }
 
         }

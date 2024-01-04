@@ -39,7 +39,6 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
  * and emit events into the specified doxia Sink.
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: DocBookParser.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 @Component( role = Parser.class, hint = "docbook" )
@@ -68,50 +67,50 @@ public class DocBookParser
     /**
      * A selective stack of parent elements
      */
-    private final Stack<String> parent = new Stack<String>();
+    private final Stack<String> parent = new Stack<>();
 
     /**
      * The list of DocBook elements that introduce a new level of hierarchy.
      */
-    private static final Collection<String> HIER_ELEMENTS = new HashSet<String>();
+    private static final Collection<String> HIER_ELEMENTS = new HashSet<>();
 
     /**
      * Simplified DocBook elements that are direct children of &lt;article&gt;
      * and that should be emitted into the Sink's head.
      */
-    private static final Collection<String> META_ELEMENTS = new HashSet<String>();
+    private static final Collection<String> META_ELEMENTS = new HashSet<>();
 
     /**
      * Simplified DocBook elements that occur within &lt;articleinfo&gt;
      * and that are currently recognized by the parser.
      */
-    private static final Collection<String> ARTICLEINFO_ELEMENTS = new HashSet<String>();
+    private static final Collection<String> ARTICLEINFO_ELEMENTS = new HashSet<>();
 
     /**
      * The list of DocBook elements that will be rendered verbatim
      */
-    private static final Collection<String> VERBATIM_ELEMENTS = new HashSet<String>();
+    private static final Collection<String> VERBATIM_ELEMENTS = new HashSet<>();
 
     /**
      * The list of DocBook elements that will be rendered inline and bold
      */
-    private static final Collection<String> BOLD_ELEMENTS = new HashSet<String>();
+    private static final Collection<String> BOLD_ELEMENTS = new HashSet<>();
 
     /**
      * The list of DocBook elements that will be rendered inline and italic
      */
-    private static final Collection<String> ITALIC_ELEMENTS = new HashSet<String>();
+    private static final Collection<String> ITALIC_ELEMENTS = new HashSet<>();
 
     /**
      * The list of DocBook elements that will be rendered inline and monospace
      */
-    private static final Collection<String> MONOSPACE_ELEMENTS = new HashSet<String>();
+    private static final Collection<String> MONOSPACE_ELEMENTS = new HashSet<>();
 
     /**
      * The list of DocBook elements that may be ignored, either because they don't
      * require any special processing or because they are not yet implemented.
      */
-    private static final Collection<String> IGNORABLE_ELEMENTS = new HashSet<String>();
+    private static final Collection<String> IGNORABLE_ELEMENTS = new HashSet<>();
     static
     {
         META_ELEMENTS.add( SimplifiedDocbookMarkup.ARTICLEINFO_TAG.toString() );
@@ -169,7 +168,9 @@ public class DocBookParser
         IGNORABLE_ELEMENTS.add( SimplifiedDocbookMarkup.VOLUMENUM_TAG.toString() );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void init()
     {
         super.init();
@@ -495,28 +496,26 @@ public class DocBookParser
     {
         final String text = parser.getText();
 
-        if ( "PB".equals( text.trim() ) )
+        switch ( text.trim() )
         {
-            sink.pageBreak();
-        }
-        else if ( "HR".equals( text.trim() ) )
-        {
-            sink.horizontalRule();
-        }
-        else if ( "LB".equals( text.trim() ) )
-        {
-            sink.lineBreak();
-        }
-        else if ( "anchor_end".equals( text.trim() ) )
-        {
-            sink.anchor_();
-        }
-        else
-        {
-            if ( isEmitComments() )
-            {
-                sink.comment( text );
-            }
+            case "PB":
+                sink.pageBreak();
+                break;
+            case "HR":
+                sink.horizontalRule();
+                break;
+            case "LB":
+                sink.lineBreak();
+                break;
+            case "anchor_end":
+                sink.anchor_();
+                break;
+            default:
+                if ( isEmitComments() )
+                {
+                    sink.comment( text );
+                }
+                break;
         }
     }
 

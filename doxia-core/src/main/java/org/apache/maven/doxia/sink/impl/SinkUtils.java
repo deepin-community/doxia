@@ -32,7 +32,6 @@ import org.apache.maven.doxia.sink.SinkEventAttributes;
  * Collection of common utility methods for sinks.
  *
  * @author ltheussl
- * @version $Id: SinkUtils.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.1
  */
 public class SinkUtils

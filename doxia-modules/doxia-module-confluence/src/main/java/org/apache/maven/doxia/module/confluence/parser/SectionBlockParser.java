@@ -26,7 +26,6 @@ import org.apache.maven.doxia.parser.ParseException;
  * <p>SectionBlockParser class.</p>
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: SectionBlockParser.java 772533 2009-05-07 07:35:06Z ltheussl $
  */
 public class SectionBlockParser
     implements BlockParser

@@ -19,18 +19,20 @@ package org.apache.maven.doxia.index;
  * under the License.
  */
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:trygve.laugstol@objectware.no">Trygve Laugst&oslash;l</a>
- * @version $Id: IndexEntryTest.java 1172204 2011-09-18 06:46:17Z hboutemy $
  */
 public class IndexEntryTest
-    extends TestCase
 {
     /**
      * Test IndexEntry.
      */
+    @Test
     public void testIndexEntry()
     {
         IndexEntry root = new IndexEntry( null );

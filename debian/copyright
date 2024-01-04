@@ -1,6 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Maven Doxia
-Source: http://svn.apache.org/repos/asf/maven/doxia/doxia/
+Source: https://github.com/apache/maven-doxia
+Files-Excluded: .github
 
 Files: *
 Copyright: 2006-2016, The Apache Software Foundation

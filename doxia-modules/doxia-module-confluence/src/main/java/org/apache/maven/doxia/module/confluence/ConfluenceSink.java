@@ -22,22 +22,24 @@ package org.apache.maven.doxia.module.confluence;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 import javax.swing.text.html.HTML.Attribute;
 
 import org.apache.maven.doxia.sink.SinkEventAttributes;
 import org.apache.maven.doxia.sink.impl.AbstractTextSink;
+import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
 import org.apache.maven.doxia.util.HtmlTools;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Confluence Sink implementation.
- * <br/>
+ * <br>
  * <b>Note</b>: The encoding used is UTF-8.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: ConfluenceSink.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public class ConfluenceSink
@@ -58,8 +60,17 @@ public class ConfluenceSink
     /**  listStyles. */
     private final Stack<String> listStyles;
 
+    /** An indication on if we're in monospaced mode. */
+    private boolean monospacedFlag;
+
+    /** Keep track of the closing tags for inline events. */
+    protected Stack<List<String>> inlineStack = new Stack<>();
+
     /** An indication on if we're in verbatim box mode. */
     private boolean verbatimBoxedFlag;
+
+    /** An indication on if we're in table mode. */
+    private boolean tableFlag;
 
     /** An indication on if we're in table header mode. */
     private boolean tableHeaderFlag;
@@ -76,7 +87,7 @@ public class ConfluenceSink
     protected ConfluenceSink( Writer writer )
     {
         this.out = new PrintWriter( writer );
-        this.listStyles = new Stack<String>();
+        this.listStyles = new Stack<>();
 
         init();
     }
@@ -150,16 +161,20 @@ public class ConfluenceSink
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void bold()
     {
-        write( BOLD_START_MARKUP );
+        inline( SinkEventAttributeSet.Semantics.BOLD );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void bold_()
     {
-        write( BOLD_END_MARKUP );
+        inline_();
     }
 
     /**
@@ -171,7 +186,9 @@ public class ConfluenceSink
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void close()
     {
         out.write( writer.toString() );
@@ -204,10 +221,12 @@ public class ConfluenceSink
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definedTerm()
     {
-        write( " " );
+        // nop
     }
 
     /** {@inheritDoc} */
@@ -217,39 +236,34 @@ public class ConfluenceSink
     }
 
     /**
-     * Not used.
      * {@inheritDoc}
      */
     public void definedTerm_()
     {
-        // nop
+        writeEOL( true );
     }
 
     /**
-     * Not used.
      * {@inheritDoc}
      */
     public void definition()
     {
-        // nop
+        writer.write( CITATION_START_MARKUP );
     }
 
-    /**
-     * Not used.
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void definition( SinkEventAttributes attributes )
     {
-        // nop
+        definition();
     }
 
     /**
-     * Not used.
      * {@inheritDoc}
      */
     public void definition_()
     {
-        // nop
+        writer.write( CITATION_END_MARKUP );
+        writeEOL( true );
     }
 
     /**
@@ -271,12 +285,11 @@ public class ConfluenceSink
     }
 
     /**
-     * Not used.
      * {@inheritDoc}
      */
     public void definitionList_()
     {
-        // nop
+        writeEOL();
     }
 
     /**
@@ -372,14 +385,18 @@ public class ConfluenceSink
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void flush()
     {
         close();
         writer.flush();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void head()
     {
         init();
@@ -393,7 +410,9 @@ public class ConfluenceSink
         head();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void head_()
     {
         headFlag = false;
@@ -414,19 +433,81 @@ public class ConfluenceSink
         horizontalRule();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public void inline()
+    {
+        inline( null );
+    }
+
     /** {@inheritDoc} */
+    public void inline( SinkEventAttributes attributes )
+    {
+        if ( !headFlag )
+        {
+            List<String> tags = new ArrayList<>();
+
+            if ( attributes != null )
+            {
+
+                if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "italic" ) )
+                {
+                    write( ITALIC_START_MARKUP );
+                    tags.add( 0, ITALIC_END_MARKUP );
+                }
+
+                if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "bold" ) )
+                {
+                    write( BOLD_START_MARKUP );
+                    tags.add( 0, BOLD_END_MARKUP );
+                }
+
+                if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "code" ) )
+                {
+                    write( MONOSPACED_START_MARKUP );
+                    tags.add( 0, MONOSPACED_END_MARKUP );
+                }
+
+            }
+
+            inlineStack.push( tags );
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void inline_()
+    {
+        if ( !headFlag )
+        {
+            for ( String tag: inlineStack.pop() )
+            {
+                write( tag );
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void italic()
     {
-        write( ITALIC_START_MARKUP );
+        inline( SinkEventAttributeSet.Semantics.ITALIC );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void italic_()
     {
-        write( ITALIC_END_MARKUP );
+        inline_();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void lineBreak()
     {
         write( LINE_BREAK_MARKUP );
@@ -451,14 +532,18 @@ public class ConfluenceSink
         link( name );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void link_()
     {
         linkName = null;
         write( LINK_END_MARKUP );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void list()
     {
         if ( !writer.toString().endsWith( EOL + EOL ) )
@@ -475,13 +560,22 @@ public class ConfluenceSink
         list();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void list_()
     {
         levelList--;
+        if ( levelList == 0 )
+        {
+            writeEOL( true );
+            writeEOL();
+        }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void listItem()
     {
         write( StringUtils.repeat( "*", levelList ) + " " );
@@ -493,22 +587,30 @@ public class ConfluenceSink
         listItem();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void listItem_()
     {
         writeEOL( true );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void monospaced()
     {
-        write( MONOSPACED_START_MARKUP );
+        monospacedFlag = true;
+        inline( SinkEventAttributeSet.Semantics.CODE );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void monospaced_()
     {
-        write( MONOSPACED_END_MARKUP );
+        monospacedFlag = false;
+        inline_();
     }
 
     /**
@@ -523,6 +625,10 @@ public class ConfluenceSink
     /** {@inheritDoc} */
     public void numberedList( int numbering )
     {
+        if ( !writer.toString().endsWith( EOL + EOL ) )
+        {
+            writeEOL( true );
+        }
         levelList++;
 
         String style;
@@ -546,19 +652,33 @@ public class ConfluenceSink
         numberedList( numbering );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void numberedList_()
     {
         levelList--;
+        if ( levelList == 0 )
+        {
+            writeEOL( true );
+            writeEOL();
+        }
         listStyles.pop();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void numberedListItem()
     {
         writeEOL( true );
         String style = listStyles.peek();
-        write( style + SPACE );
+        // We currently only handle one type of numbering style for Confluence,
+        // so we can just repeat the latest numbering markup for each level.
+        // If we ever decide to handle multiple different numbering styles, we'd
+        // need to traverse the entire listStyles stack and use the correct
+        // numbering style for each level.
+        write( StringUtils.repeat( style, levelList ) + SPACE );
     }
 
     /** {@inheritDoc} */
@@ -567,7 +687,9 @@ public class ConfluenceSink
         numberedListItem();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void numberedListItem_()
     {
         writeEOL( true );
@@ -597,7 +719,9 @@ public class ConfluenceSink
         paragraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void paragraph_()
     {
         writeEOL( true );
@@ -739,61 +863,81 @@ public class ConfluenceSink
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle1()
     {
         sectionTitle( 1, null );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle1_()
     {
         sectionTitle_( 1 );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle2()
     {
         sectionTitle( 2, null );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle2_()
     {
         sectionTitle_( 2 );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle3()
     {
         sectionTitle( 3, null );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle3_()
     {
         sectionTitle_( 3 );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle4()
     {
         sectionTitle( 4, null );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle4_()
     {
         sectionTitle_( 4 );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle5()
     {
         sectionTitle( 5, null );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle5_()
     {
         sectionTitle_( 5 );
@@ -815,10 +959,13 @@ public class ConfluenceSink
         writeEOL();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void table()
     {
         // nop
+        tableFlag = true;
         writeEOL( true );
         writeEOL();
     }
@@ -829,9 +976,12 @@ public class ConfluenceSink
         table();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void table_()
     {
+        tableFlag = false;
         writeEOL( true );
         writeEOL();
     }
@@ -860,7 +1010,9 @@ public class ConfluenceSink
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableCell()
     {
         write( " " );
@@ -878,14 +1030,18 @@ public class ConfluenceSink
         tableCell();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableCell_()
     {
         write( " " );
         write( TABLE_CELL_MARKUP );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableHeaderCell()
     {
         tableHeaderFlag = true;
@@ -904,13 +1060,17 @@ public class ConfluenceSink
         tableHeaderCell();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableHeaderCell_()
     {
         write( TABLE_CELL_HEADER_END_MARKUP );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableRow()
     {
         write( TABLE_ROW_MARKUP );
@@ -922,7 +1082,9 @@ public class ConfluenceSink
         tableRow();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableRow_()
     {
         if ( tableHeaderFlag )
@@ -964,7 +1126,25 @@ public class ConfluenceSink
             write( LINK_START_MARKUP );
         }
 
-        content( text );
+        if ( tableFlag )
+        {
+            // Remove line breaks, because it interferes with the table syntax
+            String strippedText = StringUtils.replace( text, "\n", "" );
+            // Trim if only whitespace, to handle ignorable whitespace from xdoc documents
+            if ( StringUtils.isWhitespace( strippedText ) )
+            {
+                strippedText = StringUtils.trim( strippedText );
+            }
+            content( strippedText );
+        }
+        else if ( monospacedFlag )
+        {
+            content( text, true );
+        }
+        else
+        {
+            content( text );
+        }
 
         if ( linkName != null )
         {
@@ -1062,7 +1242,7 @@ public class ConfluenceSink
 
         if ( verbatimBoxedFlag )
         {
-            write( "{code|borderStyle=solid}" );
+            write( "{code:borderStyle=solid}" );
         }
         else
         {
@@ -1071,7 +1251,9 @@ public class ConfluenceSink
         writeEOL( true );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void verbatim_()
     {
         if ( verbatimBoxedFlag )
@@ -1131,18 +1313,76 @@ public class ConfluenceSink
         write( escapeHTML( text ) );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Write HTML, and optionally Confluence, escaped text to output.
+     *
+     * @param text The text to write.
+     * @param escapeConfluence a boolean.
+     */
+    protected void content( String text, boolean escapeConfluence )
+    {
+        if ( escapeConfluence )
+        {
+            write( escapeConfluence( escapeHTML( text ) ) );
+        }
+        else
+        {
+            content( text );
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     protected void init()
     {
         super.init();
 
         this.writer = new StringWriter();
+        this.monospacedFlag = false;
         this.headFlag = false;
         this.levelList = 0;
         this.listStyles.clear();
         this.verbatimBoxedFlag = false;
         this.tableHeaderFlag = false;
         this.linkName = null;
+    }
+
+    /**
+     * Escape characters that have special meaning in Confluence.
+     *
+     * @param text the String to escape, may be null
+     * @return the text escaped, "" if null String input
+     */
+    protected static String escapeConfluence( String text )
+    {
+        if ( text == null )
+        {
+            return "";
+        }
+        else
+        {
+            int length = text.length();
+            StringBuilder buffer = new StringBuilder( length );
+
+            for ( int i = 0; i < length; ++i )
+            {
+                char c = text.charAt( i );
+                switch ( c )
+                {
+                    case '{':
+                        buffer.append( "\\{" );
+                        break;
+                    case '}':
+                        buffer.append( "\\}" );
+                        break;
+                    default:
+                         buffer.append( c );
+                }
+            }
+
+            return buffer.toString();
+        }
     }
 
     /**

@@ -32,13 +32,12 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * <a href="http://www.w3.org/TR/xhtml1/">Xhtml 1.0 Transitional</a> sink implementation.
- * <br/>
+ * <br>
  * It uses the DTD/xhtml1-transitional <a href="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
  * http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd</a>.
  *
  * @author Jason van Zyl
  * @author ltheussl
- * @version $Id: XhtmlSink.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public class XhtmlSink
@@ -101,7 +100,9 @@ public class XhtmlSink
         this.languageId = languageId;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void head()
     {
         init();
@@ -125,7 +126,9 @@ public class XhtmlSink
         writeStartTag( HEAD );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void head_()
     {
         if ( !isHeadTitleFlag() )
@@ -152,6 +155,7 @@ public class XhtmlSink
 
     /**
      * {@inheritDoc}
+     *
      * @see javax.swing.text.html.HTML.Tag#TITLE
      */
     public void title()
@@ -163,6 +167,7 @@ public class XhtmlSink
 
     /**
      * {@inheritDoc}
+     *
      * @see javax.swing.text.html.HTML.Tag#TITLE
      */
     public void title_()
@@ -177,6 +182,7 @@ public class XhtmlSink
 
     /**
      * {@inheritDoc}
+     *
      * @see javax.swing.text.html.HTML.Tag#META
      */
     public void author_()
@@ -199,6 +205,7 @@ public class XhtmlSink
 
     /**
      * {@inheritDoc}
+     *
      * @see javax.swing.text.html.HTML.Tag#META
      */
     public void date_()
@@ -217,6 +224,7 @@ public class XhtmlSink
 
     /**
      * {@inheritDoc}
+     *
      * @see javax.swing.text.html.HTML.Tag#BODY
      */
     public void body()
@@ -226,6 +234,7 @@ public class XhtmlSink
 
     /**
      * {@inheritDoc}
+     *
      * @see javax.swing.text.html.HTML.Tag#BODY
      * @see javax.swing.text.html.HTML.Tag#HTML
      */

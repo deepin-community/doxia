@@ -14,10 +14,12 @@
 # from the POM
 #   junit junit jar s/3\\..*/3.x/
 
+org.apache.maven.plugins maven-enforcer-plugin * * * *
 org.apache.maven.plugins maven-project-info-reports-plugin * * * *
 org.apache.maven.plugins maven-scm-publish-plugin
 org.codehaus.mojo clirr-maven-plugin * * * *
 org.apache.maven.doxia doxia-core test-jar * * *
 org.apache.maven.doxia doxia-test-docs * * * *
 org.apache.rat apache-rat-plugin
-xmlunit xmlunit
+org.xmlunit xmlunit-core
+org.xmlunit xmlunit-matchers

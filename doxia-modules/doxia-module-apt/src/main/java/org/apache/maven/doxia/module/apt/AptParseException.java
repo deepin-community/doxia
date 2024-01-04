@@ -24,7 +24,6 @@ import org.apache.maven.doxia.parser.ParseException;
 /**
  * Wraps an exception when parsing apt source documents.
  *
- * @version $Id: AptParseException.java 638290 2008-03-18 09:45:22Z bentmann $
  * @since 1.0
  */
 public class AptParseException

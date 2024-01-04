@@ -37,7 +37,6 @@ import java.io.Reader;
  * uses a ParserManager to lookup a parser.
  *
  * @author Jason van Zyl
- * @version $Id: DefaultDoxia.java 1345590 2012-06-02 21:36:10Z hboutemy $
  * @since 1.0
  */
 @Component( role = Doxia.class )
@@ -58,11 +57,19 @@ public class DefaultDoxia
     public void parse( Reader source, String parserId, Sink sink )
         throws ParserNotFoundException, ParseException
     {
+        this.parse( source, parserId, sink, null );
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void parse( Reader source, String parserId, Sink sink, String reference )
+        throws ParserNotFoundException, ParseException
+    {
         Parser parser = parserManager.getParser( parserId );
 
         parser.enableLogging( new PlexusLoggerWrapper( getLogger() ) );
 
-        parser.parse( source, sink );
+        parser.parse( source, sink, reference );
     }
 
     /** {@inheritDoc} */

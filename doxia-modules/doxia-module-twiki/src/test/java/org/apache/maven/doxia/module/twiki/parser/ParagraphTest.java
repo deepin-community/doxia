@@ -20,10 +20,13 @@ package org.apache.maven.doxia.module.twiki.parser;
  */
 
 import java.io.StringReader;
-import java.util.Arrays;
 
 import org.apache.maven.doxia.util.ByLineReaderSource;
 import org.apache.maven.doxia.parser.ParseException;
+import org.junit.Test;
+
+import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * Tests the {@link org.apache.maven.doxia.module.twiki.parser.ParagraphBlockParser}
@@ -34,10 +37,7 @@ import org.apache.maven.doxia.parser.ParseException;
 public class ParagraphTest
     extends AbstractBlockTestCase
 {
-
-    /**
-     * @throws ParseException on error
-     */
+    @Test
     public final void testMultiLines()
         throws ParseException
     {
@@ -61,9 +61,7 @@ public class ParagraphTest
         assertEquals( "para2 -> text1 para2 -> text2", ( (TextBlock) block.getBlocks()[0] ).getText() );
     }
 
-    /**
-     * @throws ParseException on error
-     */
+    @Test
     public final void testParagraphWithList()
         throws ParseException
     {
@@ -72,11 +70,10 @@ public class ParagraphTest
                 + "This is more text in the same paragraph\n" + "\n" + "Another paragraph";
 
         final ByLineReaderSource source = new ByLineReaderSource( new StringReader( text ) );
-        final ParagraphBlockParser parser = paraParser;
 
         ParagraphBlock block;
 
-        block = (ParagraphBlock) parser.visit( source.getNextLine(), source );
+        block = (ParagraphBlock) paraParser.visit( source.getNextLine(), source );
         assertNotNull( block );
         final Block[] firstLevelChilds = block.getBlocks();
         final int numberOfChilds = 3;
@@ -97,6 +94,7 @@ public class ParagraphTest
      *
      * @throws ParseException on error
      */
+    @Test
     public final void testParagraphWithStartingList()
         throws ParseException
     {
@@ -105,11 +103,10 @@ public class ParagraphTest
                 + "Another paragraph";
 
         final ByLineReaderSource source = new ByLineReaderSource( new StringReader( text ) );
-        final ParagraphBlockParser parser = paraParser;
 
         ParagraphBlock block;
 
-        block = (ParagraphBlock) parser.visit( source.getNextLine(), source );
+        block = (ParagraphBlock) paraParser.visit( source.getNextLine(), source );
         assertNotNull( block );
         final Block[] firstLevelChilds = block.getBlocks();
         assertEquals( 2, firstLevelChilds.length );
@@ -123,9 +120,7 @@ public class ParagraphTest
         assertEquals( "item2", ( (TextBlock) ( (ListItemBlock) listChilds[1] ).getBlocks()[0] ).getText() );
     }
 
-    /**
-     * @throws ParseException on error
-     */
+    @Test
     public final void testHorizontalRule()
         throws ParseException
     {
@@ -150,9 +145,7 @@ public class ParagraphTest
         assertEquals( expected, block );
     }
 
-    /**
-     * @throws ParseException on error
-     */
+    @Test
     public final void testHorizontalRuleAndParagraph()
         throws ParseException
     {
@@ -163,7 +156,7 @@ public class ParagraphTest
         expected =
             new Block[] { new ParagraphBlock( new Block[] { new TextBlock( "Some text" ) } ),
                 new HorizontalRuleBlock(), new ParagraphBlock( new Block[] { new TextBlock( "More text" ) } ) };
-        blocks = (Block[]) twikiParser.parse( source ).toArray( new Block[] {} );
-        assertTrue( Arrays.equals( expected, blocks ) );
+        blocks = twikiParser.parse( source ).toArray( new Block[] {} );
+        assertArrayEquals( expected, blocks );
     }
 }

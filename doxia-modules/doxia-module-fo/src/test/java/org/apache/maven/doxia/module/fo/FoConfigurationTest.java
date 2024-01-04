@@ -22,18 +22,17 @@ package org.apache.maven.doxia.module.fo;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * FoConfiguration tests.
- *
- * @version $Id: FoConfigurationTest.java 1125262 2011-05-20 07:23:00Z ltheussl $
  */
 public class FoConfigurationTest
-    extends TestCase
 {
-
     /** Tests the getAttributeString( String ) method. */
+    @Test
     public void testGetAttributeString()
     {
         FoConfiguration config = new FoConfiguration();
@@ -41,13 +40,14 @@ public class FoConfigurationTest
         assertEquals( "Null attribute ID should return empty string!", "", config.getAttributeString( null ) );
 
         assertEquals( "Non existent attribute ID should return empty string!", "",
-                      config.getAttributeString( "a.dummy.attribute" ) );
+                config.getAttributeString( "a.dummy.attribute" ) );
 
         assertEquals( "Wrong attributes returned for italic!", " font-style=\"italic\"",
-                      config.getAttributeString( "italic" ) );
+                config.getAttributeString( "italic" ) );
     }
 
     /** Tests the getAttributeSet( String ) method. */
+    @Test
     public void testGetAttributeSet()
     {
         FoConfiguration config = new FoConfiguration();
@@ -57,7 +57,7 @@ public class FoConfigurationTest
         assertNull( "Empty attribute ID should return null AttributeSet!", config.getAttributeSet( "" ) );
 
         assertNull( "Non existent attribute ID should return null AttributeSet!",
-                    config.getAttributeSet( "a.dummy.attribute" ) );
+                config.getAttributeSet( "a.dummy.attribute" ) );
 
         MutableAttributeSet expected = new SimpleAttributeSet();
         expected.addAttribute( "font-style", "italic" );

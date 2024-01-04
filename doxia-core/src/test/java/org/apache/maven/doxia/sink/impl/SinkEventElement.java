@@ -19,14 +19,13 @@ package org.apache.maven.doxia.sink.impl;
  * under the License.
  */
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * A single sink event, used for testing purposes in order to check
  * the order and effect of some parser events.
  *
  * @author ltheussl
- * @version $Id: SinkEventElement.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.1
  */
 public class SinkEventElement

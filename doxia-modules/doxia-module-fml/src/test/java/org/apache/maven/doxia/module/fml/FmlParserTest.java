@@ -26,7 +26,6 @@ import java.io.Reader;
 import java.io.Writer;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.maven.doxia.parser.AbstractParserTest;
@@ -35,12 +34,10 @@ import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.impl.SinkEventElement;
 import org.apache.maven.doxia.sink.impl.SinkEventTestingSink;
 import org.apache.maven.doxia.sink.impl.XhtmlBaseSink;
-import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
 
 /**
  * @author <a href="mailto:evenisse@codehaus.org">Emmanuel Venisse</a>
- * @version $Id: FmlParserTest.java 1726536 2016-01-24 18:53:43Z rfscholte $
  */
 public class FmlParserTest
     extends AbstractParserTest
@@ -53,7 +50,7 @@ public class FmlParserTest
     {
         super.setUp();
 
-        parser = (FmlParser) lookup( Parser.ROLE, "fml" );
+        parser = (FmlParser) lookup( Parser.class, "fml" );
 
         // AbstractXmlParser.CachedFileEntityResolver downloads DTD/XSD files in ${java.io.tmpdir}
         // Be sure to delete them
@@ -95,16 +92,9 @@ public class FmlParserTest
     {
         SinkEventTestingSink sink = new SinkEventTestingSink();
 
-        Reader reader = null;
-        try
+        try ( Reader reader = getTestReader( "simpleFaq" ) )
         {
-            reader = getTestReader( "simpleFaq" );
-
             createParser().parse( reader, sink );
-        }
-        finally
-        {
-            IOUtil.close( reader );
         }
 
         Iterator<SinkEventElement> it = sink.getEventList().iterator();
@@ -123,9 +113,9 @@ public class FmlParserTest
         assertEquals( "anchor_", ( it.next() ).getName() );
         assertEquals( "sectionTitle1_", ( it.next() ).getName() );
         assertEquals( "paragraph", ( it.next() ).getName() );
-        assertEquals( "bold", ( it.next() ).getName() );
+        assertEquals( "inline", ( it.next() ).getName() );
         assertEquals( "text", ( it.next() ).getName() );
-        assertEquals( "bold_", ( it.next() ).getName() );
+        assertEquals( "inline_", ( it.next() ).getName() );
         assertEquals( "paragraph_", ( it.next() ).getName() );
         assertEquals( "numberedList", ( it.next() ).getName() );
         assertEquals( "numberedListItem", ( it.next() ).getName() );
@@ -197,13 +187,13 @@ public class FmlParserTest
         assertEquals( "anchor_", ( it.next() ).getName() );
         assertEquals( "sectionTitle1_", ( it.next() ).getName() );
         assertEquals( "paragraph", ( it.next() ).getName() );
-        assertEquals( "bold", ( it.next() ).getName() );
+        assertEquals( "inline", ( it.next() ).getName() );
 
         // part title in TOC
         assertTextEvent( it.next(), "<" );
         assertTextEvent( it.next(), "\u0391" );
 
-        assertEquals( "bold_", ( it.next() ).getName() );
+        assertEquals( "inline_", ( it.next() ).getName() );
         assertEquals( "paragraph_", ( it.next() ).getName() );
         assertEquals( "numberedList", ( it.next() ).getName() );
         assertEquals( "numberedListItem", ( it.next() ).getName() );
@@ -239,11 +229,11 @@ public class FmlParserTest
         assertEquals( "paragraph", ( it.next() ).getName() );
 
         // answer
-        assertEquals( "monospaced", ( it.next() ).getName() );
+        assertEquals( "inline", ( it.next() ).getName() );
         assertTextEvent( it.next(), "<" );
         assertTextEvent( it.next(), "img" );
         assertTextEvent( it.next(), ">" );
-        assertEquals( "monospaced_", ( it.next() ).getName() );
+        assertEquals( "inline_", ( it.next() ).getName() );
         assertTextEvent( it.next(), "\"" );
         assertTextEvent( it.next(), "\u0391" );
 
@@ -268,38 +258,24 @@ public class FmlParserTest
     public void testFaqMacro()
         throws Exception
     {
-        Writer output = null;
-        Reader reader = null;
-        try
+        try ( Writer output = getTestWriter( "macro" );
+              Reader reader = getTestReader( "macro" ) )
         {
-            output = getTestWriter( "macro" );
-            reader = getTestReader( "macro" );
-
             Sink sink = new XhtmlBaseSink( output );
             createParser().parse( reader, sink );
             sink.close();
-        }
-        finally
-        {
-            IOUtil.close( output );
-            IOUtil.close( reader );
         }
 
         File f = getTestFile( getBasedir(), outputBaseDir() + getOutputDir() + "macro.fml" );
         assertTrue( "The file " + f.getAbsolutePath() + " was not created", f.exists() );
 
         String content;
-        try
+        try ( Reader reader = new FileReader( f ) )
         {
-            reader = new FileReader( f );
             content = IOUtil.toString( reader );
         }
-        finally
-        {
-            IOUtil.close( reader );
-        }
 
-        assertTrue( content.indexOf( "<a name=\"macro-definition\">Macro Question</a>" ) != -1 );
+        assertTrue( content.contains( "<a name=\"macro-definition\">Macro Question</a>" ) );
     }
 
     private void assertTextEvent( SinkEventElement textEvt, String string )

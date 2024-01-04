@@ -25,7 +25,6 @@ import org.apache.maven.doxia.sink.impl.SinkEventElement;
 import org.apache.maven.doxia.sink.impl.TextSink;
 import org.apache.maven.doxia.sink.impl.WellformednessCheckingSink;
 import org.apache.maven.doxia.sink.Sink;
-import org.codehaus.plexus.util.IOUtil;
 import org.junit.Assert;
 
 import java.io.IOException;
@@ -35,11 +34,9 @@ import java.util.Iterator;
 
 /**
  * Test the parsing of sample input files.
- * <br/>
+ * <br>
  * <b>Note</b>: you have to provide a sample "test." + outputExtension()
  * file in the test resources directory if you extend this class.
- *
- * @version $Id: AbstractParserTest.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public abstract class AbstractParserTest
@@ -75,19 +72,12 @@ public abstract class AbstractParserTest
     {
         WellformednessCheckingSink sink = new WellformednessCheckingSink();
 
-        Reader reader = null;
-        try
+        try ( Reader reader = getTestReader( "test", outputExtension() ) )
         {
-            reader = getTestReader( "test", outputExtension() );
-
             createParser().parse( reader, sink );
 
-            assertTrue( "Parser output not well-formed, last offending element: "
-                + sink.getOffender(), sink.isWellformed() );
-        }
-        finally
-        {
-            IOUtil.close( reader );
+            assertTrue( "Parser output not well-formed, last offending element: " + sink.getOffender(),
+                    sink.isWellformed() );
         }
     }
 
@@ -102,23 +92,11 @@ public abstract class AbstractParserTest
     public final void testDocument()
         throws IOException, ParseException
     {
-        Writer writer = null;
-        Reader reader = null;
-
-        try
+        try ( Writer writer = getTestWriter( "test", "txt" );
+              Reader reader = getTestReader( "test", outputExtension() ) )
         {
-            writer = getTestWriter( "test", "txt" );
-
-            reader = getTestReader( "test", outputExtension() );
-
             Sink sink = new TextSink( writer );
-
             createParser().parse( reader, sink );
-        }
-        finally
-        {
-            IOUtil.close( reader );
-            IOUtil.close( writer );
         }
     }
 
@@ -143,6 +121,24 @@ public abstract class AbstractParserTest
         for ( String name : names )
         {
             expected.append( name ).append( '\n' );
+        }
+
+        while ( it.hasNext() )
+        {
+            actual.append( it.next().getName() ).append( '\n' );
+        }
+
+        assertEquals( expected.toString(), actual.toString() );
+    }
+
+    protected void assertStartsWith( Iterator<SinkEventElement> it, String... names )
+    {
+        StringBuilder expected = new StringBuilder();
+        StringBuilder actual = new StringBuilder();
+
+        for ( String name : names )
+        {
+            expected.append( name ).append( '\n' );
             if ( it.hasNext() )
             {
                 actual.append( it.next().getName() ).append( '\n' );
@@ -150,6 +146,4 @@ public abstract class AbstractParserTest
         }
         assertEquals( expected.toString(), actual.toString() );
     }
-
-
 }

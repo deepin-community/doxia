@@ -19,46 +19,59 @@ package org.apache.maven.doxia.module.markdown;
  * under the License.
  */
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import com.vladsch.flexmark.ast.Heading;
+import com.vladsch.flexmark.ast.HtmlCommentBlock;
+import com.vladsch.flexmark.util.ast.Node;
+import com.vladsch.flexmark.ast.util.TextCollectingVisitor;
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.util.options.MutableDataSet;
+import com.vladsch.flexmark.ext.escaped.character.EscapedCharacterExtension;
+import com.vladsch.flexmark.ext.abbreviation.AbbreviationExtension;
+import com.vladsch.flexmark.ext.autolink.AutolinkExtension;
+import com.vladsch.flexmark.ext.definition.DefinitionExtension;
+import com.vladsch.flexmark.ext.typographic.TypographicExtension;
+import com.vladsch.flexmark.ext.tables.TablesExtension;
+import com.vladsch.flexmark.ext.wikilink.WikiLinkExtension;
+import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension;
+
+import org.apache.commons.io.input.CharSequenceReader;
 import org.apache.maven.doxia.markup.HtmlMarkup;
+import org.apache.maven.doxia.markup.TextMarkup;
 import org.apache.maven.doxia.module.xhtml.XhtmlParser;
-import org.apache.maven.doxia.parser.AbstractParser;
+import org.apache.maven.doxia.parser.AbstractTextParser;
 import org.apache.maven.doxia.parser.ParseException;
 import org.apache.maven.doxia.parser.Parser;
 import org.apache.maven.doxia.sink.Sink;
+import org.apache.maven.doxia.util.HtmlTools;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.pull.XmlPullParser;
-import org.pegdown.Extensions;
-import org.pegdown.PegDownProcessor;
-import org.pegdown.ast.HeaderNode;
-import org.pegdown.ast.HtmlBlockNode;
-import org.pegdown.ast.Node;
-import org.pegdown.ast.RootNode;
-import org.pegdown.ast.SuperNode;
-import org.pegdown.ast.TextNode;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * <p>
  * Implementation of {@link org.apache.maven.doxia.parser.Parser} for Markdown documents.
- * <p/>
- * Defers effective parsing to the <a href="http://pegdown.org">PegDown library</a>, which generates HTML content
- * then delegates parsing of this content to a slightly modified Doxia Xhtml parser.
+ * </p>
+ * <p>
+ * Defers effective parsing to the <a href="https://github.com/vsch/flexmark-java">flexmark-java library</a>,
+ * which generates HTML content then delegates parsing of this content to a slightly modified Doxia Xhtml parser.
+ * (before 1.8, the <a href="http://pegdown.org">PegDown library</a> was used)
+ * </p>
  *
- * @author Julien Nicoulaud <julien.nicoulaud@gmail.com>
+ * @author Vladimir Schneider
+ * @author Julien Nicoulaud
  * @since 1.3
- * @see MarkdownToDoxiaHtmlSerializer
  */
-@Component( role = Parser.class, hint = "markdown" )
+@Component( role = Parser.class, hint = MarkdownParser.ROLE_HINT )
 public class MarkdownParser
-    extends AbstractParser
+    extends AbstractTextParser
+    implements TextMarkup
 {
 
     /**
@@ -67,49 +80,90 @@ public class MarkdownParser
     public static final String ROLE_HINT = "markdown";
 
     /**
-     * The {@link PegDownProcessor} used to convert Pegdown documents to HTML.
-     */
-    protected static final PegDownProcessor PEGDOWN_PROCESSOR =
-        new PegDownProcessor( Extensions.ALL & ~Extensions.HARDWRAPS, Long.MAX_VALUE );
-
-    /**
      * Regex that identifies a multimarkdown-style metadata section at the start of the document
-     */
-    private static final String MULTI_MARKDOWN_METADATA_SECTION =
-        "^(((?:[^\\s:][^:]*):(?:.*(?:\r?\n\\p{Blank}+[^\\s].*)*\r?\n))+)(?:\\s*\r?\n)";
-
-    /**
-     * Regex that captures the key and value of a multimarkdown-style metadata entry.
-     */
-    private static final String MULTI_MARKDOWN_METADATA_ENTRY =
-        "([^\\s:][^:]*):(.*(?:\r?\n\\p{Blank}+[^\\s].*)*)\r?\n";
-
-    /**
+     *
      * In order to ensure that we have minimal risk of false positives when slurping metadata sections, the
      * first key in the metadata section must be one of these standard keys or else the entire metadata section is
      * ignored.
      */
-    private static final String[] STANDARD_METADATA_KEYS =
-        { "title", "author", "date", "address", "affiliation", "copyright", "email", "keywords", "language", "phone",
-            "subtitle" };
+    private static final Pattern METADATA_SECTION_PATTERN = Pattern.compile(
+            "\\A^\\s*"
+            + "(?:title|author|date|address|affiliation|copyright|email|keywords|language|phone|subtitle)"
+            + "[ \\t]*:[ \\t]*[^\\r\\n]*[ \\t]*$[\\r\\n]+"
+            + "(?:^[ \\t]*[^:\\r\\n]+[ \\t]*:[ \\t]*[^\\r\\n]*[ \\t]*$[\\r\\n]+)*",
+            Pattern.MULTILINE | Pattern.CASE_INSENSITIVE );
 
-    public int getType()
+    /**
+     * Regex that captures the key and value of a multimarkdown-style metadata entry.
+     */
+    private static final Pattern METADATA_ENTRY_PATTERN = Pattern.compile(
+            "^[ \\t]*([^:\\r\\n]+?)[ \\t]*:[ \\t]*([^\\r\\n]*)[ \\t]*$",
+            Pattern.MULTILINE );
+
+    /**
+     * The parser of the HTML produced by Flexmark, that we will
+     * use to convert this HTML to Sink events
+     */
+    @Requirement
+    private MarkdownHtmlParser parser;
+
+    /**
+     * Flexmark's Markdown parser (one static instance fits all)
+     */
+    private static final com.vladsch.flexmark.parser.Parser FLEXMARK_PARSER;
+
+    /**
+     * Flexmark's HTML renderer (its output will be re-parsed and converted to Sink events)
+     */
+    private static final HtmlRenderer FLEXMARK_HTML_RENDERER;
+
+    // Initialize the Flexmark parser and renderer, once and for all
+    static
     {
-        return TXT_TYPE;
+        MutableDataSet flexmarkOptions = new MutableDataSet();
+
+        // Enable the extensions that we used to have in Pegdown
+        flexmarkOptions.set( com.vladsch.flexmark.parser.Parser.EXTENSIONS, Arrays.asList(
+                EscapedCharacterExtension.create(),
+                AbbreviationExtension.create(),
+                AutolinkExtension.create(),
+                DefinitionExtension.create(),
+                TypographicExtension.create(),
+                TablesExtension.create(),
+                WikiLinkExtension.create(),
+                StrikethroughExtension.create()
+        ) );
+
+        // Disable wrong apostrophe replacement
+        flexmarkOptions.set( TypographicExtension.SINGLE_QUOTE_UNMATCHED, "&apos;" );
+
+        // Additional options on the HTML rendering
+        flexmarkOptions.set( HtmlRenderer.HTML_BLOCK_OPEN_TAG_EOL, false );
+        flexmarkOptions.set( HtmlRenderer.HTML_BLOCK_CLOSE_TAG_EOL, false );
+        flexmarkOptions.set( HtmlRenderer.MAX_TRAILING_BLANK_LINES, -1 );
+
+        // Build the Markdown parser
+        FLEXMARK_PARSER = com.vladsch.flexmark.parser.Parser.builder( flexmarkOptions ).build();
+
+        // Build the HTML renderer
+        FLEXMARK_HTML_RENDERER = HtmlRenderer.builder( flexmarkOptions )
+                .linkResolverFactory( new FlexmarkDoxiaLinkResolver.Factory() )
+                .build();
+
     }
 
-    @Requirement
-    private PegDownHtmlParser parser;
-
-    public void parse( Reader source, Sink sink )
+    /** {@inheritDoc} */
+    @Override
+    public void parse( Reader source, Sink sink, String reference )
         throws ParseException
     {
         try
         {
-            // Markdown to HTML (using Pegdown library)
-            String html = toHtml( source );
+            // Markdown to HTML (using flexmark-java library)
+            CharSequence html = toHtml( source );
+
             // then HTML to Sink API
-            parser.parse( new StringReader( html ), sink );
+            parser.parse( new CharSequenceReader( html ), sink );
         }
         catch ( IOException e )
         {
@@ -118,153 +172,126 @@ public class MarkdownParser
     }
 
     /**
-     * uses PegDown library to parse content and generate HTML output.
-     * 
+     * uses flexmark-java library to parse content and generate HTML output.
+     *
      * @param source the Markdown source
-     * @return HTML content generated by PegDown 
-     * @throws IOException
-     * @see MarkdownToDoxiaHtmlSerializer
+     * @return HTML content generated by flexmark-java
+     * @throws IOException passed through
      */
-    private String toHtml( Reader source )
+    CharSequence toHtml( Reader source )
         throws IOException
     {
+        // Read the source
         String text = IOUtil.toString( source );
-        StringBuilder html = new StringBuilder( text.length() * 2 );
+
+        // Now, build the HTML document
+        StringBuilder html = new StringBuilder( 1000 );
         html.append( "<html>" );
         html.append( "<head>" );
-        Pattern metadataPattern = Pattern.compile( MULTI_MARKDOWN_METADATA_SECTION, Pattern.MULTILINE );
-        Matcher metadataMatcher = metadataPattern.matcher( text );
+
+        // detect yaml style metadata
+        if ( text.startsWith( "---" ) )
+        {
+            // remove the enclosing --- to get back to classical metadata
+            text = text.replaceFirst( "---", "" ).replaceFirst( "---", "" );
+        }
+
+        // First, we interpret the "metadata" section of the document and add the corresponding HTML headers
+        Matcher metadataMatcher = METADATA_SECTION_PATTERN.matcher( text );
         boolean haveTitle = false;
         if ( metadataMatcher.find() )
         {
-            metadataPattern = Pattern.compile( MULTI_MARKDOWN_METADATA_ENTRY, Pattern.MULTILINE );
-            Matcher lineMatcher = metadataPattern.matcher( metadataMatcher.group( 1 ) );
-            boolean first = true;
-            while ( lineMatcher.find() )
+            Matcher entryMatcher = METADATA_ENTRY_PATTERN.matcher( metadataMatcher.group( 0 ) );
+            while ( entryMatcher.find() )
             {
-                String key = StringUtils.trimToEmpty( lineMatcher.group( 1 ) );
-                if ( first )
-                {
-                    boolean found = false;
-                    for ( String k : STANDARD_METADATA_KEYS )
-                    {
-                        if ( k.equalsIgnoreCase( key ) )
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if ( !found )
-                    {
-                        break;
-                    }
-                    first = false;
-                }
-                String value = StringUtils.trimToEmpty( lineMatcher.group( 2 ) );
+                String key = entryMatcher.group( 1 );
+                String value = entryMatcher.group( 2 );
                 if ( "title".equalsIgnoreCase( key ) )
                 {
                     haveTitle = true;
                     html.append( "<title>" );
-                    html.append( StringEscapeUtils.escapeXml( value ) );
+                    html.append( HtmlTools.escapeHTML( value, false ) );
                     html.append( "</title>" );
-                }
-                else if ( "author".equalsIgnoreCase( key ) )
-                {
-                    html.append( "<meta name=\'author\' content=\'" );
-                    html.append( StringEscapeUtils.escapeXml( value ) );
-                    html.append( "\' />" );
-                }
-                else if ( "date".equalsIgnoreCase( key ) )
-                {
-                    html.append( "<meta name=\'date\' content=\'" );
-                    html.append( StringEscapeUtils.escapeXml( value ) );
-                    html.append( "\' />" );
                 }
                 else
                 {
-                    html.append( "<meta name=\'" );
-                    html.append( StringEscapeUtils.escapeXml( key ) );
-                    html.append( "\' content=\'" );
-                    html.append( StringEscapeUtils.escapeXml( value ) );
-                    html.append( "\' />" );
+                    html.append( "<meta name='" );
+                    html.append( HtmlTools.escapeHTML( key ) );
+                    html.append( "' content='" );
+                    html.append( HtmlTools.escapeHTML( value ) );
+                    html.append( "' />" );
                 }
             }
-            if ( !first )
-            {
-                text = text.substring( metadataMatcher.end() );
-            }
+
+            // Trim the metadata from the source
+            text = text.substring( metadataMatcher.end( 0 ) );
+
         }
-        RootNode rootNode = PEGDOWN_PROCESSOR.parseMarkdown( text.toCharArray() );
-        if ( !haveTitle && rootNode.getChildren().size() > 0 )
+
+        // Now is the time to parse the Markdown document
+        // (after we've trimmed out the metadatas, and before we check for its headings)
+        Node documentRoot = FLEXMARK_PARSER.parse( text );
+
+        // Special trick: if there is no title specified as a metadata in the header, we will use the first
+        // heading as the document title
+        if ( !haveTitle && documentRoot.hasChildren() )
         {
-            // use the first (non-comment) node only if it is a heading
-            int i = 0;
-            Node firstNode = null;
-            while ( i < rootNode.getChildren().size() && isHtmlComment(
-                ( firstNode = rootNode.getChildren().get( i ) ) ) )
+            // Skip the comment nodes
+            Node firstNode = documentRoot.getFirstChild();
+            while ( firstNode != null && firstNode instanceof HtmlCommentBlock )
             {
-                i++;
+                firstNode = firstNode.getNext();
             }
-            if ( firstNode instanceof HeaderNode )
+
+            // If this first non-comment node is a heading, we use it as the document title
+            if ( firstNode != null && firstNode instanceof Heading )
             {
                 html.append( "<title>" );
-                html.append( StringEscapeUtils.escapeXml( nodeText( firstNode ) ) );
+                TextCollectingVisitor collectingVisitor = new TextCollectingVisitor();
+                String headingText = collectingVisitor.collectAndGetText( firstNode );
+                html.append( HtmlTools.escapeHTML( headingText, false ) );
                 html.append( "</title>" );
             }
         }
         html.append( "</head>" );
         html.append( "<body>" );
-        html.append( new MarkdownToDoxiaHtmlSerializer().toHtml( rootNode ) );
+
+        // Convert our Markdown document to HTML and append it to our HTML
+        FLEXMARK_HTML_RENDERER.render( documentRoot, html );
+
         html.append( "</body>" );
         html.append( "</html>" );
 
-        return html.toString();
-    }
-
-    public static boolean isHtmlComment( Node node )
-    {
-        if ( node instanceof HtmlBlockNode )
-        {
-            HtmlBlockNode blockNode = (HtmlBlockNode) node;
-            return blockNode.getText().startsWith( "<!--" );
-        }
-        return false;
-    }
-
-    public static String nodeText( Node node )
-    {
-        StringBuilder builder = new StringBuilder();
-        if ( node instanceof TextNode )
-        {
-            builder.append( TextNode.class.cast( node ).getText() );
-        }
-        else
-        {
-            for ( Node n : node.getChildren() )
-            {
-                if ( n instanceof TextNode )
-                {
-                    builder.append( TextNode.class.cast( n ).getText() );
-                }
-                else if ( n instanceof SuperNode )
-                {
-                    builder.append( nodeText( n ) );
-                }
-            }
-        }
-        return builder.toString();
+        return html;
     }
 
     /**
-     * Internal parser for HTML generated by PegDown library.
+     * Internal parser for HTML generated by the Markdown library.
+     *
+     * 2 special things:
+     * <ul>
+     * <li> DIV elements are translated as Unknown Sink events
+     * <li> PRE elements are all considered as boxed
+     * </ul>
+     * PRE elements need to be "boxed" because the XhtmlSink will surround the
+     * corresponding verbatim() Sink event with a DIV element with class="source",
+     * which is how most Maven Skin (incl. Fluido) recognize a block of code, which
+     * needs to be highlighted accordingly.
      */
-    @Component( role = PegDownHtmlParser.class )
-    public static class PegDownHtmlParser
+    @Component( role = MarkdownHtmlParser.class )
+    public static class MarkdownHtmlParser
         extends XhtmlParser
     {
-        public PegDownHtmlParser()
+        public MarkdownHtmlParser()
         {
             super();
+        }
+
+        @Override
+        protected void init()
+        {
+            super.init();
+            super.boxed = true;
         }
 
         @Override
@@ -281,7 +308,7 @@ public class MarkdownParser
             }
             return visited;
         }
-    
+
         @Override
         protected boolean baseStartTag( XmlPullParser parser, Sink sink )
         {
@@ -291,6 +318,7 @@ public class MarkdownParser
                 if ( parser.getName().equals( HtmlMarkup.DIV.toString() ) )
                 {
                     handleUnknown( parser, sink, TAG_TYPE_START );
+                    super.boxed = true;
                     visited = true;
                 }
             }

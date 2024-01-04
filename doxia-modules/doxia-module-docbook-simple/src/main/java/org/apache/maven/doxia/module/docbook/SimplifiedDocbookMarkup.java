@@ -29,7 +29,6 @@ import org.apache.maven.doxia.markup.XmlMarkup;
  * <a href="http://www.docbook.org/schemas/sdocbook/elements.html">Simplified DocBook DTD v. 1.1</a>.
  *
  * @author ltheussl
- * @version $Id: SimplifiedDocbookMarkup.java 1633964 2014-10-23 22:01:01Z hboutemy $
  * @since 1.1.1
  */
 @SuppressWarnings( "checkstyle:interfaceistype" )

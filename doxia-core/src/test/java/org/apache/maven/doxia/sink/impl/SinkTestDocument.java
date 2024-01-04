@@ -24,8 +24,6 @@ import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
 
 /**
  * Static methods to generate standard Doxia sink events.
- *
- * @version $Id: SinkTestDocument.java 1726411 2016-01-23 16:34:09Z hboutemy $
  */
 public class SinkTestDocument
 {
@@ -445,19 +443,19 @@ public class SinkTestDocument
     {
         sink.paragraph();
 
-        sink.italic();
+        sink.inline( SinkEventAttributeSet.Semantics.ITALIC );
         sink.text( "Italic" );
-        sink.italic_();
+        sink.inline_();
         sink.text( " font. " );
 
-        sink.bold();
+        sink.inline( SinkEventAttributeSet.Semantics.BOLD );
         sink.text( "Bold" );
-        sink.bold_();
+        sink.inline_();
         sink.text( " font. " );
 
-        sink.monospaced();
-        sink.text( "Monospaced" );
-        sink.monospaced_();
+        sink.inline( SinkEventAttributeSet.Semantics.CODE );
+        sink.text( "Monospaced (code)" );
+        sink.inline_();
         sink.text( " font." );
 
         sink.paragraph_();

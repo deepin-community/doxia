@@ -31,7 +31,6 @@ import org.apache.maven.doxia.util.ByLineSource;
  * Parse verbatim blocks
  *
  * @author Christian Nardi
- * @version $Id: VerbatimBlockParser.java 1090706 2011-04-09 23:15:28Z hboutemy $
  * @since 1.1
  */
 public class VerbatimBlockParser
@@ -50,9 +49,7 @@ public class VerbatimBlockParser
         return VERBATIM_START_PATTERN.matcher( line ).lookingAt();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public final Block visit( final String line, final ByLineSource source )
         throws ParseException
     {
@@ -61,7 +58,7 @@ public class VerbatimBlockParser
             throw new IllegalAccessError( "call accept before this ;)" );
         }
 
-        final List<Block> lines = new ArrayList<Block>();
+        final List<Block> lines = new ArrayList<>();
         Matcher matcher = VERBATIM_START_PATTERN.matcher( line );
         matcher.find();
         String l = line.substring( matcher.end() );

@@ -29,15 +29,14 @@ import java.util.Map;
 import javax.swing.text.html.HTML.Attribute;
 
 import org.apache.maven.doxia.macro.MacroExecutionException;
-import org.apache.maven.doxia.macro.manager.MacroNotFoundException;
 import org.apache.maven.doxia.macro.MacroRequest;
+import org.apache.maven.doxia.macro.manager.MacroNotFoundException;
 import org.apache.maven.doxia.parser.ParseException;
 import org.apache.maven.doxia.parser.Parser;
 import org.apache.maven.doxia.parser.XhtmlBaseParser;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
 import org.apache.maven.doxia.util.HtmlTools;
-
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
@@ -48,7 +47,6 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
  * Parse an xdoc model and emit events into the specified doxia Sink.
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: XdocParser.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 @Component( role = Parser.class, hint = "xdoc" )
@@ -74,7 +72,7 @@ public class XdocParser
     /**
      * The macro parameters.
      */
-    private Map<String, Object> macroParameters = new HashMap<String, Object>();
+    private Map<String, Object> macroParameters = new HashMap<>();
 
     /**
      * Indicates that we're inside &lt;properties&gt; or &lt;head&gt;.
@@ -86,10 +84,8 @@ public class XdocParser
      */
     private boolean hasTitle;
 
-    /**
-     * {@inheritDoc}
-     */
-    public void parse( Reader source, Sink sink )
+    /** {@inheritDoc} */
+    public void parse( Reader source, Sink sink, String reference )
         throws ParseException
     {
         this.sourceContent = null;
@@ -114,7 +110,7 @@ public class XdocParser
 
         try
         {
-            super.parse( new StringReader( sourceContent ), sink );
+            super.parse( new StringReader( sourceContent ), sink, reference );
         }
         finally
         {
@@ -122,9 +118,7 @@ public class XdocParser
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     protected void handleStartTag( XmlPullParser parser, Sink sink )
         throws XmlPullParserException, MacroExecutionException
     {
@@ -247,9 +241,7 @@ public class XdocParser
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     protected void handleEndTag( XmlPullParser parser, Sink sink )
         throws XmlPullParserException, MacroExecutionException
     {
@@ -326,9 +318,7 @@ public class XdocParser
         isEmptyElement = false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     protected void consecutiveSections( int newLevel, Sink sink )
     {
         closeOpenSections( newLevel, sink );
@@ -411,7 +401,7 @@ public class XdocParser
 
             if ( macroParameters == null )
             {
-                macroParameters = new HashMap<String, Object>();
+                macroParameters = new HashMap<>();
             }
 
             if ( StringUtils.isEmpty( macroName ) )
@@ -442,7 +432,7 @@ public class XdocParser
         }
         else
         {
-            sink.unknown( "meta", new Object[]{ Integer.valueOf( TAG_TYPE_SIMPLE ) }, attribs );
+            sink.unknown( "meta", new Object[]{ TAG_TYPE_SIMPLE }, attribs );
         }
     }
 

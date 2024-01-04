@@ -23,14 +23,15 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
+ * TreeComponent
+ *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: TreeComponent.java 1438269 2013-01-24 23:47:50Z olamy $
  */
 class TreeComponent
 {
     private static final String EOL = System.getProperty( "line.separator" );
 
-    private List<TreeComponent> children = new ArrayList<TreeComponent>();
+    private List<TreeComponent> children = new ArrayList<>();
 
     private String text;
 
@@ -83,7 +84,11 @@ class TreeComponent
         return ret;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String toString()
     {
         return toString( "" );

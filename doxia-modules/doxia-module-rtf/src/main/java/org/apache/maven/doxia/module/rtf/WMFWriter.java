@@ -29,7 +29,7 @@ import java.util.Vector;
 /**
  * A Windows MetaFile writer.
  *
- * @version $Id: WMFWriter.java 638290 2008-03-18 09:45:22Z bentmann $
+ * WMFWriter
  */
 class WMFWriter
 {
@@ -57,7 +57,7 @@ class WMFWriter
 
     private short numOfParams;
 
-    private Vector records;
+    private Vector<Record> records;
 
     WMFWriter()
     {
@@ -69,7 +69,7 @@ class WMFWriter
         maxRecordSize = trailer.size();
         numOfParams = 0;
 
-        records = new Vector();
+        records = new Vector<>();
     }
 
     void add( Record record )
@@ -262,9 +262,9 @@ class WMFWriter
             write16( function, out );
             if ( parameters != null )
             {
-                for ( int i = 0; i < parameters.length; ++i )
+                for ( short parameter : parameters )
                 {
-                    write16( parameters[i], out );
+                    write16( parameter, out );
                 }
             }
         }
@@ -276,9 +276,9 @@ class WMFWriter
             print16( function, out );
             if ( parameters != null )
             {
-                for ( int i = 0; i < parameters.length; ++i )
+                for ( short parameter : parameters )
                 {
-                    print16( parameters[i], out );
+                    print16( parameter, out );
                 }
             }
         }

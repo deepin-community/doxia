@@ -33,15 +33,13 @@ import org.apache.maven.doxia.parser.Parser;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.impl.SinkTestDocument;
 import org.apache.maven.doxia.sink.impl.TextSink;
-import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.DefaultPlexusContainer;
 
 /**
  * If a module provides both Parser and Sink, this class
  * can be used to check that chaining them together
  * results in the identity transformation, ie the model is still the same
  * after being piped through a Parser and the corresponding Sink.
- *
- * @version $Id: AbstractIdentityTest.java 1726411 2016-01-23 16:34:09Z hboutemy $
  */
 public abstract class AbstractIdentityTest
     extends AbstractModuleTest
@@ -93,10 +91,10 @@ public abstract class AbstractIdentityTest
         expected = writer.toString();
 
         // write to file for comparison
-        Writer fileWriter = getTestWriter( "expected" );
-        fileWriter.write( expected );
-        IOUtil.close( fileWriter );
-
+        try ( Writer fileWriter = getTestWriter( "expected" ) )
+        {
+            fileWriter.write( expected );
+        }
         // generate the actual model
         writer = new StringWriter();
         sink = createSink( writer );
@@ -107,14 +105,15 @@ public abstract class AbstractIdentityTest
         writer = new StringWriter();
         sink = new TextSink( writer );
         Parser parser = createParser();
-        parser.enableLogging( new PlexusLoggerWrapper( getContainer().getLogger() ) );
+        parser.enableLogging( new PlexusLoggerWrapper( ( ( DefaultPlexusContainer )getContainer() ).getLogger() ) );
         parser.parse( reader, sink );
         String actual = writer.toString();
 
         // write to file for comparison
-        fileWriter = getTestWriter( "actual" );
-        fileWriter.write( actual );
-        IOUtil.close( fileWriter );
+        try( Writer fileWriter = getTestWriter( "actual" ) )
+        {
+            fileWriter.write( actual );
+        }
 
         // Disabled by default, it's unlikely that all our modules
         // will pass this test any time soon, but the generated

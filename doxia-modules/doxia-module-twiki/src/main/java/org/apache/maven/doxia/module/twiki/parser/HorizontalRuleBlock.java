@@ -25,7 +25,6 @@ import org.apache.maven.doxia.sink.Sink;
  * Represents an horizontal block
  *
  * @author Juan F. Codagnone
- * @version $Id: HorizontalRuleBlock.java 705065 2008-10-15 21:46:08Z vsiveton $
  */
 class HorizontalRuleBlock
     implements Block
@@ -42,10 +41,13 @@ class HorizontalRuleBlock
         return obj == this || ( obj != null && getClass().equals( obj.getClass() ) );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a int.
+     */
     public final int hashCode()
     {
-        final int hashCode = 214905655;
-        return hashCode;
+        return 214905655;
     }
 }

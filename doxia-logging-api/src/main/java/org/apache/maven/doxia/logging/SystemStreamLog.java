@@ -24,14 +24,14 @@ import java.io.StringWriter;
 
 /**
  * Logger with "standard" output and error output stream. The log prefix is voluntarily in lower case.
- * <br/>
+ * <br>
  * Based on <code>org.apache.maven.plugin.logging.SystemStreamLog</code>.
  *
  * @author jdcasey
  * @author ltheussl
- * @version $Id: SystemStreamLog.java 733395 2009-01-10 23:09:40Z ltheussl $
  * @since 1.1
  */
+@Deprecated
 public class SystemStreamLog
     implements Log
 {
@@ -64,7 +64,11 @@ public class SystemStreamLog
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param content a {@link java.lang.CharSequence} object.
+     */
     public void debug( CharSequence content )
     {
         if ( isDebugEnabled() )
@@ -109,7 +113,11 @@ public class SystemStreamLog
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param error a {@link java.lang.Throwable} object.
+     */
     public void info( Throwable error )
     {
         if ( isInfoEnabled() )
@@ -118,7 +126,11 @@ public class SystemStreamLog
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param content a {@link java.lang.CharSequence} object.
+     */
     public void warn( CharSequence content )
     {
         if ( isWarnEnabled() )
@@ -169,7 +181,11 @@ public class SystemStreamLog
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param error a {@link java.lang.Throwable} object.
+     */
     public void error( Throwable error )
     {
         if ( isErrorEnabled() )
@@ -183,25 +199,41 @@ public class SystemStreamLog
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a boolean.
+     */
     public boolean isDebugEnabled()
     {
         return ( currentLevel <= LEVEL_DEBUG );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a boolean.
+     */
     public boolean isInfoEnabled()
     {
         return ( currentLevel <= LEVEL_INFO );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a boolean.
+     */
     public boolean isWarnEnabled()
     {
         return ( currentLevel <= LEVEL_WARN );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a boolean.
+     */
     public boolean isErrorEnabled()
     {
         return ( currentLevel <= LEVEL_ERROR );

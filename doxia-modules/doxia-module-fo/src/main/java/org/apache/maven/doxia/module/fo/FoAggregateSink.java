@@ -47,7 +47,6 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * A Doxia Sink that produces an aggregated FO model. The usage is similar to the following:
- * <p/>
  * <pre>
  * FoAggregateSink sink = new FoAggregateSink( writer );
  * sink.setDocumentModel( documentModel );
@@ -57,13 +56,11 @@ import org.codehaus.plexus.util.StringUtils;
  * ...
  * sink.endDocument();
  * </pre>
- * <p/>
  * <b>Note</b>: the documentModel object contains several
- * <a href="http://maven.apache.org/doxia/doxia/doxia-core/document.html">document metadata</a>, but only a few
+ * <a href="https://maven.apache.org/doxia/doxia/doxia-core/document.html">document metadata</a>, but only a few
  * of them are used in this sink (i.e. author, confidential, date and title), the others are ignored.
  *
  * @author ltheussl
- * @version $Id: FoAggregateSink.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.1
  */
 public class FoAggregateSink
@@ -126,7 +123,7 @@ public class FoAggregateSink
     /**
      * Used to get the current position in the TOC.
      */
-    private final Stack<NumberedListItem> tocStack = new Stack<NumberedListItem>();
+    private final Stack<NumberedListItem> tocStack = new Stack<>();
 
     /**
      * Constructor.
@@ -146,9 +143,7 @@ public class FoAggregateSink
         head( null );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void head( SinkEventAttributes attributes )
     {
         init();
@@ -173,9 +168,7 @@ public class FoAggregateSink
         title( null );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void title( SinkEventAttributes attributes )
     {
         // ignored
@@ -197,9 +190,7 @@ public class FoAggregateSink
         author( null );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void author( SinkEventAttributes attributes )
     {
         // ignored
@@ -221,9 +212,7 @@ public class FoAggregateSink
         date( null );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void date( SinkEventAttributes attributes )
     {
         // ignored
@@ -245,9 +234,7 @@ public class FoAggregateSink
         body( null );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void body( SinkEventAttributes attributes )
     {
         chapter++;
@@ -262,7 +249,7 @@ public class FoAggregateSink
         }
         else
         {
-            writeStartTag( BLOCK_TAG, "id", docName );
+            writeStartTag( BLOCK_TAG, "" );
         }
 
     }
@@ -310,11 +297,11 @@ public class FoAggregateSink
     /**
      * Sets the DocumentModel to be used by this sink. The DocumentModel provides all the meta-information
      * required to render a document, eg settings for the cover page, table of contents, etc.
-     * <br/>
+     * <br>
      * By default, a TOC will be added at the beginning of the document.
      *
      * @param model the DocumentModel.
-     * @see #setDocumentModel(DocumentModel, String)
+     * @see #setDocumentModel(DocumentModel, int)
      * @see #TOC_START
      */
     public void setDocumentModel( DocumentModel model )
@@ -348,7 +335,7 @@ public class FoAggregateSink
             DocumentTOCItem tocItem = new DocumentTOCItem();
             tocItem.setName( this.docModel.getToc().getName() );
             tocItem.setRef( "./toc" );
-            List<DocumentTOCItem> items = new LinkedList<DocumentTOCItem>();
+            List<DocumentTOCItem> items = new LinkedList<>();
             if ( this.tocPosition == TOC_START )
             {
                 items.add( tocItem );
@@ -391,7 +378,7 @@ public class FoAggregateSink
             idName = idName.substring( 0, idName.lastIndexOf( "." ) );
         }
 
-        while ( idName.indexOf( "//" ) != -1 )
+        while ( idName.contains( "//" ) )
         {
             idName = StringUtils.replace( idName, "//", "/" );
         }
@@ -403,17 +390,13 @@ public class FoAggregateSink
     //
     // -----------------------------------------------------------------------
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void figureGraphics( String name )
     {
         figureGraphics( name, null );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void figureGraphics( String src, SinkEventAttributes attributes )
     {
         String anchor = src;
@@ -431,17 +414,13 @@ public class FoAggregateSink
         super.figureGraphics( anchor, attributes );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void anchor( String name )
     {
         anchor( name, null );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void anchor( String name, SinkEventAttributes attributes )
     {
         if ( name == null )
@@ -469,17 +448,13 @@ public class FoAggregateSink
         writeStartTag( INLINE_TAG, "id", anchor );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void link( String name )
     {
         link( name, null );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void link( String name, SinkEventAttributes attributes )
     {
         if ( name == null )
@@ -495,7 +470,7 @@ public class FoAggregateSink
             return;
         }
 
-        while ( name.indexOf( "//" ) != -1 )
+        while ( name.contains( "//" ) )
         {
             name = StringUtils.replace( name, "//", "/" );
         }
@@ -569,7 +544,7 @@ public class FoAggregateSink
 
         String base = docName.substring( 0, docName.lastIndexOf( "/" ) );
 
-        if ( base.indexOf( "/" ) != -1 )
+        if ( base.contains( "/" ) )
         {
             while ( anchor.startsWith( "../" ) )
             {
@@ -613,7 +588,7 @@ public class FoAggregateSink
                 else
                 {
                     anchor = anchor.substring( 0, dot ) + "#" + HtmlTools.encodeId(
-                        anchor.substring( hash + 1, anchor.length() ) );
+                        anchor.substring( hash + 1 ) );
                 }
             }
             else
@@ -629,11 +604,8 @@ public class FoAggregateSink
     //
     // ----------------------------------------------------------------------
 
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * Writes a start tag, prepending EOL.
-     */
+    /** {@inheritDoc} */
+    @Override
     protected void writeStartTag( Tag tag, String attributeId )
     {
         if ( !ignoreText )
@@ -642,11 +614,8 @@ public class FoAggregateSink
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * Writes a start tag, prepending EOL.
-     */
+    /** {@inheritDoc} */
+    @Override
     protected void writeStartTag( Tag tag, String id, String name )
     {
         if ( !ignoreText )
@@ -655,11 +624,8 @@ public class FoAggregateSink
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * Writes an end tag, appending EOL.
-     */
+    /** {@inheritDoc} */
+    @Override
     protected void writeEndTag( Tag t )
     {
         if ( !ignoreText )
@@ -668,11 +634,8 @@ public class FoAggregateSink
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * Writes a simple tag, appending EOL.
-     */
+    /** {@inheritDoc} */
+    @Override
     protected void writeEmptyTag( Tag tag, String attributeId )
     {
         if ( !ignoreText )
@@ -681,11 +644,8 @@ public class FoAggregateSink
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * Writes a text, swallowing any exceptions.
-     */
+    /** {@inheritDoc} */
+    @Override
     protected void write( String text )
     {
         if ( !ignoreText )
@@ -694,11 +654,8 @@ public class FoAggregateSink
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * Writes a text, appending EOL.
-     */
+    /** {@inheritDoc} */
+    @Override
     protected void writeln( String text )
     {
         if ( !ignoreText )
@@ -707,11 +664,8 @@ public class FoAggregateSink
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * Writes content, escaping special characters.
-     */
+    /** {@inheritDoc} */
+    @Override
     protected void content( String text )
     {
         if ( !ignoreText )
@@ -756,7 +710,7 @@ public class FoAggregateSink
      */
     protected String getHeaderText()
     {
-        return Integer.toString( chapter ) + "   " + docTitle;
+        return chapter + "   " + docTitle;
     }
 
     /**
@@ -794,21 +748,15 @@ public class FoAggregateSink
         return "&#169;" + actualYear + ", " + escaped( companyName, false ) + add;
     }
 
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * Returns the current chapter number as a string.
-     */
+    /** {@inheritDoc} */
+    @Override
     protected String getChapterString()
     {
-        return Integer.toString( chapter ) + ".";
+        return chapter + ".";
     }
 
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * Writes a 'xsl-region-before' block.
-     */
+    /** {@inheritDoc} */
+    @Override
     protected void regionBefore( String headerText )
     {
         writeStartTag( STATIC_CONTENT_TAG, "flow-name", "xsl-region-before" );
@@ -838,11 +786,8 @@ public class FoAggregateSink
         writeEndTag( STATIC_CONTENT_TAG );
     }
 
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * Writes a 'xsl-region-after' block.
-     */
+    /** {@inheritDoc} */
+    @Override
     protected void regionAfter( String footerText )
     {
         writeStartTag( STATIC_CONTENT_TAG, "flow-name", "xsl-region-after" );
@@ -857,14 +802,20 @@ public class FoAggregateSink
         writeEndTag( STATIC_CONTENT_TAG );
     }
 
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * Writes a chapter heading.
-     */
+    /** {@inheritDoc} */
+    @Override
     protected void chapterHeading( String headerText, boolean chapterNumber )
     {
-        writeStartTag( BLOCK_TAG, "" );
+        if ( docName == null )
+        {
+            getLog().warn( "No document root specified, local links will not be resolved correctly!" );
+            writeStartTag( BLOCK_TAG, "" );
+        }
+        else
+        {
+            writeStartTag( BLOCK_TAG, "id", docName );
+        }
+
         writeStartTag( LIST_BLOCK_TAG, "" );
         writeStartTag( LIST_ITEM_TAG, "" );
         writeln( "<fo:list-item-label end-indent=\"6.375in\" start-indent=\"-1in\">" );
@@ -947,6 +898,8 @@ public class FoAggregateSink
 
         tocStack.push( new NumberedListItem( NUMBERING_DECIMAL ) );
 
+        boolean printToc = ( level == 1 );
+
         for ( DocumentTOCItem tocItem : tocItems )
         {
             String ref = getIdName( tocItem.getRef() );
@@ -967,8 +920,16 @@ public class FoAggregateSink
             writeStartTag( BLOCK_TAG, "toc.number.style" );
 
             NumberedListItem current = tocStack.peek();
-            current.next();
-            write( currentTocNumber() );
+            if ( printToc )
+            {
+                // MPDF-59: no entry numbering for first, since it's the "Table of Contents"
+                printToc = false;
+            }
+            else
+            {
+                current.next();
+                write( currentTocNumber() );
+            }
 
             writeEndTag( BLOCK_TAG );
             writeEndTag( TABLE_CELL_TAG );
@@ -1010,15 +971,13 @@ public class FoAggregateSink
 
         for ( int i = 1; i < tocStack.size(); i++ )
         {
-            ch.append( "." + tocStack.get( i ).getListItemSymbol() );
+            ch.append( tocStack.get( i ).getListItemSymbol() );
         }
 
         return ch.toString();
     }
 
     /**
-     * {@inheritDoc}
-     * <p/>
      * Writes a fo:bookmark-tree. The DocumentModel has to contain a DocumentTOC for this to work.
      */
     protected void pdfBookmarks()
@@ -1144,7 +1103,7 @@ public class FoAggregateSink
         }
 
         String subtitle = null;
-        String title = null;
+        String title;
         String type = null;
         String version = null;
         if ( cover == null )
@@ -1242,7 +1201,7 @@ public class FoAggregateSink
         }
 
         String date = null;
-        String compName = null;
+        String compName;
         if ( cover == null )
         {
             // aleady checked that meta != null
@@ -1308,7 +1267,7 @@ public class FoAggregateSink
 
         if ( atts == null )
         {
-            return new SinkEventAttributeSet( new String[]{ SinkEventAttributes.HEIGHT, COVER_HEADER_HEIGHT } );
+            return new SinkEventAttributeSet( SinkEventAttributes.HEIGHT, COVER_HEADER_HEIGHT );
         }
 
         // FOP dpi: 72

@@ -29,7 +29,6 @@ import org.apache.maven.doxia.markup.XmlMarkup;
  * remove full DocBook-only ones.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: DocbookMarkup.java 1633964 2014-10-23 22:01:01Z hboutemy $
  * @since 1.0
  * @deprecated This interface is incomplete and will be removed. Use {@link SimplifiedDocbookMarkup} instead.
  */

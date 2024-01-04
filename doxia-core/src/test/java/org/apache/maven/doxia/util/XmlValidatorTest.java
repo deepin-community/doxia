@@ -29,7 +29,6 @@ import org.codehaus.plexus.util.xml.XmlStreamReader;
  * Test case for <code>XmlValidator</code>.
  *
  * @author Hervé Boutemy
- * @version $Id: XmlValidatorTest.java 1721030 2015-12-20 14:25:19Z hboutemy $
  */
 public class XmlValidatorTest
 extends PlexusTestCase

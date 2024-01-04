@@ -23,7 +23,6 @@ package org.apache.maven.doxia.module.twiki.parser;
  * Resolves the WikiWordLinks
  *
  * @author Christian D. Nardi
- * @version $Id: WikiWordLinkResolver.java 638290 2008-03-18 09:45:22Z bentmann $
  */
 interface WikiWordLinkResolver
 {

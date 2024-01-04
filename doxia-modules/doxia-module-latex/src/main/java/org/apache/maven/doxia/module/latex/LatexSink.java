@@ -32,14 +32,16 @@ import org.codehaus.plexus.util.StringUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Stack;
 
 /**
  * Latex Sink implementation.
- * <br/>
+ * <br>
  * <b>Note</b>: The encoding used is UTF-8.
  *
- * @version $Id: LatexSink.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public class LatexSink
@@ -79,6 +81,9 @@ public class LatexSink
     private boolean isTitle;
 
     private String title;
+
+    /** Keep track of the closing tags for inline events. */
+    protected Stack<List<String>> inlineStack = new Stack<>();
 
     // ----------------------------------------------------------------------
     //
@@ -357,7 +362,7 @@ public class LatexSink
     /** {@inheritDoc} */
     public void sectionTitle_( int level )
     {
-        String command = "";
+        String command;
         switch ( level )
         {
             case SECTION_LEVEL_1:
@@ -529,9 +534,7 @@ public class LatexSink
         markup( EOL + "\\item " );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void numberedList( int numbering )
     {
         numberedList( numbering, null );
@@ -650,7 +653,9 @@ public class LatexSink
         markup( "}] " );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definitionListItem()
     {
         definitionListItem( null );
@@ -662,13 +667,17 @@ public class LatexSink
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definitionListItem_()
     {
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definition()
     {
         definition( null );
@@ -680,7 +689,9 @@ public class LatexSink
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definition_()
     {
         // nop
@@ -714,9 +725,7 @@ public class LatexSink
         figureFlag = false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void figureGraphics( String name )
     {
         figureGraphics( name, null );
@@ -785,20 +794,18 @@ public class LatexSink
         tableFlag = false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void tableRows( int[] justification, boolean grid )
 
     {
         StringBuilder justif = new StringBuilder();
-        for ( int i = 0; i < justification.length; ++i )
+        for ( int i1 : justification )
         {
             if ( grid )
             {
                 justif.append( '|' );
             }
-            switch ( justification[i] )
+            switch ( i1 )
             {
                 case Sink.JUSTIFY_CENTER:
                     justif.append( 'c' );
@@ -1008,15 +1015,17 @@ public class LatexSink
         markup( EOL );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void verbatim( boolean boxed )
     {
         verbatim( boxed ? SinkEventAttributeSet.BOXED : null );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param attributes a {@link org.apache.maven.doxia.sink.SinkEventAttributes} object.
+     */
     public void verbatim( SinkEventAttributes attributes )
     {
         boolean boxed = false;
@@ -1074,9 +1083,7 @@ public class LatexSink
         markup( EOL + "\\newpage" + EOL );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void anchor( String name )
     {
         anchor( name, null );
@@ -1096,9 +1103,7 @@ public class LatexSink
         markup( "}" );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void link( String name )
     {
         link( name, null );
@@ -1129,9 +1134,59 @@ public class LatexSink
     /**
      * {@inheritDoc}
      */
+    public void inline()
+    {
+        inline( null );
+    }
+
+    /** {@inheritDoc} */
+    public void inline( SinkEventAttributes attributes )
+    {
+        List<String> tags = new ArrayList<>();
+
+        if ( attributes != null )
+        {
+
+            if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "italic" ) )
+            {
+                markup( "\\textit{" );
+                tags.add( 0, "}" );
+            }
+
+            if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "bold" ) )
+            {
+                markup( "\\textbf{" );
+                tags.add( 0, "}" );
+            }
+
+            if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "code" ) )
+            {
+                markup( "\\texttt{\\small " );
+                tags.add( 0, "}" );
+            }
+
+        }
+
+        inlineStack.push( tags );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void inline_()
+    {
+        for ( String tag: inlineStack.pop() )
+        {
+            markup( tag );
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void italic()
     {
-        markup( "\\textit{" );
+        inline( SinkEventAttributeSet.Semantics.ITALIC );
     }
 
     /**
@@ -1139,7 +1194,7 @@ public class LatexSink
      */
     public void italic_()
     {
-        markup( "}" );
+        inline_();
     }
 
     /**
@@ -1147,7 +1202,7 @@ public class LatexSink
      */
     public void bold()
     {
-        markup( "\\textbf{" );
+        inline( SinkEventAttributeSet.Semantics.BOLD );
     }
 
     /**
@@ -1155,7 +1210,7 @@ public class LatexSink
      */
     public void bold_()
     {
-        markup( "}" );
+        inline_();
     }
 
     /**
@@ -1163,7 +1218,7 @@ public class LatexSink
      */
     public void monospaced()
     {
-        markup( "\\texttt{\\small " );
+        inline( SinkEventAttributeSet.Semantics.CODE );
     }
 
     /**
@@ -1171,7 +1226,7 @@ public class LatexSink
      */
     public void monospaced_()
     {
-        markup( "}" );
+        inline_();
     }
 
     /**
@@ -1196,9 +1251,7 @@ public class LatexSink
         markup( "~" );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void text( String text )
     {
         text( text, null );
@@ -1439,7 +1492,9 @@ public class LatexSink
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void init()
     {
         super.init();

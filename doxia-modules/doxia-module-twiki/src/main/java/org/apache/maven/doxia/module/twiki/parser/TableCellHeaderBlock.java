@@ -25,7 +25,6 @@ import org.apache.maven.doxia.sink.Sink;
  * Table Cell headear
  *
  * @author Juan F. Codagnone
- * @version $Id: TableCellHeaderBlock.java 705065 2008-10-15 21:46:08Z vsiveton $
  */
 class TableCellHeaderBlock
     extends AbstractFatherBlock

@@ -27,9 +27,10 @@ import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.impl.AbstractSinkTest;
 import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
 
+import static org.apache.maven.doxia.util.HtmlTools.escapeHTML;
+
 /**
  * @author Jason van Zyl
- * @version $Id: XhtmlSinkTest.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public class XhtmlSinkTest
@@ -56,10 +57,8 @@ public class XhtmlSinkTest
     /**
      * Test link generation.
      *
-     * @throws java.lang.Exception if any.
      */
     public void testLinks()
-        throws Exception
     {
         XhtmlSink sink = null;
         Writer writer =  new StringWriter();
@@ -84,10 +83,10 @@ public class XhtmlSinkTest
         }
 
         String actual = writer.toString();
-        assertTrue( actual.indexOf( "<a class=\"externalLink\" href=\"http:/www.xdoc.com\"></a>" ) != -1 );
-        assertTrue( actual.indexOf( "<a href=\"./index.html#anchor\"></a>" ) != -1 );
-        assertTrue( actual.indexOf( "<a href=\"../index.html#anchor\"></a>" ) != -1 );
-        assertTrue( actual.indexOf( "<a href=\"index.html\"></a>" ) != -1 );
+        assertTrue( actual.contains( "<a class=\"externalLink\" href=\"http:/www.xdoc.com\"></a>" ) );
+        assertTrue( actual.contains( "<a href=\"./index.html#anchor\"></a>" ) );
+        assertTrue( actual.contains( "<a href=\"../index.html#anchor\"></a>" ) );
+        assertTrue( actual.contains( "<a href=\"index.html\"></a>" ) );
     }
 
     /** {@inheritDoc} */
@@ -119,6 +118,24 @@ public class XhtmlSinkTest
     protected String getBodyBlock()
     {
         return "<body></body></html>";
+    }
+
+    /** {@inheritDoc} */
+    protected String getArticleBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
+    protected String getNavigationBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
+    protected String getSidebarBlock()
+    {
+        return "";
     }
 
     /** {@inheritDoc} */
@@ -158,6 +175,24 @@ public class XhtmlSinkTest
     }
 
     /** {@inheritDoc} */
+    protected String getHeaderBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
+    protected String getContentBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
+    protected String getFooterBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
     protected String getListBlock( String item )
     {
         return "<ul>\n<li>" + item + "</li></ul>";
@@ -178,7 +213,7 @@ public class XhtmlSinkTest
     /** {@inheritDoc} */
     protected String getFigureBlock( String source, String caption )
     {
-        String figureBlock = "<img src=\"" + source + "\"";
+        String figureBlock = "<img src=\"" + escapeHTML( source, true ) + "\"";
         if( caption != null )
         {
             figureBlock += " alt=\"" + caption + "\"";
@@ -214,6 +249,36 @@ public class XhtmlSinkTest
     }
 
     /** {@inheritDoc} */
+    protected String getDataBlock( String value, String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getTimeBlock( String datetime, String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getAddressBlock( String text )
+    {
+        return "<address>" + text + "</address>";
+    }
+
+    /** {@inheritDoc} */
+    protected String getBlockquoteBlock( String text )
+    {
+        return "<blockquote>" + text + "</blockquote>";
+    }
+
+    /** {@inheritDoc} */
+    protected String getDivisionBlock( String text )
+    {
+        return "<div>" + text + "</div>";
+    }
+
+    /** {@inheritDoc} */
     protected String getVerbatimBlock( String text )
     {
         return "<div class=\"source\">\n<pre>" + text + "</pre></div>";
@@ -244,6 +309,30 @@ public class XhtmlSinkTest
     }
 
     /** {@inheritDoc} */
+    protected String getInlineBlock( String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getInlineItalicBlock( String text )
+    {
+        return "<i>" + text + "</i>";
+    }
+
+    /** {@inheritDoc} */
+    protected String getInlineBoldBlock( String text )
+    {
+        return "<b>" + text + "</b>";
+    }
+
+    /** {@inheritDoc} */
+    protected String getInlineCodeBlock( String text )
+    {
+        return "<code>" + text + "</code>";
+    }
+
+    /** {@inheritDoc} */
     protected String getItalicBlock( String text )
     {
         return "<i>" + text + "</i>";
@@ -265,6 +354,12 @@ public class XhtmlSinkTest
     protected String getLineBreakBlock()
     {
         return "<br />";
+    }
+
+    /** {@inheritDoc} */
+    protected String getLineBreakOpportunityBlock()
+    {
+        return "";
     }
 
     /** {@inheritDoc} */
@@ -336,7 +431,7 @@ public class XhtmlSinkTest
             sink.author_();
             SinkEventAttributeSet atts = new SinkEventAttributeSet( 1 );
             atts.addAttribute( "href", "http://maven.apache.org/" );
-            sink.unknown( "base", new Object[] {new Integer( HtmlMarkup.TAG_TYPE_SIMPLE )}, atts );
+            sink.unknown( "base", new Object[] { HtmlMarkup.TAG_TYPE_SIMPLE }, atts );
             sink.head_();
         }
         finally
@@ -348,7 +443,7 @@ public class XhtmlSinkTest
             "<head>\n<title>Title</title><!--A comment--><meta name=\"author\" content=\"&#x123;&amp;\" />"
                 + "<base href=\"http://maven.apache.org/\" /></head>";
         String actual = writer.toString();
-        assertTrue( actual, actual.indexOf( expected ) != -1 );
+        assertTrue( actual, actual.contains( expected ) );
     }
 
     /** {@inheritDoc} */

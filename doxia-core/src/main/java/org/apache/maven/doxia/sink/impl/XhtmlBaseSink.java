@@ -22,11 +22,14 @@ package org.apache.maven.doxia.sink.impl;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeSet;
 
 import javax.swing.text.MutableAttributeSet;
@@ -35,6 +38,7 @@ import javax.swing.text.html.HTML.Tag;
 
 import org.apache.maven.doxia.markup.HtmlMarkup;
 import org.apache.maven.doxia.markup.Markup;
+import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.SinkEventAttributes;
 import org.apache.maven.doxia.util.DoxiaUtils;
 import org.apache.maven.doxia.util.HtmlTools;
@@ -47,7 +51,6 @@ import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
  *
  * @author Jason van Zyl
  * @author ltheussl
- * @version $Id: XhtmlBaseSink.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.1
  */
 public class XhtmlBaseSink
@@ -125,6 +128,9 @@ public class XhtmlBaseSink
      * */
     protected boolean tableRows = false;
 
+    /** Keep track of the closing tags for inline events. */
+    protected Stack<List<Tag>> inlineStack = new Stack<>();
+
     /** Map of warn messages with a String as key to describe the error type and a Set as value.
      * Using to reduce warn messages. */
     private Map<String, Set<String>> warnMessages;
@@ -142,13 +148,13 @@ public class XhtmlBaseSink
     {
         this.writer = new PrintWriter( out );
 
-        this.cellJustifStack = new LinkedList<int[]>();
-        this.isCellJustifStack = new LinkedList<Boolean>();
-        this.cellCountStack = new LinkedList<Integer>();
-        this.tableContentWriterStack = new LinkedList<StringWriter>();
-        this.tableCaptionWriterStack = new LinkedList<StringWriter>();
-        this.tableCaptionXMLWriterStack = new LinkedList<PrettyPrintXMLWriter>();
-        this.tableCaptionStack = new LinkedList<String>();
+        this.cellJustifStack = new LinkedList<>();
+        this.isCellJustifStack = new LinkedList<>();
+        this.cellCountStack = new LinkedList<>();
+        this.tableContentWriterStack = new LinkedList<>();
+        this.tableCaptionWriterStack = new LinkedList<>();
+        this.tableCaptionXMLWriterStack = new LinkedList<>();
+        this.tableCaptionStack = new LinkedList<>();
 
         init();
     }
@@ -961,7 +967,7 @@ public class XhtmlBaseSink
 
         MutableAttributeSet atts = new SinkEventAttributeSet( count );
 
-        atts.addAttribute( Attribute.SRC, escapeHTML( src ) );
+        atts.addAttribute( Attribute.SRC, HtmlTools.escapeHTML( src, true ) );
         atts.addAttributes( filtered );
 
         if ( atts.getAttribute( Attribute.ALT.toString() ) == null )
@@ -1009,7 +1015,7 @@ public class XhtmlBaseSink
                 attributes, SinkUtils.SINK_BASE_ATTRIBUTES  ) );
 
             paragraph( atts );
-            italic();
+            inline( SinkEventAttributeSet.Semantics.ITALIC );
         }
     }
 
@@ -1023,7 +1029,7 @@ public class XhtmlBaseSink
         }
         else
         {
-            italic_();
+            inline_();
             paragraph_();
         }
     }
@@ -1065,6 +1071,105 @@ public class XhtmlBaseSink
             writeEndTag( HtmlMarkup.P );
             paragraphFlag = false;
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see javax.swing.text.html.HTML.Tag#ADDRESS
+     */
+    @Override
+    public void address()
+    {
+        address( null );
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see javax.swing.text.html.HTML.Tag#ADDRESS
+     */
+    @Override
+    public void address( SinkEventAttributes attributes )
+    {
+        MutableAttributeSet atts = SinkUtils.filterAttributes(
+                attributes, SinkUtils.SINK_SECTION_ATTRIBUTES  );
+
+        writeStartTag( HtmlMarkup.ADDRESS, atts );
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see javax.swing.text.html.HTML.Tag#ADDRESS
+     */
+    @Override
+    public void address_()
+    {
+        writeEndTag( HtmlMarkup.ADDRESS );
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see javax.swing.text.html.HTML.Tag#BLOCKQUOTE
+     */
+    @Override
+    public void blockquote()
+    {
+        blockquote( null );
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see javax.swing.text.html.HTML.Tag#BLOCKQUOTE
+     */
+    @Override
+    public void blockquote( SinkEventAttributes attributes )
+    {
+        MutableAttributeSet atts = SinkUtils.filterAttributes(
+                attributes, SinkUtils.SINK_SECTION_ATTRIBUTES  );
+
+        writeStartTag( HtmlMarkup.BLOCKQUOTE, atts );
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see javax.swing.text.html.HTML.Tag#BLOCKQUOTE
+     */
+    @Override
+    public void blockquote_()
+    {
+        writeEndTag( HtmlMarkup.BLOCKQUOTE );
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see javax.swing.text.html.HTML.Tag#DIV
+     */
+    @Override
+    public void division()
+    {
+        division( null );
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see javax.swing.text.html.HTML.Tag#DIV
+     */
+    @Override
+    public void division( SinkEventAttributes attributes )
+    {
+        MutableAttributeSet atts = SinkUtils.filterAttributes(
+                attributes, SinkUtils.SINK_SECTION_ATTRIBUTES  );
+
+        writeStartTag( HtmlMarkup.DIV, atts );
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see javax.swing.text.html.HTML.Tag#DIV
+     */
+    @Override
+    public void division_()
+    {
+        writeEndTag( HtmlMarkup.DIV );
     }
 
     /**
@@ -1127,7 +1232,7 @@ public class XhtmlBaseSink
 
         if ( boxed )
         {
-            divAtts = new SinkEventAttributeSet( new String[] { Attribute.CLASS.toString(), "source" } );
+            divAtts = new SinkEventAttributeSet( Attribute.CLASS.toString(), "source" );
         }
 
         atts.removeAttribute( SinkEventAttributes.DECORATION );
@@ -1239,14 +1344,14 @@ public class XhtmlBaseSink
         String tableCaption = null;
         if ( !this.tableCaptionStack.isEmpty() && this.tableCaptionStack.getLast() != null )
         {
-            tableCaption = this.tableCaptionStack.removeLast().toString();
+            tableCaption = this.tableCaptionStack.removeLast();
         }
 
         if ( tableCaption != null )
         {
             // DOXIA-177
             StringBuilder sb = new StringBuilder();
-            sb.append( tableContent.substring( 0, tableContent.indexOf( Markup.GREATER_THAN ) + 1 ) );
+            sb.append( tableContent, 0, tableContent.indexOf( Markup.GREATER_THAN ) + 1 );
             sb.append( tableCaption );
             sb.append( tableContent.substring( tableContent.indexOf( Markup.GREATER_THAN ) + 1 ) );
 
@@ -1293,7 +1398,7 @@ public class XhtmlBaseSink
 
         writeStartTag( HtmlMarkup.TABLE, att );
 
-        this.cellCountStack.addLast( Integer.valueOf( 0 ) );
+        this.cellCountStack.addLast( 0 );
     }
 
     /** {@inheritDoc} */
@@ -1360,7 +1465,7 @@ public class XhtmlBaseSink
         if ( !this.cellCountStack.isEmpty() )
         {
             this.cellCountStack.removeLast();
-            this.cellCountStack.addLast( Integer.valueOf( 0 ) );
+            this.cellCountStack.addLast( 0 );
         }
     }
 
@@ -1432,6 +1537,29 @@ public class XhtmlBaseSink
     {
         Tag t = ( headerRow ? HtmlMarkup.TH : HtmlMarkup.TD );
 
+        if ( !headerRow && cellCountStack != null && !cellCountStack.isEmpty()
+            && cellJustifStack != null && !cellJustifStack.isEmpty() && getCellJustif() != null )
+        {
+            int cellCount = getCellCount();
+            if ( cellCount < getCellJustif().length )
+            {
+                Map<Integer, MutableAttributeSet> hash = new HashMap<>();
+                hash.put( Sink.JUSTIFY_CENTER, SinkEventAttributeSet.CENTER );
+                hash.put( Sink.JUSTIFY_LEFT, SinkEventAttributeSet.LEFT );
+                hash.put( Sink.JUSTIFY_RIGHT, SinkEventAttributeSet.RIGHT );
+                MutableAttributeSet atts = hash.get( getCellJustif()[cellCount] );
+
+                if ( attributes == null )
+                {
+                    attributes = new SinkEventAttributeSet();
+                }
+                if ( atts != null )
+                {
+                    attributes.addAttributes( atts );
+                }
+            }
+        }
+
         if ( attributes == null )
         {
             writeStartTag( t, null );
@@ -1474,7 +1602,7 @@ public class XhtmlBaseSink
             && !this.cellCountStack.isEmpty() )
         {
             int cellCount = Integer.parseInt( this.cellCountStack.removeLast().toString() );
-            this.cellCountStack.addLast( Integer.valueOf( ++cellCount ) );
+            this.cellCountStack.addLast( ++cellCount );
         }
     }
 
@@ -1666,6 +1794,76 @@ public class XhtmlBaseSink
         }
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void inline()
+    {
+        inline( null );
+    }
+
+    private void inlineSemantics( SinkEventAttributes attributes, String semantic,
+            List<Tag> tags, Tag tag )
+    {
+        if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, semantic ) )
+        {
+            SinkEventAttributes attributesNoSemantics = ( SinkEventAttributes ) attributes.copyAttributes();
+            attributesNoSemantics.removeAttribute( SinkEventAttributes.SEMANTICS );
+            writeStartTag( tag, attributesNoSemantics );
+            tags.add( 0, tag );
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void inline( SinkEventAttributes attributes )
+    {
+        if ( !headFlag )
+        {
+            List<Tag> tags = new ArrayList<>();
+
+            if ( attributes != null )
+            {
+                inlineSemantics( attributes, "emphasis", tags, HtmlMarkup.EM );
+                inlineSemantics( attributes, "strong", tags, HtmlMarkup.STRONG );
+                inlineSemantics( attributes, "small", tags, HtmlMarkup.SMALL );
+                inlineSemantics( attributes, "line-through", tags, HtmlMarkup.S );
+                inlineSemantics( attributes, "citation", tags, HtmlMarkup.CITE );
+                inlineSemantics( attributes, "quote", tags, HtmlMarkup.Q );
+                inlineSemantics( attributes, "definition", tags, HtmlMarkup.DFN );
+                inlineSemantics( attributes, "abbreviation", tags, HtmlMarkup.ABBR );
+                inlineSemantics( attributes, "italic", tags, HtmlMarkup.I );
+                inlineSemantics( attributes, "bold", tags, HtmlMarkup.B );
+                inlineSemantics( attributes, "monospaced", tags, HtmlMarkup.TT );
+                inlineSemantics( attributes, "code", tags, HtmlMarkup.CODE );
+                inlineSemantics( attributes, "variable", tags, HtmlMarkup.VAR );
+                inlineSemantics( attributes, "sample", tags, HtmlMarkup.SAMP );
+                inlineSemantics( attributes, "keyboard", tags, HtmlMarkup.KBD );
+                inlineSemantics( attributes, "superscript", tags, HtmlMarkup.SUP );
+                inlineSemantics( attributes, "subscript", tags, HtmlMarkup.SUB );
+                inlineSemantics( attributes, "annotation", tags, HtmlMarkup.U );
+                inlineSemantics( attributes, "bidirectionalOverride", tags, HtmlMarkup.BDO );
+                inlineSemantics( attributes, "phrase", tags, HtmlMarkup.SPAN );
+                inlineSemantics( attributes, "insert", tags, HtmlMarkup.INS );
+                inlineSemantics( attributes, "delete", tags, HtmlMarkup.DEL );
+            }
+
+            inlineStack.push( tags );
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void inline_()
+    {
+        if ( !headFlag )
+        {
+            for ( Tag tag: inlineStack.pop() )
+            {
+                writeEndTag( tag );
+            }
+        }
+    }
+
     /**
      * {@inheritDoc}
      * @see javax.swing.text.html.HTML.Tag#I
@@ -1673,10 +1871,7 @@ public class XhtmlBaseSink
     @Override
     public void italic()
     {
-        if ( !headFlag )
-        {
-            writeStartTag( HtmlMarkup.I );
-        }
+        inline( SinkEventAttributeSet.Semantics.ITALIC );
     }
 
     /**
@@ -1686,10 +1881,7 @@ public class XhtmlBaseSink
     @Override
     public void italic_()
     {
-        if ( !headFlag )
-        {
-            writeEndTag( HtmlMarkup.I );
-        }
+        inline_();
     }
 
     /**
@@ -1699,10 +1891,7 @@ public class XhtmlBaseSink
     @Override
     public void bold()
     {
-        if ( !headFlag )
-        {
-            writeStartTag( HtmlMarkup.B );
-        }
+        inline( SinkEventAttributeSet.Semantics.BOLD );
     }
 
     /**
@@ -1712,10 +1901,7 @@ public class XhtmlBaseSink
     @Override
     public void bold_()
     {
-        if ( !headFlag )
-        {
-            writeEndTag( HtmlMarkup.B );
-        }
+        inline_();
     }
 
     /**
@@ -1725,10 +1911,7 @@ public class XhtmlBaseSink
     @Override
     public void monospaced()
     {
-        if ( !headFlag )
-        {
-            writeStartTag( HtmlMarkup.TT );
-        }
+        inline( SinkEventAttributeSet.Semantics.MONOSPACED );
     }
 
     /**
@@ -1738,10 +1921,7 @@ public class XhtmlBaseSink
     @Override
     public void monospaced_()
     {
-        if ( !headFlag )
-        {
-            writeEndTag( HtmlMarkup.TT );
-        }
+        inline_();
     }
 
     /**
@@ -1817,48 +1997,7 @@ public class XhtmlBaseSink
     @Override
     public void text( String text, SinkEventAttributes attributes )
     {
-        if ( attributes == null )
-        {
-            text( text );
-        }
-        else
-        {
-            if ( attributes.containsAttribute( SinkEventAttributes.DECORATION, "underline" ) )
-            {
-                writeStartTag( HtmlMarkup.U );
-            }
-            if ( attributes.containsAttribute( SinkEventAttributes.DECORATION, "line-through" ) )
-            {
-                writeStartTag( HtmlMarkup.S );
-            }
-            if ( attributes.containsAttribute( SinkEventAttributes.VALIGN, "sub" ) )
-            {
-                writeStartTag( HtmlMarkup.SUB );
-            }
-            if ( attributes.containsAttribute( SinkEventAttributes.VALIGN, "sup" ) )
-            {
-                writeStartTag( HtmlMarkup.SUP );
-            }
-
-            text( text );
-
-            if ( attributes.containsAttribute( SinkEventAttributes.VALIGN, "sup" ) )
-            {
-                writeEndTag( HtmlMarkup.SUP );
-            }
-            if ( attributes.containsAttribute( SinkEventAttributes.VALIGN, "sub" ) )
-            {
-                writeEndTag( HtmlMarkup.SUB );
-            }
-            if ( attributes.containsAttribute( SinkEventAttributes.DECORATION, "line-through" ) )
-            {
-                writeEndTag( HtmlMarkup.S );
-            }
-            if ( attributes.containsAttribute( SinkEventAttributes.DECORATION, "underline" ) )
-            {
-                writeEndTag( HtmlMarkup.U );
-            }
-        }
+        text( text );
     }
 
     /** {@inheritDoc} */
@@ -1910,6 +2049,8 @@ public class XhtmlBaseSink
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Add an unknown event.
      * This can be used to generate html tags for which no corresponding sink event exists.
      *
@@ -1959,7 +2100,7 @@ public class XhtmlBaseSink
             return;
         }
 
-        int tagType = ( (Integer) requiredParams[0] ).intValue();
+        int tagType = (Integer) requiredParams[0];
 
         if ( tagType == ENTITY_TYPE )
         {
@@ -2105,7 +2246,7 @@ public class XhtmlBaseSink
     {
         if ( !this.tableCaptionXMLWriterStack.isEmpty() && this.tableCaptionXMLWriterStack.getLast() != null )
         {
-            this.tableCaptionXMLWriterStack.getLast().writeText( unifyEOLs( text ) );
+            this.tableCaptionXMLWriterStack.getLast().writeMarkup( unifyEOLs( text ) );
         }
         else if ( !this.tableContentWriterStack.isEmpty() && this.tableContentWriterStack.getLast() != null )
         {
@@ -2183,13 +2324,13 @@ public class XhtmlBaseSink
 
         if ( warnMessages == null )
         {
-            warnMessages = new HashMap<String, Set<String>>();
+            warnMessages = new HashMap<>();
         }
 
         Set<String> set = warnMessages.get( key );
         if ( set == null )
         {
-            set = new TreeSet<String>();
+            set = new TreeSet<>();
         }
         set.add( mesg );
         warnMessages.put( key, set );

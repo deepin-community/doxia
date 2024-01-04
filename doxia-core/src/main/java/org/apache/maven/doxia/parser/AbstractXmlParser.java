@@ -36,16 +36,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-
 import org.apache.maven.doxia.macro.MacroExecutionException;
 import org.apache.maven.doxia.markup.XmlMarkup;
 import org.apache.maven.doxia.sink.Sink;
@@ -56,6 +53,7 @@ import org.apache.maven.doxia.util.XmlValidator;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.xml.pull.EntityReplacementMap;
 import org.codehaus.plexus.util.xml.pull.MXParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -68,7 +66,6 @@ import org.xml.sax.SAXException;
  * An abstract class that defines some convenience methods for <code>XML</code> parsers.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: AbstractXmlParser.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public abstract class AbstractXmlParser
@@ -78,7 +75,7 @@ public abstract class AbstractXmlParser
     /**
      * Entity pattern for HTML entity, i.e. &#38;nbsp;
      * "<!ENTITY(\\s)+([^>|^\\s]+)(\\s)+\"(\\s)*(&[a-zA-Z]{2,6};)(\\s)*\"(\\s)*>
-     * <br/>
+     * <br>
      * see <a href="http://www.w3.org/TR/REC-xml/#NT-EntityDecl">http://www.w3.org/TR/REC-xml/#NT-EntityDecl</a>.
      */
     private static final Pattern PATTERN_ENTITY_1 =
@@ -87,7 +84,7 @@ public abstract class AbstractXmlParser
     /**
      * Entity pattern for Unicode entity, i.e. &#38;#38;
      * "<!ENTITY(\\s)+([^>|^\\s]+)(\\s)+\"(\\s)*(&(#x?[0-9a-fA-F]{1,5};)*)(\\s)*\"(\\s)*>"
-     * <br/>
+     * <br>
      * see <a href="http://www.w3.org/TR/REC-xml/#NT-EntityDecl">http://www.w3.org/TR/REC-xml/#NT-EntityDecl</a>.
      */
     private static final Pattern PATTERN_ENTITY_2 =
@@ -103,8 +100,20 @@ public abstract class AbstractXmlParser
 
     private boolean validate = false;
 
+    /**
+     * If set the parser will be loaded with all single characters
+     * from the XHTML specification.
+     * The entities used:
+     * <ul>
+     * <li>http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent</li>
+     * <li>http://www.w3.org/TR/xhtml1/DTD/xhtml-special.ent</li>
+     * <li>http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent</li>
+     * </ul>
+     */
+    private boolean addDefaultEntities = true;
+
     /** {@inheritDoc} */
-    public void parse( Reader source, Sink sink )
+    public void parse( Reader source, Sink sink, String reference )
         throws ParseException
     {
         init();
@@ -132,7 +141,9 @@ public abstract class AbstractXmlParser
         // 2 second parsing to process
         try
         {
-            XmlPullParser parser = new MXParser();
+            XmlPullParser parser = addDefaultEntities
+                                   ? new MXParser( EntityReplacementMap.defaultEntityReplacementMap )
+                                   : new MXParser();
 
             parser.setInput( src );
             
@@ -157,7 +168,7 @@ public abstract class AbstractXmlParser
         setSecondParsing( false );
         init();
     }
-    
+
     /**
      * Initializes the parser with custom entities or other options.
      *
@@ -168,18 +179,6 @@ public abstract class AbstractXmlParser
         throws XmlPullParserException
     {
         // nop
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * Convenience method to parse an arbitrary string and emit any xml events into the given sink.
-     */
-    @Override
-    public void parse( String string, Sink sink )
-        throws ParseException
-    {
-        super.parse( string, sink );
     }
 
     /** {@inheritDoc} */
@@ -427,7 +426,7 @@ public abstract class AbstractXmlParser
      */
     protected void handleUnknown( XmlPullParser parser, Sink sink, int type )
     {
-        Object[] required = new Object[] { Integer.valueOf( type ) };
+        Object[] required = new Object[] { type };
 
         SinkEventAttributeSet attribs = getAttributesFromParser( parser );
 
@@ -565,7 +564,7 @@ public abstract class AbstractXmlParser
     {
         if ( entities == null )
         {
-            entities = new LinkedHashMap<String, String>();
+            entities = new LinkedHashMap<>();
         }
 
         return entities;
@@ -594,20 +593,37 @@ public abstract class AbstractXmlParser
         this.validate = validate;
     }
 
+    /**
+     * @since 2.0.0-M4
+     */
+    public boolean getAddDefaultEntities()
+    {
+        return addDefaultEntities;
+    }
+
+    /**
+     * @since 2.0.0-M4
+     */
+    public void setAddDefaultEntities( boolean addDefaultEntities )
+    {
+        this.addDefaultEntities = addDefaultEntities;
+    }
+
+
     // ----------------------------------------------------------------------
     // Private methods
     // ----------------------------------------------------------------------
 
     /**
      * Add an entity given by <code>entityName</code> and <code>entityValue</code> to {@link #entities}.
-     * <br/>
+     * <br>
      * By default, we exclude the default XML entities: &#38;amp;, &#38;lt;, &#38;gt;, &#38;quot; and &#38;apos;.
      *
      * @param parser not null
      * @param entityName not null
      * @param entityValue not null
      * @throws XmlPullParserException if any
-     * @see {@link XmlPullParser#defineEntityReplacementText(String, String)}
+     * @see XmlPullParser#defineEntityReplacementText(String, String)
      */
     private void addEntity( XmlPullParser parser, String entityName, String entityValue )
         throws XmlPullParserException
@@ -673,11 +689,10 @@ public abstract class AbstractXmlParser
         if ( entitiesCount > 0 )
         {
             final String txt = StringUtils.replace( text, ENTITY_START, "\n" + ENTITY_START );
-            BufferedReader reader = new BufferedReader( new StringReader( txt ) );
-            String line;
-            String tmpLine = "";
-            try
+            try ( BufferedReader reader = new BufferedReader( new StringReader( txt ) ) )
             {
+                String line;
+                String tmpLine = "";
                 Matcher matcher;
                 while ( ( line = reader.readLine() ) != null )
                 {
@@ -709,10 +724,6 @@ public abstract class AbstractXmlParser
             {
                 // nop
             }
-            finally
-            {
-                IOUtil.close( reader );
-            }
         }
     }
 
@@ -724,7 +735,7 @@ public abstract class AbstractXmlParser
         implements EntityResolver
     {
         /** Map with systemId as key and the content of systemId as byte[]. */
-        protected static final Map<String, byte[]> ENTITY_CACHE = new Hashtable<String, byte[]>();
+        protected static final Map<String, byte[]> ENTITY_CACHE = new Hashtable<>();
 
         /** {@inheritDoc} */
         public InputSource resolveEntity( String publicId, String systemId )
@@ -816,29 +827,25 @@ public abstract class AbstractXmlParser
             }
 
             // it is an HTTP url, using HttpClient...
-            DefaultHttpClient client = new DefaultHttpClient();
-            HttpGet method = new HttpGet( url.toString() );
-            // Set a user-agent that doesn't contain the word "java", otherwise it will be blocked by the W3C
-            // The default user-agent is "Apache-HttpClient/4.0.2 (java 1.5)"
-            method.setHeader( "user-agent", "Apache-Doxia/" + doxiaVersion() );
+            HttpClientBuilder httpClientBuilder = HttpClientBuilder.create()
+                    .useSystemProperties()
+                    .setRetryHandler( new DefaultHttpRequestRetryHandler( 3, false ) )
+                    // Set a user-agent that doesn't contain the word "java", otherwise it will be blocked by the W3C
+                    // The default user-agent is "Apache-HttpClient/4.5.8 (java 7)"
+                    .setUserAgent( "Apache-Doxia/" + doxiaVersion() );
 
-            HttpRequestRetryHandler retryHandler = new DefaultHttpRequestRetryHandler( 3, false );
-            client.setHttpRequestRetryHandler( retryHandler );
-
-            HttpEntity entity = null;
-            try
+            try ( CloseableHttpResponse response = httpClientBuilder.build().execute( new HttpGet( url.toString() ) ) )
             {
-                HttpResponse response = client.execute( method );
                 int statusCode = response.getStatusLine().getStatusCode();
                 if ( statusCode != HttpStatus.SC_OK )
                 {
-                    throw new IOException( "The status code when accessing the URL '" + url.toString() + "' was "
-                        + statusCode + ", which is not allowed. The server gave this reason for the failure '"
-                        + response.getStatusLine().getReasonPhrase() + "'." );
+                    throw new IOException(
+                            "The status code when accessing the URL '" + url.toString() + "' was " + statusCode
+                                    + ", which is not allowed. The server gave this reason for the failure '"
+                                    + response.getStatusLine().getReasonPhrase() + "'." );
                 }
 
-                entity = response.getEntity();
-                return EntityUtils.toByteArray( entity );
+                return EntityUtils.toByteArray( response.getEntity() );
             }
             catch ( ClientProtocolException e )
             {
@@ -848,20 +855,6 @@ public abstract class AbstractXmlParser
             {
                 throw new SAXException( "IOException: Fatal transport error: " + e.getMessage(), e );
             }
-            finally
-            {
-                if ( entity != null )
-                {
-                    try
-                    {
-                        entity.consumeContent();
-                    }
-                    catch ( IOException e )
-                    {
-                        // Ignore
-                    }
-                }
-            }
         }
 
         /**
@@ -870,7 +863,7 @@ public abstract class AbstractXmlParser
          * @param res not null array of byte
          * @param f the file where to write the bytes
          * @throws SAXException if any
-         * @see {@link IOUtil#copy(byte[], OutputStream)}
+         * @see IOUtil#copy(byte[], OutputStream)
          */
         private void copy( byte[] res, File f )
             throws SAXException

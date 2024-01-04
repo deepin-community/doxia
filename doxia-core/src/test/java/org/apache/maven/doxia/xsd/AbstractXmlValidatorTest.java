@@ -28,7 +28,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -49,7 +48,6 @@ import org.xml.sax.EntityResolver;
  * Abstract class to validate XML files with DTD or XSD mainly for Doxia namespaces.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: AbstractXmlValidatorTest.java 1172204 2011-09-18 06:46:17Z hboutemy $
  * @since 1.0
  */
 public abstract class AbstractXmlValidatorTest
@@ -57,7 +55,7 @@ public abstract class AbstractXmlValidatorTest
 {
 
     /** Simple cache mechanism to load test documents. */
-    private static final Map<String,String> CACHE_DOXIA_TEST_DOCUMENTS = new Hashtable<String,String>();
+    private static final Map<String,String> CACHE_DOXIA_TEST_DOCUMENTS = new Hashtable<>();
 
     /** Maven resource in the doxia-test-docs-XXX.jar */
     private static final String MAVEN_RESOURCE_PATH = "META-INF/maven/org.apache.maven.doxia/doxia-test-docs/";
@@ -87,12 +85,9 @@ public abstract class AbstractXmlValidatorTest
         }
 
         Map<String,String> testDocs = getAllTestDocuments();
-        Map<String,String> ret = new Hashtable<String,String>();
-        ret.putAll( testDocs );
-        for ( Iterator<String> it = testDocs.keySet().iterator(); it.hasNext(); )
+        Map<String, String> ret = new Hashtable<>( testDocs );
+        for ( String key : testDocs.keySet() )
         {
-            String key = it.next();
-
             for ( int i = 0; i < getIncludes().length; i++ )
             {
                 if ( !SelectorUtils.matchPath( getIncludes()[i], key.toLowerCase( Locale.ENGLISH ) ) )
@@ -187,17 +182,17 @@ public abstract class AbstractXmlValidatorTest
             File testDocsDir = FileUtils.toFile( testJar ).getParentFile();
 
             List<File> files = FileUtils.getFiles( testDocsDir, "**/*.*", FileUtils.getDefaultExcludesAsString(), true );
-            for ( Iterator<File> it = files.iterator(); it.hasNext();)
+            for ( File file1 : files )
             {
-                File file = new File( it.next().toString() );
+                File file = new File( file1.toString() );
 
                 if ( file.getAbsolutePath().contains( "META-INF" ) )
                 {
                     continue;
                 }
 
-                Reader reader = null;
-                if ( XmlUtil.isXml( file ))
+                Reader reader;
+                if ( XmlUtil.isXml( file ) )
                 {
                     reader = ReaderFactory.newXmlReader( file );
                 }

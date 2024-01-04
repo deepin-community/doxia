@@ -19,84 +19,72 @@ package org.apache.maven.doxia.module.apt;
  * under the License.
  */
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * Test AptUtils.
  *
  * @author ltheussl
- * @version $Id: AptUtilsTest.java 762718 2009-04-07 11:58:36Z ltheussl $
  */
 public class AptUtilsTest
-        extends TestCase
 {
     /**
      * Test of isExternalLink method, of class AptUtils.
      */
+    @Test
     public void testIsExternalLink()
     {
         String link = "http://maven.apache.org/";
-        assertTrue( "Should be an external link: " + link,
-            AptUtils.isExternalLink( link ) );
+        assertTrue( "Should be an external link: " + link, AptUtils.isExternalLink( link ) );
 
         link = "https://maven.apache.org/";
-        assertTrue( "Should be an external link: " + link,
-            AptUtils.isExternalLink( link ) );
+        assertTrue( "Should be an external link: " + link, AptUtils.isExternalLink( link ) );
 
         link = "HTTPS://MAVEN.APACHE.ORG/";
-        assertTrue( "Should be an external link: " + link,
-            AptUtils.isExternalLink( link ) );
+        assertTrue( "Should be an external link: " + link, AptUtils.isExternalLink( link ) );
 
         link = "ftp:/maven.apache.org/";
-        assertTrue( "Should be an external link: " + link,
-            AptUtils.isExternalLink( link ) );
+        assertTrue( "Should be an external link: " + link, AptUtils.isExternalLink( link ) );
 
         link = "mailto:maven@apache.org";
-        assertTrue( "Should be an external link: " + link,
-            AptUtils.isExternalLink( link ) );
+        assertTrue( "Should be an external link: " + link, AptUtils.isExternalLink( link ) );
 
         link = "file:/index.html";
-        assertTrue( "Should be an external link: " + link,
-            AptUtils.isExternalLink( link ) );
+        assertTrue( "Should be an external link: " + link, AptUtils.isExternalLink( link ) );
 
         link = "resource_type://domain:port/filepathname?query_string#anchor";
-        assertTrue( "Should be an external link: " + link,
-            AptUtils.isExternalLink( link ) );
+        assertTrue( "Should be an external link: " + link, AptUtils.isExternalLink( link ) );
 
         link = "index.html";
-        assertFalse( "Should NOT be an external link: " + link,
-            AptUtils.isExternalLink( link ) );
+        assertFalse( "Should NOT be an external link: " + link, AptUtils.isExternalLink( link ) );
 
         link = "example.pdf";
-        assertFalse( "Should NOT be an external link: " + link,
-            AptUtils.isExternalLink( link ) );
+        assertFalse( "Should NOT be an external link: " + link, AptUtils.isExternalLink( link ) );
 
         link = "./index.html";
-        assertFalse( "Should NOT be an external link: " + link,
-            AptUtils.isExternalLink( link ) );
+        assertFalse( "Should NOT be an external link: " + link, AptUtils.isExternalLink( link ) );
 
         link = "../index.html";
-        assertFalse( "Should NOT be an external link: " + link,
-            AptUtils.isExternalLink( link ) );
+        assertFalse( "Should NOT be an external link: " + link, AptUtils.isExternalLink( link ) );
 
         // Windows style separators "\" are not allowed
 
         link = "file:\\index.html";
-        assertFalse( "Should NOT be an external link: " + link,
-            AptUtils.isExternalLink( link ) );
+        assertFalse( "Should NOT be an external link: " + link, AptUtils.isExternalLink( link ) );
 
         link = ".\\index.html";
-        assertFalse( "Should NOT be an external link: " + link,
-            AptUtils.isExternalLink( link ) );
+        assertFalse( "Should NOT be an external link: " + link, AptUtils.isExternalLink( link ) );
 
         link = "..\\index.html";
-        assertFalse( "Should NOT be an external link: " + link,
-            AptUtils.isExternalLink( link ) );
+        assertFalse( "Should NOT be an external link: " + link, AptUtils.isExternalLink( link ) );
     }
 
     /**
      * Test of isInternalLink method, of class AptUtils.
      */
+    @Test
     public void testIsInternalLink()
     {
         String link = "index.html";
@@ -110,6 +98,7 @@ public class AptUtilsTest
     /**
      * Test of isLocalLink method, of class AptUtils.
      */
+    @Test
     public void testIsLocalLink()
     {
         String link = "/index.html";
@@ -137,6 +126,7 @@ public class AptUtilsTest
     /**
      * Test of encodeAnchor method, of class AptUtils.
      */
+    @Test
     public void testEncodeAnchor()
     {
         assertNull( AptUtils.encodeAnchor( null ) );
@@ -146,6 +136,8 @@ public class AptUtilsTest
     /**
      * Test of encodeFragment method, of class AptUtils.
      */
+    @SuppressWarnings( "deprecation" )
+    @Test
     public void testEncodeFragment()
     {
         assertNull( AptUtils.encodeFragment( null ) );
@@ -155,6 +147,8 @@ public class AptUtilsTest
     /**
      * Test of linkToKey method, of class AptUtils.
      */
+    @SuppressWarnings( "deprecation" )
+    @Test
     public void testLinkToKey()
     {
         assertEquals( "abc56au", AptUtils.linkToKey( "aB$%C56 a&\\/'U" ) );

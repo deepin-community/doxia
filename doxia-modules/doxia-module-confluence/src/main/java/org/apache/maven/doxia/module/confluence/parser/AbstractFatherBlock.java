@@ -25,8 +25,6 @@ import org.apache.maven.doxia.sink.Sink;
 
 /**
  * <p>Abstract AbstractFatherBlock class.</p>
- *
- * @version $Id: AbstractFatherBlock.java 1090706 2011-04-09 23:15:28Z hboutemy $
  */
 public abstract class AbstractFatherBlock
     implements Block

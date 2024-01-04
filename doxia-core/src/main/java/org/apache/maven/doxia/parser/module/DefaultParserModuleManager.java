@@ -35,17 +35,22 @@ import org.codehaus.plexus.component.annotations.Requirement;
 public class DefaultParserModuleManager
     implements ParserModuleManager
 {
+    @SuppressWarnings( "MismatchedQueryAndUpdateOfCollection" )
     @Requirement( role = ParserModule.class )
     private Map<String, ParserModule> parserModules;
 
     private Collection<ParserModule> parserModulesValues;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a {@link java.util.Collection} object.
+     */
     public Collection<ParserModule> getParserModules()
     {
         if ( parserModulesValues == null )
         {
-            Map<Class<?>, ParserModule> parserModulesTmp = new LinkedHashMap<Class<?>, ParserModule>();
+            Map<Class<?>, ParserModule> parserModulesTmp = new LinkedHashMap<>();
             for ( ParserModule module : parserModules.values() )
             {
                 parserModulesTmp.put( module.getClass(), module );

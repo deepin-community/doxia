@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
  * Parse almost plain text in search of WikiWords, links, ...
  *
  * @author Juan F. Codagnone
- * @version $Id: TextParser.java 1462774 2013-03-30 15:09:53Z rfscholte $
  */
 public class TextParser
 {
@@ -99,7 +98,7 @@ public class TextParser
      */
     public final List<Block> parse( final String line )
     {
-        final List<Block> ret = new ArrayList<Block>();
+        final List<Block> ret = new ArrayList<>();
 
         final Matcher linkMatcher = SPECIFICLINK_PATTERN.matcher( line );
         final Matcher wikiMatcher = WIKIWORD_PATTERN.matcher( line );
@@ -169,7 +168,7 @@ public class TextParser
         ret.addAll( parse( line.substring( 0, imageTagMatcher.start() ) ) );
         final String src = imageTagMatcher.group( 2 );
         ret.add( new ImageBlock( src ) );
-        ret.addAll( parse( line.substring( imageTagMatcher.end(), line.length() ) ) );
+        ret.addAll( parse( line.substring( imageTagMatcher.end() ) ) );
     }
 
     /**
@@ -191,7 +190,7 @@ public class TextParser
         {
             ret.add( new LinkBlock( url, new TextBlock( url ) ) );
         }
-        ret.addAll( parse( line.substring( urlMatcher.end(), line.length() ) ) );
+        ret.addAll( parse( line.substring( urlMatcher.end() ) ) );
     }
 
     /**
@@ -204,7 +203,7 @@ public class TextParser
     {
         ret.addAll( parse( line.substring( 0, anchorMatcher.start() ) ) );
         ret.add( new AnchorBlock( anchorMatcher.group( 1 ) ) );
-        ret.addAll( parse( line.substring( anchorMatcher.end(), line.length() ) ) );
+        ret.addAll( parse( line.substring( anchorMatcher.end() ) ) );
     }
 
     /**
@@ -240,7 +239,7 @@ public class TextParser
             {
                 ret.addAll( parse( line.substring( 0, forcedLinkMatcher.start() ) ) );
                 ret.add( createLink( showText, showText ) );
-                ret.addAll( parse( line.substring( forcedLinkMatcher.end(), line.length() ) ) );
+                ret.addAll( parse( line.substring( forcedLinkMatcher.end() ) ) );
             }
         }
     }
@@ -298,7 +297,7 @@ public class TextParser
         {
             ret.add( new WikiWordBlock( wikiWord, wikiWordLinkResolver ) );
         }
-        ret.addAll( parse( line.substring( wikiMatcher.end(), line.length() ) ) );
+        ret.addAll( parse( line.substring( wikiMatcher.end() ) ) );
     }
 
     /**
@@ -318,7 +317,7 @@ public class TextParser
         {
             ret.add( createLink( linkMatcher.group( 1 ), linkMatcher.group( 2 ) ) );
         }
-        ret.addAll( parse( line.substring( linkMatcher.end(), line.length() ) ) );
+        ret.addAll( parse( line.substring( linkMatcher.end() ) ) );
     }
 
     /**
@@ -331,7 +330,7 @@ public class TextParser
     private void parseXHTML( final String line, final List<Block> ret, final Matcher xhtmlMatcher )
     {
         ret.addAll( parse( line.substring( 0, xhtmlMatcher.start() ) ) );
-        if ( xhtmlMatcher.group( 1 ).indexOf( "noautolink" ) != -1 )
+        if ( xhtmlMatcher.group( 1 ).contains( "noautolink" ) )
         {
             noautolink = true;
         }
@@ -342,7 +341,7 @@ public class TextParser
 
         ret.addAll( parse( xhtmlMatcher.group( 2 ) ) );
 
-        if ( xhtmlMatcher.group( 1 ).indexOf( "noautolink" ) != -1 )
+        if ( xhtmlMatcher.group( 1 ).contains( "noautolink" ) )
         {
             noautolink = false;
         }

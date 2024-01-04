@@ -35,7 +35,7 @@ public class MacroManagerTest
     public void testMacroManager()
         throws Exception
     {
-        MacroManager mm = (MacroManager) lookup( MacroManager.ROLE );
+        MacroManager mm = lookup( MacroManager.class );
 
         assertNotNull( mm );
 
@@ -44,7 +44,7 @@ public class MacroManagerTest
 
         try
         {
-            macro = mm.getMacro( "weirdId" );
+            mm.getMacro( "weirdId" );
             fail( "should not exist!" );
         }
         catch ( MacroNotFoundException macroNotFoundException )

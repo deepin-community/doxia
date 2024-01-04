@@ -19,7 +19,7 @@ package org.apache.maven.doxia.util;
  * under the License.
  */
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +27,7 @@ import java.util.Map;
 
 import javax.swing.text.html.HTML.Tag;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.maven.doxia.markup.HtmlMarkup;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -35,7 +35,6 @@ import org.codehaus.plexus.util.StringUtils;
  * The <code>HtmlTools</code> class defines methods to HTML handling.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: HtmlTools.java 1185112 2011-10-17 11:33:00Z ltheussl $
  * @since 1.0
  */
 public class HtmlTools
@@ -43,26 +42,26 @@ public class HtmlTools
     private static final Tag[] ALL_TAGS  =
     {
         HtmlMarkup.A, HtmlMarkup.ABBR, HtmlMarkup.ACRONYM, HtmlMarkup.ADDRESS, HtmlMarkup.APPLET,
-        HtmlMarkup.AREA, HtmlMarkup.B, HtmlMarkup.BASE, HtmlMarkup.BASEFONT, HtmlMarkup.BDO,
-        HtmlMarkup.BIG, HtmlMarkup.BLOCKQUOTE, HtmlMarkup.BODY, HtmlMarkup.BR, HtmlMarkup.BUTTON,
-        HtmlMarkup.CAPTION, HtmlMarkup.CENTER, HtmlMarkup.CITE, HtmlMarkup.CODE, HtmlMarkup.COL,
-        HtmlMarkup.COLGROUP, HtmlMarkup.DD, HtmlMarkup.DEL, HtmlMarkup.DFN, HtmlMarkup.DIR,
-        HtmlMarkup.DIV, HtmlMarkup.DL, HtmlMarkup.DT, HtmlMarkup.EM, HtmlMarkup.FIELDSET,
-        HtmlMarkup.FONT, HtmlMarkup.FORM, HtmlMarkup.FRAME, HtmlMarkup.FRAMESET, HtmlMarkup.H1,
-        HtmlMarkup.H2, HtmlMarkup.H3, HtmlMarkup.H4, HtmlMarkup.H5, HtmlMarkup.H6, HtmlMarkup.HEAD,
-        HtmlMarkup.HR, HtmlMarkup.HTML, HtmlMarkup.I, HtmlMarkup.IFRAME, HtmlMarkup.IMG,
-        HtmlMarkup.INPUT, HtmlMarkup.INS, HtmlMarkup.ISINDEX, HtmlMarkup.KBD, HtmlMarkup.LABEL,
-        HtmlMarkup.LEGEND, HtmlMarkup.LI, HtmlMarkup.LINK, HtmlMarkup.MAP, HtmlMarkup.MENU,
-        HtmlMarkup.META, HtmlMarkup.NOFRAMES, HtmlMarkup.NOSCRIPT, HtmlMarkup.OBJECT, HtmlMarkup.OL,
-        HtmlMarkup.OPTGROUP, HtmlMarkup.OPTION, HtmlMarkup.P, HtmlMarkup.PARAM, HtmlMarkup.PRE,
-        HtmlMarkup.Q, HtmlMarkup.S, HtmlMarkup.SAMP, HtmlMarkup.SCRIPT, HtmlMarkup.SELECT,
-        HtmlMarkup.SMALL, HtmlMarkup.SPAN, HtmlMarkup.STRIKE, HtmlMarkup.STRONG, HtmlMarkup.STYLE,
-        HtmlMarkup.SUB, HtmlMarkup.SUP, HtmlMarkup.TABLE, HtmlMarkup.TBODY, HtmlMarkup.TD,
-        HtmlMarkup.TEXTAREA, HtmlMarkup.TFOOT, HtmlMarkup.TH, HtmlMarkup.THEAD, HtmlMarkup.TITLE,
-        HtmlMarkup.TR, HtmlMarkup.TT, HtmlMarkup.U, HtmlMarkup.UL, HtmlMarkup.VAR
+        HtmlMarkup.AREA, HtmlMarkup.B, HtmlMarkup.BASE, HtmlMarkup.BASEFONT, HtmlMarkup.BDO, HtmlMarkup.BIG,
+        HtmlMarkup.BLOCKQUOTE, HtmlMarkup.BODY, HtmlMarkup.BR, HtmlMarkup.BUTTON, HtmlMarkup.CAPTION,
+        HtmlMarkup.CENTER, HtmlMarkup.CITE, HtmlMarkup.CODE, HtmlMarkup.COL, HtmlMarkup.COLGROUP,
+        HtmlMarkup.DD, HtmlMarkup.DEL, HtmlMarkup.DFN, HtmlMarkup.DIR, HtmlMarkup.DIV, HtmlMarkup.DL,
+        HtmlMarkup.DT, HtmlMarkup.EM, HtmlMarkup.FIELDSET, HtmlMarkup.FONT, HtmlMarkup.FORM,
+        HtmlMarkup.FRAME, HtmlMarkup.FRAMESET, HtmlMarkup.H1, HtmlMarkup.H2, HtmlMarkup.H3, HtmlMarkup.H4,
+        HtmlMarkup.H5, HtmlMarkup.H6, HtmlMarkup.HEAD, HtmlMarkup.HR, HtmlMarkup.HTML, HtmlMarkup.I,
+        HtmlMarkup.IFRAME, HtmlMarkup.IMG, HtmlMarkup.INPUT, HtmlMarkup.INS, HtmlMarkup.ISINDEX,
+        HtmlMarkup.KBD, HtmlMarkup.KEYGEN, HtmlMarkup.LABEL, HtmlMarkup.LEGEND, HtmlMarkup.LI,
+        HtmlMarkup.LINK, HtmlMarkup.MAP, HtmlMarkup.MENU, HtmlMarkup.META, HtmlMarkup.NOFRAMES,
+        HtmlMarkup.NOSCRIPT, HtmlMarkup.OBJECT, HtmlMarkup.OL, HtmlMarkup.OPTGROUP, HtmlMarkup.OPTION,
+        HtmlMarkup.P, HtmlMarkup.PARAM, HtmlMarkup.PRE, HtmlMarkup.Q, HtmlMarkup.S, HtmlMarkup.SAMP,
+        HtmlMarkup.SCRIPT, HtmlMarkup.SELECT, HtmlMarkup.SMALL, HtmlMarkup.SPAN, HtmlMarkup.STRIKE,
+        HtmlMarkup.STRONG, HtmlMarkup.STYLE, HtmlMarkup.SUB, HtmlMarkup.SUP, HtmlMarkup.TABLE,
+        HtmlMarkup.TBODY, HtmlMarkup.TD, HtmlMarkup.TEXTAREA, HtmlMarkup.TFOOT, HtmlMarkup.TH,
+        HtmlMarkup.THEAD, HtmlMarkup.TITLE, HtmlMarkup.TR, HtmlMarkup.TT, HtmlMarkup.U, HtmlMarkup.UL,
+        HtmlMarkup.VAR
     };
 
-    private static final Map<String, Tag> TAG_MAP = new HashMap<String, Tag>( ALL_TAGS.length );
+    private static final Map<String, Tag> TAG_MAP = new HashMap<>( ALL_TAGS.length );
 
     private static final int ASCII = 0x7E;
 
@@ -88,9 +87,7 @@ public class HtmlTools
      */
     public static Tag getHtmlTag( String tagName )
     {
-        Object t =  TAG_MAP.get( tagName );
-
-        return (Tag) t;
+        return TAG_MAP.get( tagName );
     }
 
     /**
@@ -111,9 +108,9 @@ public class HtmlTools
      * Escape special HTML characters in a String.
      *
      * <pre>
-     * < becomes <code>&#38;lt;</code>
-     * > becomes <code>&#38;gt;</code>
-     * & becomes <code>&#38;amp;</code>
+     * &lt; becomes <code>&#38;lt;</code>
+     * &gt; becomes <code>&#38;gt;</code>
+     * &amp; becomes <code>&#38;amp;</code>
      * " becomes <code>&#38;quot;</code>
      * ' becomes <code>&#38;apos;</code> if xmlMode = true
      * </pre>
@@ -249,12 +246,12 @@ public class HtmlTools
         }
         else
         {
-            // StringEscapeUtils.unescapeHtml returns entities it doesn't recognize unchanged
-            unescaped = StringEscapeUtils.unescapeHtml( text );
+            // StringEscapeUtils.unescapeHtml4 returns entities it doesn't recognize unchanged
+            unescaped = StringEscapeUtils.unescapeHtml4( text );
         }
 
         String tmp = unescaped;
-        List<String> entities = new ArrayList<String>();
+        List<String> entities = new ArrayList<>();
         while ( true )
         {
             int i = tmp.indexOf( "&#x" );
@@ -345,35 +342,22 @@ public class HtmlTools
                     {
                         byte[] bytes;
 
-                        try
+                        if ( isHighSurrogate( c ) )
                         {
-                            if ( isHighSurrogate( c ) )
-                            {
-                                int codePoint = toCodePoint( c, url.charAt( ++i ) );
-                                unicode = toChars( codePoint );
-                                bytes = ( new String( unicode, 0, unicode.length ) ).getBytes( "UTF8" );
-                            }
-                            else
-                            {
-                                unicode[0] = c;
-                                bytes = ( new String( unicode, 0, 1 ) ).getBytes( "UTF8" );
-                            }
+                            int codePoint = toCodePoint( c, url.charAt( ++i ) );
+                            unicode = toChars( codePoint );
+                            bytes = ( new String( unicode, 0, unicode.length ) ).getBytes( StandardCharsets.UTF_8 );
                         }
-                        catch ( UnsupportedEncodingException cannotHappen )
+                        else
                         {
-                            bytes = new byte[0];
+                            unicode[0] = c;
+                            bytes = ( new String( unicode, 0, 1 ) ).getBytes( StandardCharsets.UTF_8 );
                         }
 
-                        for ( int j = 0; j < bytes.length; ++j )
+                        for ( byte aByte : bytes )
                         {
-                            String hex = DoxiaUtils.byteToHex( bytes[j] );
-
                             encoded.append( '%' );
-                            if ( hex.length() == 1 )
-                            {
-                                encoded.append( '0' );
-                            }
-                            encoded.append( hex );
+                            encoded.append( String.format( "%02X", aByte ) );
                         }
                     }
             }
@@ -387,7 +371,7 @@ public class HtmlTools
      *
      * <p>
      *   <b>Note</b>: this method is identical to
-     *   {@link DoxiaUtils#encodeId(String,boolean) DoxiaUtils.encodeId( id, true)},
+     *   {@link DoxiaUtils#encodeId(String,boolean) DoxiaUtils.encodeId( id, false )},
      *   the rules to encode an id are laid out there.
      * </p>
      *
@@ -397,7 +381,7 @@ public class HtmlTools
      */
     public static String encodeId( String id )
     {
-        return DoxiaUtils.encodeId( id, true );
+        return DoxiaUtils.encodeId( id, false );
     }
 
     /**
@@ -406,7 +390,7 @@ public class HtmlTools
      *
      * @param text The text to be tested.
      * @return <code>true</code> if the text is a valid id, otherwise <code>false</code>.
-     * @see #encodeId(String).
+     * @see DoxiaUtils#isValidId(String)
      */
     public static boolean isId( String text )
     {

@@ -42,7 +42,6 @@ import org.codehaus.plexus.component.annotations.Requirement;
  * Provides a macro mechanism to give dynamic functionalities for the parsing.
  *
  * @author Jason van Zyl
- * @version $Id: AbstractParser.java 1726913 2016-01-26 22:01:54Z rfscholte $
  * @since 1.0
  */
 public abstract class AbstractParser
@@ -99,17 +98,27 @@ public abstract class AbstractParser
         DOXIA_VERSION = props.getProperty( "version" );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a int
+     */
     public int getType()
     {
         return UNKNOWN_TYPE;
     }
 
+    /** {@inheritDoc} */
     public void setEmitComments( boolean emitComments )
     {
         this.emitComments = emitComments;
     }
 
+    /**
+     * <p>isEmitComments.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEmitComments()
     {
         return emitComments;
@@ -118,11 +127,11 @@ public abstract class AbstractParser
     /**
      * Execute a macro on the given sink.
      *
-     * @param macroId An id to lookup the macro.
-     * @param request The corresponding MacroRequest.
-     * @param sink The sink to receive the events.
-     * @throws org.apache.maven.doxia.macro.MacroExecutionException if an error occurred during execution.
-     * @throws org.apache.maven.doxia.macro.manager.MacroNotFoundException if the macro could not be found.
+     * @param macroId an id to lookup the macro
+     * @param request the corresponding MacroRequest
+     * @param sink the sink to receive the events
+     * @throws org.apache.maven.doxia.macro.MacroExecutionException if an error occurred during execution
+     * @throws org.apache.maven.doxia.macro.manager.MacroNotFoundException if the macro could not be found
      */
     // Made public right now because of the structure of the APT parser and
     // all its inner classes.
@@ -139,8 +148,7 @@ public abstract class AbstractParser
     /**
      * Returns the current base directory.
      *
-     * @return The base directory.
-     *
+     * @return the base directory
      * @deprecated this does not work in multi-module builds, see DOXIA-373
      */
     protected File getBasedir()
@@ -159,30 +167,50 @@ public abstract class AbstractParser
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Convenience method to parse an arbitrary string and emit events into the given sink.
      *
-     * @param string A string that provides the source input.
-     * @param sink A sink that consumes the Doxia events.
-     * @throws org.apache.maven.doxia.parser.ParseException if the string could not be parsed.
+     * @param string a string that provides the source input
+     * @param sink a sink that consumes the Doxia events
+     * @throws org.apache.maven.doxia.parser.ParseException if the string could not be parsed
      * @since 1.1
      */
     public void parse( String string, Sink sink )
         throws ParseException
     {
-        parse( new StringReader( string ), sink );
+        this.parse( string, sink, null );
     }
-    
-    @Override
-    public void parse( Reader source, Sink sink, String reference )
+
+    /**
+     * {@inheritDoc}
+     *
+     * Convenience method to parse an arbitrary string and emit events into the given sink.
+     *
+     * @param string a string that provides the source input
+     * @param sink a sink that consumes the Doxia events
+     * @param reference a string containing the reference to the source of the input string (e.g. filename)
+     * @throws org.apache.maven.doxia.parser.ParseException if the string could not be parsed
+     * @since 1.10
+     */
+    public void parse( String string, Sink sink, String reference )
         throws ParseException
     {
-        parse( source, sink );
+        parse( new StringReader( string ), sink, reference );
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void parse( Reader source, Sink sink )
+        throws ParseException
+    {
+        parse( source, sink, null );
     }
 
     /**
      * Set <code>secondParsing</code> to true, if we need a second parsing.
      *
-     * @param second True for second parsing.
+     * @param second true for second parsing
      */
     public void setSecondParsing( boolean second )
     {
@@ -192,7 +220,7 @@ public abstract class AbstractParser
     /**
      * Indicates if we are currently parsing a second time.
      *
-     * @return true if we are currently parsing a second time.
+     * @return true if we are currently parsing a second time
      * @since 1.1
      */
     protected boolean isSecondParsing()
@@ -226,7 +254,7 @@ public abstract class AbstractParser
     /**
      * Gets the current {@link MacroManager}.
      *
-     * @return The current {@link MacroManager}.
+     * @return the current {@link MacroManager}
      * @since 1.1
      */
     protected MacroManager getMacroManager()
@@ -249,8 +277,7 @@ public abstract class AbstractParser
     /**
      * The current Doxia version.
      *
-     * @return the current Doxia version as a String.
-     *
+     * @return the current Doxia version as a String
      * @since 1.2
      */
     protected static String doxiaVersion()

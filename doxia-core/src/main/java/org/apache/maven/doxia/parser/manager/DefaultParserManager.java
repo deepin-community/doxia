@@ -29,13 +29,13 @@ import java.util.Map;
  * Simple implementation of the <code>ParserManager</code> interface.
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: DefaultParserManager.java 1345590 2012-06-02 21:36:10Z hboutemy $
  * @since 1.0
  */
 @Component( role = ParserManager.class )
 public class DefaultParserManager
     implements ParserManager
 {
+    @SuppressWarnings( "MismatchedQueryAndUpdateOfCollection" )
     @Requirement( role = Parser.class )
     private Map<String, Parser> parsers;
 

@@ -26,7 +26,6 @@ import org.apache.maven.doxia.sink.Sink;
 
 /**
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: XdocSinkWithLanguageIdTest.java 739565 2009-01-31 14:39:03Z vsiveton $
  */
 public class XdocSinkWithLanguageIdTest
     extends XdocSinkTest
@@ -43,7 +42,7 @@ public class XdocSinkWithLanguageIdTest
         return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             + "<document xmlns=\"http://maven.apache.org/XDOC/2.0\" "
             + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
-            + "xsi:schemaLocation=\"http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd\" "
+            + "xsi:schemaLocation=\"http://maven.apache.org/XDOC/2.0 https://maven.apache.org/xsd/xdoc-2.0.xsd\" "
             + "lang=\"en\" xml:lang=\"en\">" + "<properties></properties>";
     }
 }

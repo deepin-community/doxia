@@ -35,7 +35,6 @@ import java.util.Locale;
  * A set of util methods for the <code>iText</code> framework
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: ITextUtil.java 1003453 2010-10-01 09:45:16Z ltheussl $
  */
 public class ITextUtil
 {
@@ -69,9 +68,8 @@ public class ITextUtil
     public static String getPageSize( Rectangle rect )
     {
         Field[] fields = PageSize.class.getFields();
-        for ( int i = 0; i < fields.length; i++ )
+        for ( Field currentField : fields )
         {
-            Field currentField = fields[i];
             try
             {
                 if ( currentField.getType().equals( Rectangle.class ) )
@@ -102,11 +100,10 @@ public class ITextUtil
     public static boolean isPageSizeSupported( String aPageSize )
     {
         Field[] fields = PageSize.class.getFields();
-        for ( int i = 0; i < fields.length; i++ )
+        for ( Field currentField : fields )
         {
-            Field currentField = fields[i];
-            if ( ( currentField.getName().equalsIgnoreCase( aPageSize ) )
-                && ( currentField.getType().equals( Rectangle.class ) ) )
+            if ( ( currentField.getName().equalsIgnoreCase( aPageSize ) ) && ( currentField.getType().equals(
+                    Rectangle.class ) ) )
             {
                 return true;
             }

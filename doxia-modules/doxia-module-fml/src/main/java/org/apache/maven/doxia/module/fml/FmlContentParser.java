@@ -20,7 +20,7 @@ package org.apache.maven.doxia.module.fml;
  */
 
 import org.apache.maven.doxia.macro.MacroExecutionException;
-import org.apache.maven.doxia.parser.XhtmlBaseParser;
+import org.apache.maven.doxia.parser.Xhtml5BaseParser;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
 import org.codehaus.plexus.util.xml.pull.XmlPullParser;
@@ -30,11 +30,10 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
  * Parse Fml questions and answers, these may contain arbitrary xdoc elements.
  *
  * @author ltheussl
- * @version $Id: FmlContentParser.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public class FmlContentParser
-    extends XhtmlBaseParser
+    extends Xhtml5BaseParser
     implements FmlMarkup
 {
     /** Empty elements don't write a closing tag. */
@@ -109,7 +108,9 @@ public class FmlContentParser
         isEmptyElement = false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void init()
     {
         super.init();

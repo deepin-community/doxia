@@ -25,10 +25,8 @@ import org.codehaus.plexus.util.StringUtils;
 /**
  * This interface defines all markups and syntaxes used by the <b>APT</b> format.
  *
- * @see <a href="http://maven.apache.org/doxia/references/apt-format.html">http://maven.apache.org/doxia/references/apt-format.html</a>
- *
+ * @see <a href="https://maven.apache.org/doxia/references/apt-format.html">https://maven.apache.org/doxia/references/apt-format.html</a>
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: AptMarkup.java 1633964 2014-10-23 22:01:01Z hboutemy $
  * @since 1.0
  */
 @SuppressWarnings( "checkstyle:interfaceistype" )
@@ -79,26 +77,25 @@ public interface AptMarkup
     /** Syntax for the anchor start: "{" */
     String ANCHOR_START_MARKUP = String.valueOf( LEFT_CURLY_BRACKET );
 
-    /** Syntax for the bold style end: ">>" */
+    /** Syntax for the bold style end: "&gt;&gt;" */
     String BOLD_END_MARKUP = StringUtils.repeat( String.valueOf( GREATER_THAN ), 2 );
 
-    /** Syntax for the bold style start: "<<" */
+    /** Syntax for the bold style start: "&lt;&lt;" */
     String BOLD_START_MARKUP = StringUtils.repeat( String.valueOf( LESS_THAN ), 2 );
 
     /** Syntax for the boxed verbatim start: "+------+" */
-    String BOXED_VERBATIM_START_MARKUP = String.valueOf( PLUS )
-        + StringUtils.repeat( String.valueOf( MINUS ), 6 ) + String.valueOf( PLUS );
+    String BOXED_VERBATIM_START_MARKUP = PLUS + StringUtils.repeat( String.valueOf( MINUS ), 6 ) + PLUS;
 
     /** Syntax for the header start: " -----" */
-    String HEADER_START_MARKUP = String.valueOf( SPACE ) + StringUtils.repeat( String.valueOf( MINUS ), 5 );
+    String HEADER_START_MARKUP = SPACE + StringUtils.repeat( String.valueOf( MINUS ), 5 );
 
     /** Syntax for the horizontal rule: "========" */
     String HORIZONTAL_RULE_MARKUP = StringUtils.repeat( String.valueOf( EQUAL ), 8 );
 
-    /** Syntax for the italic style end: ">" */
+    /** Syntax for the italic style end: "&gt;" */
     String ITALIC_END_MARKUP = String.valueOf( GREATER_THAN );
 
-    /** Syntax for the italic style start: "<" */
+    /** Syntax for the italic style start: "&lt;" */
     String ITALIC_START_MARKUP = String.valueOf( LESS_THAN );
 
     /** Syntax for the link end: "}}" */
@@ -111,22 +108,22 @@ public interface AptMarkup
     String LINK_START_2_MARKUP = String.valueOf( RIGHT_CURLY_BRACKET );
 
     /** Syntax for the list end: "[]" */
-    String LIST_END_MARKUP = String.valueOf( LEFT_SQUARE_BRACKET ) + String.valueOf( RIGHT_SQUARE_BRACKET );
+    String LIST_END_MARKUP = String.valueOf( LEFT_SQUARE_BRACKET ) + RIGHT_SQUARE_BRACKET;
 
     /** Syntax for the list start: "*" */
     String LIST_START_MARKUP = String.valueOf( STAR );
 
-    /** Syntax for the mono-spaced style end: ">>>" */
+    /** Syntax for the mono-spaced style end: "&gt;&gt;&gt;" */
     String MONOSPACED_END_MARKUP = StringUtils.repeat( String.valueOf( GREATER_THAN ), 3 );
 
-    /** Syntax for the mono-spaced style start: "<<<" */
+    /** Syntax for the mono-spaced style start: "&lt;&lt;&lt;" */
     String MONOSPACED_START_MARKUP = StringUtils.repeat( String.valueOf( LESS_THAN ), 3 );
 
     /** Syntax for the non boxed verbatim start: "------" */
     String NON_BOXED_VERBATIM_START_MARKUP = StringUtils.repeat( String.valueOf( MINUS ), 6 );
 
     /** Syntax for the non breaking space: "\ " */
-    String NON_BREAKING_SPACE_MARKUP = String.valueOf( BACKSLASH ) + String.valueOf( SPACE );
+    String NON_BREAKING_SPACE_MARKUP = String.valueOf( BACKSLASH ) + SPACE;
 
     /** Syntax for the page break: "\f" */
     String PAGE_BREAK_MARKUP = String.valueOf( PAGE_BREAK );
@@ -138,22 +135,19 @@ public interface AptMarkup
     String TABLE_CELL_SEPARATOR_MARKUP = String.valueOf( PIPE );
 
     /** Syntax for the table column, centered style: "-*" */
-    String TABLE_COL_CENTERED_ALIGNED_MARKUP = StringUtils.repeat( String.valueOf( MINUS ), 2 )
-        + String.valueOf( STAR );
+    String TABLE_COL_CENTERED_ALIGNED_MARKUP = StringUtils.repeat( String.valueOf( MINUS ), 2 ) + STAR;
 
     /** Syntax for the table column, left style: "-+" */
-    String TABLE_COL_LEFT_ALIGNED_MARKUP = StringUtils.repeat( String.valueOf( MINUS ), 2 )
-        + String.valueOf( PLUS );
+    String TABLE_COL_LEFT_ALIGNED_MARKUP = StringUtils.repeat( String.valueOf( MINUS ), 2 ) + PLUS;
 
     /** Syntax for the table column, right style: "-:" */
-    String TABLE_COL_RIGHT_ALIGNED_MARKUP = StringUtils.repeat( String.valueOf( MINUS ), 2 )
-        + String.valueOf( COLON );
+    String TABLE_COL_RIGHT_ALIGNED_MARKUP = StringUtils.repeat( String.valueOf( MINUS ), 2 ) + COLON;
 
     /** Syntax for the table row end: "|" */
     String TABLE_ROW_SEPARATOR_MARKUP = String.valueOf( PIPE );
 
     /** Syntax for the table row start: "*--" */
-    String TABLE_ROW_START_MARKUP = String.valueOf( STAR ) + StringUtils.repeat( String.valueOf( MINUS ), 2 );
+    String TABLE_ROW_START_MARKUP = STAR + StringUtils.repeat( String.valueOf( MINUS ), 2 );
 
     /** Syntax for the boxed verbatim end: "+------+" */
     String BOXED_VERBATIM_END_MARKUP = BOXED_VERBATIM_START_MARKUP;

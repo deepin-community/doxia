@@ -25,7 +25,6 @@ import org.apache.maven.doxia.sink.impl.SinkAdapter;
  * <p>Abstract AbstractXhtmlSink class.</p>
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: AbstractXhtmlSink.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public abstract class AbstractXhtmlSink

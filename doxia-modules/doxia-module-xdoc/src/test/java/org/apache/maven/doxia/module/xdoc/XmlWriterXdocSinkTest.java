@@ -28,7 +28,6 @@ import org.codehaus.plexus.util.xml.XmlUtil;
 
 /**
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: XmlWriterXdocSinkTest.java 1467294 2013-04-12 14:51:42Z rfscholte $
  * @since 1.1
  */
 public class XmlWriterXdocSinkTest

@@ -30,7 +30,6 @@ import java.io.Reader;
  * by any Doxia Sink.
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: Parser.java 1726913 2016-01-26 22:01:54Z rfscholte $
  * @since 1.0
  */
 public interface Parser
@@ -65,6 +64,7 @@ public interface Parser
      * @param source not null reader that provides the source document.
      * You could use <code>newReader</code> methods from {@link org.codehaus.plexus.util.ReaderFactory}.
      * @param sink A sink that consumes the Doxia events.
+     * @param reference the reference
      * @throws org.apache.maven.doxia.parser.ParseException if the model could not be parsed.
      */
     void parse( Reader source, Sink sink, String reference )

@@ -26,7 +26,6 @@ import org.apache.maven.doxia.util.ByLineSource;
  * <p>DefinitionListBlockParser class.</p>
  *
  * @author Dave Syer
- * @version $Id: DefinitionListBlockParser.java 1438269 2013-01-24 23:47:50Z olamy $
  * @since 1.1
  */
 public class DefinitionListBlockParser
@@ -54,7 +53,7 @@ public class DefinitionListBlockParser
         {
             line = line.substring( index + 6 );
 
-            while ( !( line.indexOf( "}" ) >= 0 ) && line != null )
+            while ( !( line.contains( "}" ) ) && line != null )
             {
                 append( title, line );
                 line = source.getNextLine();

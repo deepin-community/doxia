@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Objects;
 
 import org.apache.maven.doxia.parser.Parser;
 import org.apache.maven.doxia.sink.Sink;
@@ -32,7 +33,6 @@ import org.codehaus.plexus.PlexusTestCase;
 
 /**
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: AbstractSinkTestCase.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public abstract class AbstractSinkTestCase
@@ -120,16 +120,12 @@ public abstract class AbstractSinkTestCase
      * Returns a Reader that gives access to a common test apt file.
      *
      * @return a Reader to access the test apt resource file.
-     * @throws java.lang.Exception if the Reader cannot be constructed.
      */
     protected Reader getTestReader()
-        throws Exception
     {
         InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream( "test.apt" );
 
-        InputStreamReader reader = new InputStreamReader( is );
-
-        return reader;
+        return new InputStreamReader( Objects.requireNonNull( is ) );
     }
 
     // ----------------------------------------------------------------------

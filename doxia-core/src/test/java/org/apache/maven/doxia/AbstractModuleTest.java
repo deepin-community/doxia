@@ -30,18 +30,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Provide some common convenience methods to test Doxia modules (parsers and sinks).
  *
- * @version $Id: AbstractModuleTest.java 1410898 2012-11-18 15:33:17Z hboutemy $
  * @since 1.0
  */
 public abstract class AbstractModuleTest
     extends PlexusTestCase
     implements Markup
 {
-    /**
+    /*
      * Set the system properties:
      * <ul>
      * <li><code>line.separator</code> to <code>\n</code> (Unix) to prevent
@@ -100,6 +100,18 @@ public abstract class AbstractModuleTest
         throws IOException
     {
         return getXmlTestWriter( baseName, outputExtension() );
+    }
+
+    protected static String normalizeLineEnds( String s )
+    {
+        if ( s != null )
+        {
+            return s.replaceAll( "\r\n", "\n" ).replaceAll( "\r", "\n" );
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /**
@@ -161,9 +173,7 @@ public abstract class AbstractModuleTest
 
         assertNotNull( "Could not find resource: " + baseName + "." + extension, is );
 
-        InputStreamReader reader = new InputStreamReader( is );
-
-        return reader;
+        return new InputStreamReader( is, StandardCharsets.UTF_8 );
     }
 
     /**

@@ -25,7 +25,6 @@ import org.apache.maven.doxia.markup.TextMarkup;
  * An abstract <code>Sink</code> for text markup syntax.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: AbstractTextSink.java 1726411 2016-01-23 16:34:09Z hboutemy $
  */
 public abstract class AbstractTextSink
     extends SinkAdapter

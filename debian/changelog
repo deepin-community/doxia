@@ -1,3 +1,33 @@
+doxia (1.12.0-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream release
+
+ -- Emmanuel Bourg <ebourg@apache.org>  Thu, 12 Jan 2023 14:55:34 +0100
+
+doxia (1.11.1-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream release
+    - Refreshed the patches
+    - Updated the maven-debian-helper rules
+    - No longer build the markdown module (missing dependency)
+    - Build the new xhtml5 module
+    - New dependency on libcommons-text-java
+
+ -- Emmanuel Bourg <ebourg@apache.org>  Fri, 06 Jan 2023 20:09:43 +0100
+
+doxia (1.7-3) unstable; urgency=medium
+
+  * Team upload.
+  * Removed the libdoxia-java-doc package
+  * Added the missing dependency on sisu-maven-plugin (Closes: #1026689)
+  * Standards-Version updated to 4.6.2
+  * Switch to debhelper level 13
+  * Track and download the new releases from GitHub
+
+ -- Emmanuel Bourg <ebourg@apache.org>  Fri, 06 Jan 2023 16:13:10 +0100
+
 doxia (1.7-2) unstable; urgency=medium
 
   * Team upload.

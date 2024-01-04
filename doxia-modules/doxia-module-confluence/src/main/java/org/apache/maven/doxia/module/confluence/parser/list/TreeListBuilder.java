@@ -27,8 +27,6 @@ import org.apache.maven.doxia.module.confluence.parser.ChildBlocksBuilder;
 
 /**
  * <p>TreeListBuilder class.</p>
- *
- * @version $Id: TreeListBuilder.java 1090706 2011-04-09 23:15:28Z hboutemy $
  */
 public class TreeListBuilder
 {
@@ -110,11 +108,11 @@ public class TreeListBuilder
 
     private List<Block> getListItems( TreeComponent tc )
     {
-        List<Block> blocks = new ArrayList<Block>();
+        List<Block> blocks = new ArrayList<>();
 
         for ( TreeComponent child : tc.getChildren() )
         {
-            List<Block> childBlocks = new ArrayList<Block>();
+            List<Block> childBlocks = new ArrayList<>();
 
             if ( child.getFather() != null )
             {

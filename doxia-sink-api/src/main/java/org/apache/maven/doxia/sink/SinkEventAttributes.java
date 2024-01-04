@@ -26,7 +26,9 @@ import javax.swing.text.MutableAttributeSet;
  * <p>
  * All sink methods that produce some presentation-level output should have at least
  * one form that allows to pass in a Set of SinkEventAttributes. For instance in
+ * </p>
  * <pre>void text( String text, SinkEventAttributes attributes );</pre>
+ * <p>
  * the <code>attributes</code> parameter can be used to specify some text styling
  * options, or other optional parameters.
  * </p>
@@ -47,7 +49,6 @@ import javax.swing.text.MutableAttributeSet;
  * </p>
  *
  * @author ltheussl
- * @version $Id: SinkEventAttributes.java 1633964 2014-10-23 22:01:01Z hboutemy $
  * @since 1.1
  */
 @SuppressWarnings( "checkstyle:interfaceistype" )
@@ -357,4 +358,39 @@ public interface SinkEventAttributes
      * </p>
      */
     String DECORATION = "decoration";
+
+    /**
+     * Specifies the semantics of an element.
+     *
+     * <p>
+     *   Generally accepted values are "emphasis", "strong",
+     *   "small", "line-through", "citation", "quote", "definition", "abbreviation",
+     *   "italic", "bold", "monospaced", "code, "variable", "sample", "keyboard",
+     *   "superscript", "subscript", "annotation", "highlight", "ruby", "rubyBase",
+     *   "rubyText", "rubyTextContainer", "rubyParentheses", "bidirectionalIsolation",
+     *   "bidirectionalOverride", "phrase", "insert", "delete".
+     * </p>
+     */
+    String SEMANTICS = "semantics";
+
+    /**
+     * Specifies the semantics of an element.
+     *
+     * <p>
+     *   Generally accepted values are "article", "section",
+     *   "navigation", "sidebar".
+     * </p>
+     */
+    String SECTIONS = "sections";
+
+    /**
+     * Specifies a value for the data element.
+     */
+    String VALUE = "value";
+
+    /**
+     * Specifies a machine readable date/time for the time element.
+     */
+    String DATETIME = "datetime";
+
 }

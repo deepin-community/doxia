@@ -35,7 +35,6 @@ import org.codehaus.plexus.util.IOUtil;
 
 /**
  * @author <a href="mailto:lars@trieloff.net">Lars Trieloff</a>
- * @version $Id: DocBookParserTest.java 1726411 2016-01-23 16:34:09Z hboutemy $
  */
 public class DocBookParserTest extends AbstractParserTest
 {
@@ -48,7 +47,7 @@ public class DocBookParserTest extends AbstractParserTest
     {
         super.setUp();
 
-        parser = (DocBookParser) lookup( Parser.ROLE, "docbook" );
+        parser = (DocBookParser) lookup( Parser.class, "docbook" );
     }
 
     /** {@inheritDoc} */
@@ -98,7 +97,6 @@ public class DocBookParserTest extends AbstractParserTest
         }
     }
 
-    /** @throws Exception  */
     public void testSignificantWhiteSpace()
         throws Exception
     {

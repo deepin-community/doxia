@@ -24,45 +24,36 @@ import java.io.Writer;
 
 import javax.swing.text.html.HTML.Attribute;
 
-import junit.framework.TestCase;
-
 import org.apache.maven.doxia.markup.Markup;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.SinkEventAttributes;
-import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
-import org.apache.maven.doxia.sink.impl.XhtmlBaseSink;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test for XhtmlBaseSink.
  *
  * @author ltheussl
- * @version $Id: XhtmlBaseSinkTest.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.1
  */
 public class XhtmlBaseSinkTest
-    extends TestCase
 {
     protected static final String LS = Markup.EOL;
     private final SinkEventAttributes attributes = SinkEventAttributeSet.BOLD;
     private XhtmlBaseSink sink;
     private Writer writer;
 
-    /**
-     * Set up the writer.
-     *
-     * @throws java.lang.Exception if any.
-     */
-    @Override
-    protected void setUp()
-            throws Exception
+    @Before
+    public void setUp()
     {
-        super.setUp();
         writer =  new StringWriter();
     }
 
-    /** @throws Exception */
+    @Test
     public void testSpaceAfterClosingTag()
-        throws Exception
     {
         // DOXIA-189
         try
@@ -71,9 +62,9 @@ public class XhtmlBaseSinkTest
 
             sink.paragraph();
             sink.text( "There should be no space before the " );
-            sink.italic();
+            sink.inline( SinkEventAttributeSet.Semantics.ITALIC );
             sink.text( "period" );
-            sink.italic_();
+            sink.inline_();
             sink.text( "." );
             sink.paragraph_();
         }
@@ -92,10 +83,9 @@ public class XhtmlBaseSinkTest
     }
 
     /**
-     * @throws Exception if any
      */
+    @Test
     public void testNestedTables()
-        throws Exception
     {
         // DOXIA-177
         try
@@ -103,7 +93,7 @@ public class XhtmlBaseSinkTest
             sink = new XhtmlBaseSink( writer );
 
             sink.table();
-            sink.tableRows( new int[] { Sink.JUSTIFY_CENTER }, false );
+            sink.tableRows( new int[] { Sink.JUSTIFY_CENTER, Sink.JUSTIFY_LEFT }, false );
             sink.tableRow();
             sink.tableCell();
             sink.text( "cell11" );
@@ -116,7 +106,7 @@ public class XhtmlBaseSinkTest
             sink.tableRow();
             sink.tableCell();
             sink.table( SinkEventAttributeSet.LEFT );
-            sink.tableRows( new int[] { Sink.JUSTIFY_LEFT }, false );
+            sink.tableRows( new int[] { Sink.JUSTIFY_LEFT, Sink.JUSTIFY_RIGHT }, false );
             sink.tableRow();
             sink.tableCell();
             sink.text( "nestedTable1Cell11" );
@@ -129,7 +119,7 @@ public class XhtmlBaseSinkTest
             sink.tableCell();
 
             sink.table( SinkEventAttributeSet.RIGHT );
-            sink.tableRows( new int[] { Sink.JUSTIFY_RIGHT }, false );
+            sink.tableRows( new int[] { Sink.JUSTIFY_RIGHT, Sink.JUSTIFY_CENTER }, false );
             sink.tableRow();
             sink.tableCell();
             sink.text( "nestedTable2Cell11" );
@@ -170,7 +160,7 @@ public class XhtmlBaseSinkTest
             sink.tableRow_();
             sink.tableRows_();
             sink.tableCaption();
-            sink.text( "caption1" );
+            sink.text( "caption&1" );
             sink.tableCaption_();
             sink.table_();
         }
@@ -180,23 +170,23 @@ public class XhtmlBaseSinkTest
         }
 
         String actual = writer.toString();
-        assertTrue( actual.indexOf( "<table align=\"center\" border=\"0\" class=\"bodyTable\">"
-            + "<caption>caption1</caption>" ) != 1 );
-        assertTrue( actual.indexOf( "<table border=\"0\" class=\"bodyTable\" align=\"left\">"
-            + "<caption>caption2</caption>" ) != 1 );
-        assertTrue( actual.indexOf( "<table align=\"center\" border=\"0\" class=\"bodyTable\">"
-            + "<caption>caption3</caption>" ) != 1 );
+        assertTrue(
+                actual.contains( "<table border=\"0\" class=\"bodyTable\">" + "<caption>caption&amp;1</caption>" ) );
+        assertTrue( actual.contains(
+                "<table border=\"0\" class=\"bodyTable\" align=\"left\">" + "<caption>caption2</caption>" ) );
+        assertTrue( actual.contains(
+                "<table border=\"0\" class=\"bodyTable\" align=\"right\">" + "<caption>caption3</caption>" ) );
 
-        assertTrue( actual.indexOf( "<td align=\"center\">cell11</td>" ) != 1 );
-        assertTrue( actual.indexOf( "<td align=\"left\">nestedTable1Cell11</td>" ) != 1 );
-        assertTrue( actual.indexOf( "<td align=\"right\">nestedTable2Cell11</td>" ) != 1 );
-        assertTrue( actual.indexOf( "<td align=\"left\">nestedTable1Cell22</td>" ) != 1 );
-        assertTrue( actual.indexOf( "<td align=\"center\">cell22</td>" ) != 1 );
+        assertTrue( actual.contains( "<td align=\"center\">cell11</td>" ) );
+        assertTrue( actual.contains( "<td align=\"right\">nestedTable2Cell11</td>" ) );
+        assertTrue( actual.contains( "<td align=\"right\">nestedTable1Cell22</td>" ) );
+        assertTrue( actual.contains( "<td align=\"left\">cell22</td>" ) );
     }
 
     /**
      * Test of section method, of class XhtmlBaseSink.
      */
+    @Test
     public void testSection()
     {
         final int level = XhtmlBaseSink.SECTION_LEVEL_1;
@@ -215,17 +205,19 @@ public class XhtmlBaseSinkTest
             sink.close();
         }
 
-        assertEquals( "<div class=\"section\" style=\"bold\">" + LS + "<h2 style=\"bold\"></h2></div>", writer.toString() );
+        assertEquals( "<div class=\"section\" style=\"bold\">" + LS + "<h2 style=\"bold\"></h2></div>",
+                writer.toString() );
     }
 
     /**
      * Test of section method, of class XhtmlBaseSink.
      */
+    @Test
     public void testSectionAttributes()
     {
         final int level = XhtmlBaseSink.SECTION_LEVEL_1;
-        final SinkEventAttributeSet set = new SinkEventAttributeSet(
-            new String[] {"name", "section name", "class", "foo", "id", "bar"} );
+        final SinkEventAttributeSet set = new SinkEventAttributeSet( "name", "section name", "class", "foo", "id",
+                "bar" );
 
         try
         {
@@ -247,6 +239,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of section1 method, of class XhtmlBaseSink.
      */
+    @Test
     public void testSection1()
     {
 
@@ -270,6 +263,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of section2 method, of class XhtmlBaseSink.
      */
+    @Test
     public void testSection2()
     {
 
@@ -293,6 +287,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of section3 method, of class XhtmlBaseSink.
      */
+    @Test
     public void testSection3()
     {
 
@@ -316,6 +311,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of section4 method, of class XhtmlBaseSink.
      */
+    @Test
     public void testSection4()
     {
         try
@@ -338,6 +334,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of section5 method, of class XhtmlBaseSink.
      */
+    @Test
     public void testSection5()
     {
         try
@@ -359,10 +356,9 @@ public class XhtmlBaseSinkTest
 
     /**
      * Test of list method, of class XhtmlBaseSink.
-     * @throws java.lang.Exception if any.
      */
+    @Test
     public void testList()
-            throws Exception
     {
         try
         {
@@ -402,6 +398,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of numberedList method, of class XhtmlBaseSink.
      */
+    @Test
     public void testNumberedList()
     {
         final int numbering = XhtmlBaseSink.NUMBERING_DECIMAL;
@@ -438,12 +435,14 @@ public class XhtmlBaseSinkTest
             sink.close();
         }
 
-        assertEquals( "<ol style=\"list-style-type: decimal\">" + LS + "<li style=\"bold\"></li></ol>", writer.toString() );
+        assertEquals( "<ol style=\"list-style-type: decimal\">" + LS + "<li style=\"bold\"></li></ol>",
+                writer.toString() );
     }
 
     /**
      * Test of definitionList method, of class XhtmlBaseSink.
      */
+    @Test
     public void testDefinitionList()
     {
         try
@@ -482,12 +481,15 @@ public class XhtmlBaseSinkTest
             sink.close();
         }
 
-        assertEquals( "<dl style=\"bold\">" + LS + "<dt style=\"bold\"></dt>" + LS + "<dd style=\"bold\"></dd></dl>", writer.toString() );
+        assertEquals(
+                "<dl style=\"bold\">" + LS + "<dt style=\"bold\"></dt>" + LS + "<dd style=\"bold\"></dd></dl>",
+                writer.toString() );
     }
 
     /**
      * Test of figure method, of class XhtmlBaseSink.
      */
+    @Test
     public void testFigure()
     {
         final String src = "src.jpg";
@@ -507,14 +509,15 @@ public class XhtmlBaseSinkTest
             sink.close();
         }
 
-        assertEquals( "<div style=\"bold\" class=\"figure\">"
-                + "" + LS + "<p align=\"center\"><img src=\"src.jpg\" style=\"bold\" alt=\"\" /></p>"
-                + "" + LS + "<p align=\"center\" style=\"bold\"><i></i></p></div>", writer.toString() );
+        assertEquals(
+                "<div style=\"bold\" class=\"figure\">" + "" + LS + "<p align=\"center\"><img src=\"src.jpg\" style=\"bold\" alt=\"\" /></p>" + "" + LS + "<p align=\"center\" style=\"bold\"><i></i></p></div>",
+                writer.toString() );
     }
 
     /**
      * Test of figureGraphics method, of class XhtmlBaseSink.
      */
+    @Test
     public void testFigureGraphics()
     {
         String src = "source.png";
@@ -535,6 +538,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of paragraph method, of class XhtmlBaseSink.
      */
+    @Test
     public void testParagraph()
     {
         try
@@ -571,6 +575,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of verbatim method, of class XhtmlBaseSink.
      */
+    @Test
     public void testVerbatim()
     {
         try
@@ -590,7 +595,7 @@ public class XhtmlBaseSinkTest
         checkVerbatimAttributes( attributes, "<div>" + LS + "<pre style=\"bold\"></pre></div>" );
 
         final SinkEventAttributes att =
-            new SinkEventAttributeSet( new String[] {SinkEventAttributes.ID, "id"} );
+            new SinkEventAttributeSet( SinkEventAttributes.ID, "id" );
         checkVerbatimAttributes( att, "<div>" + LS + "<pre id=\"id\"></pre></div>" );
 
         att.addAttribute( Attribute.CLASS, "class" );
@@ -626,6 +631,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of horizontalRule method, of class XhtmlBaseSink.
      */
+    @Test
     public void testHorizontalRule()
     {
         try
@@ -646,6 +652,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of table method, of class XhtmlBaseSink.
      */
+    @Test
     public void testTable()
     {
         try
@@ -666,6 +673,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of tableRows method, of class XhtmlBaseSink.
      */
+    @Test
     public void testTableRows()
     {
         final int[] justification = null;
@@ -689,6 +697,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of tableRow method, of class XhtmlBaseSink.
      */
+    @Test
     public void testTableRow()
     {
         try
@@ -709,6 +718,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of tableCell method, of class XhtmlBaseSink.
      */
+    @Test
     public void testTableCell()
     {
         try
@@ -729,6 +739,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of tableHeaderCell method, of class XhtmlBaseSink.
      */
+    @Test
     public void testTableHeaderCell()
     {
         try
@@ -749,6 +760,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of tableCaption method, of class XhtmlBaseSink.
      */
+    @Test
     public void testTableCaption()
     {
         try
@@ -768,13 +780,15 @@ public class XhtmlBaseSinkTest
             sink.close();
         }
 
-        assertEquals( "<table border=\"0\" class=\"bodyTable\">" +
-                "<caption style=\"bold\">caption</caption></table>", writer.toString() );
+        assertEquals(
+                "<table border=\"0\" class=\"bodyTable\">" + "<caption style=\"bold\">caption</caption></table>",
+                writer.toString() );
     }
 
     /**
      * Test of anchor method, of class XhtmlBaseSink.
      */
+    @Test
     public void testAnchor()
     {
         String name = "anchor";
@@ -796,6 +810,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of link method, of class XhtmlBaseSink.
      */
+    @Test
     public void testLink()
     {
         final String name = "link.html";
@@ -817,17 +832,18 @@ public class XhtmlBaseSinkTest
     /**
      * Test of italic/bold/monospaced method, of class XhtmlBaseSink.
      */
+    @Test
     public void testItalic()
     {
         try
         {
             sink = new XhtmlBaseSink( writer );
-            sink.italic();
-            sink.italic_();
-            sink.bold();
-            sink.bold_();
-            sink.monospaced();
-            sink.monospaced_();
+            sink.inline( SinkEventAttributeSet.Semantics.ITALIC );
+            sink.inline_();
+            sink.inline( SinkEventAttributeSet.Semantics.BOLD );
+            sink.inline_();
+            sink.inline( SinkEventAttributeSet.Semantics.MONOSPACED );
+            sink.inline_();
         }
         finally
         {
@@ -840,6 +856,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of lineBreak/pageBreak/nonBreakingSpace method, of class XhtmlBaseSink.
      */
+    @Test
     public void testLineBreak()
     {
         try
@@ -860,6 +877,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of text method, of class XhtmlBaseSink.
      */
+    @Test
     public void testText()
     {
         String text = "a text & \u00c6";
@@ -894,6 +912,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of rawText method, of class XhtmlBaseSink.
      */
+    @Test
     public void testRawText()
     {
         String text = "raw text";
@@ -914,6 +933,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of comment method, of class XhtmlBaseSink.
      */
+    @Test
     public void testComment()
     {
         try
@@ -929,12 +949,14 @@ public class XhtmlBaseSinkTest
             sink.close();
         }
 
-        assertEquals( "<!--a comment--><!-- a comment--><!--a comment --><!-- a comment -->", writer.toString() );
+        assertEquals( "<!--a comment--><!-- a comment--><!--a comment --><!-- a comment -->",
+                writer.toString() );
     }
 
     /**
      * Test of unknown method, of class XhtmlBaseSink.
      */
+    @Test
     public void testUnknown()
     {
         final String name = "unknown";
@@ -956,13 +978,14 @@ public class XhtmlBaseSinkTest
     /**
      * Test entities in attribute values.
      */
+    @Test
     public void testAttributeEntities()
     {
-        final Object[] startTag = new Object[] { new Integer( XhtmlBaseSink.TAG_TYPE_START ) };
-        final Object[] endTag = new Object[] { new Integer( XhtmlBaseSink.TAG_TYPE_END ) };
+        final Object[] startTag = new Object[] { XhtmlBaseSink.TAG_TYPE_START };
+        final Object[] endTag = new Object[] { XhtmlBaseSink.TAG_TYPE_END };
         final String script = XhtmlBaseSink.SCRIPT.toString();
-        final SinkEventAttributes src = new SinkEventAttributeSet(
-                new String[] {SinkEventAttributes.SRC.toString(), "http://ex.com/ex.js?v=l&l=e"} );
+        final SinkEventAttributes src = new SinkEventAttributeSet( SinkEventAttributes.SRC,
+                "http://ex.com/ex.js?v=l&l=e" );
 
         try
         {
@@ -987,6 +1010,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test of entity.
      */
+    @Test
     public void testEntity()
     {
         // DOXIA-314
@@ -1008,6 +1032,7 @@ public class XhtmlBaseSinkTest
     /**
      * Test unicode chracters in tables. DOXIA-433.
      */
+    @Test
     public void testSpecialCharacters()
     {
         try
