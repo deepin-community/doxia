@@ -19,41 +19,38 @@ package org.apache.maven.doxia.module.fo;
  * under the License.
  */
 
+import org.apache.maven.doxia.document.DocumentCover;
+import org.apache.maven.doxia.document.DocumentModel;
+import org.apache.maven.doxia.markup.Markup;
+import org.codehaus.plexus.util.WriterFactory;
+import org.junit.Before;
+import org.junit.Test;
+import org.xml.sax.SAXParseException;
+
+import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import javax.xml.transform.TransformerException;
-
-import org.apache.maven.doxia.document.DocumentCover;
-import org.apache.maven.doxia.document.DocumentModel;
-import org.apache.maven.doxia.markup.Markup;
-import org.codehaus.plexus.util.WriterFactory;
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.XMLUnit;
-import org.xml.sax.SAXParseException;
-
-import junit.framework.TestCase;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.xmlunit.matchers.CompareMatcher.isIdenticalTo;
 
 /**
  * Test FoAggregateSink.
  *
  * @author ltheussl
- * @version $Id: FoAggregateSinkTest.java 1563713 2014-02-02 20:55:04Z rfscholte $
  */
 public class FoAggregateSinkTest
-    extends TestCase
 {
     private FoAggregateSink sink;
 
     private Writer writer;
 
-    @Override
-    protected void setUp()
-        throws Exception
+    @Before
+    public void setUp()
     {
-        super.setUp();
         writer = new StringWriter();
     }
     
@@ -66,6 +63,7 @@ public class FoAggregateSinkTest
     /**
      * Test of body method, of class FoAggregateSink.
      */
+    @Test
     public void testBody()
     {
         try
@@ -82,12 +80,13 @@ public class FoAggregateSinkTest
             sink.close();
         }
 
-        assertTrue( writer.toString().indexOf( "<fo:block id=\"./folder/documentName\">" ) != -1 );
+        assertTrue( writer.toString().contains( "<fo:block id=\"./folder/documentName\">" ) );
     }
 
     /**
      * Test of setDocumentName method, of class FoAggregateSink.
      */
+    @Test
     public void testSetDocumentName()
     {
         try
@@ -102,12 +101,13 @@ public class FoAggregateSinkTest
             sink.close();
         }
 
-        assertTrue( writer.toString().indexOf( "<fo:block id=\"./folder/documentName\">" ) != -1 );
+        assertTrue( writer.toString().contains( "<fo:block id=\"./folder/documentName\">" ) );
     }
     
     /**
      * Test the FO PDF generation with some special characters in company name.
      */
+    @Test
     public void testSpecialCharacters()
         throws IOException, TransformerException
     {
@@ -149,12 +149,9 @@ public class FoAggregateSinkTest
             if ( ( e.getCause() != null ) && ( e.getCause() instanceof SAXParseException ) )
             {
                 SAXParseException sax = (SAXParseException) e.getCause();
-
-                StringBuffer sb = new StringBuffer();
-                sb.append( "Error creating PDF from " ).append( foFile.getAbsolutePath() ).append( ":" ).append( sax.getLineNumber() ).append( ":" ).append( sax.getColumnNumber() ).append( "\n" );
-                sb.append( e.getMessage() );
-
-                throw new RuntimeException( sb.toString() );
+                String sb = "Error creating PDF from " + foFile.getAbsolutePath() + ":" + sax.getLineNumber() + ":"
+                 + sax.getColumnNumber() + "\n" + e.getMessage();
+                throw new RuntimeException( sb );
             }
 
             throw new TransformerException( "Error creating PDF from " + foFile + ": " + e.getMessage() );
@@ -164,7 +161,8 @@ public class FoAggregateSinkTest
     /**
      * Test of figureGraphics method, of class FoAggregateSink.
      */
-    public void testFigureGraphics() throws Exception
+    @Test
+    public void testFigureGraphics()
     {
         try
         {
@@ -184,13 +182,13 @@ public class FoAggregateSinkTest
                         + "width=\"100%\"/>" + Markup.EOL;
         String actual = writer.toString();
 
-        Diff diff = XMLUnit.compareXML( wrapXml( expected ), wrapXml( actual ) );
-        assertTrue( "Wrong figure!", diff.identical() );
+        assertThat ( wrapXml( actual ), isIdenticalTo( wrapXml( expected ) ));
     }
 
     /**
      * Test of anchor method, of class FoAggregateSink.
      */
+    @Test
     public void testAnchor()
     {
         try
@@ -205,13 +203,14 @@ public class FoAggregateSinkTest
             sink.close();
         }
 
-        assertTrue( writer.toString().indexOf( "<fo:inline id=\"#invalid_Anchor\">" ) != -1 );
-        assertTrue( writer.toString().indexOf( "<fo:inline id=\"./folder/docName#validAnchor\">" ) != -1 );
+        assertTrue( writer.toString().contains( "<fo:inline id=\"#invalid_Anchor\">" ) );
+        assertTrue( writer.toString().contains( "<fo:inline id=\"./folder/docName#validAnchor\">" ) );
     }
 
     /**
      * Test of link method, of class FoAggregateSink.
      */
+    @Test
     public void testLink()
     {
         try
@@ -247,13 +246,13 @@ public class FoAggregateSinkTest
 
         String result = writer.toString();
 
-        assertTrue( result.indexOf( "<fo:basic-link external-destination=\"http://www.example.com/\">" ) != -1 );
-        assertTrue( result.indexOf( "<fo:basic-link internal-destination=\"./folder/docName#anchor\">" ) != -1 );
-        assertTrue( result.indexOf( "<fo:basic-link internal-destination=\"./folder/index\">" ) != -1 );
-        assertTrue( result.indexOf( "<fo:basic-link internal-destination=\"./download\">" ) != -1 );
-        assertTrue( result.indexOf( "<fo:basic-link internal-destination=\"./folder/test\">" ) != -1 );
-        assertTrue( result.indexOf( "<fo:basic-link internal-destination=\"./folder/whatsnew-1.1\">" ) != -1 );
-        assertTrue( result.indexOf( "<fo:block id=\"./whatsnew-1.1\">" ) != -1 );
+        assertTrue( result.contains( "<fo:basic-link external-destination=\"http://www.example.com/\">" ) );
+        assertTrue( result.contains( "<fo:basic-link internal-destination=\"./folder/docName#anchor\">" ) );
+        assertTrue( result.contains( "<fo:basic-link internal-destination=\"./folder/index\">" ) );
+        assertTrue( result.contains( "<fo:basic-link internal-destination=\"./download\">" ) );
+        assertTrue( result.contains( "<fo:basic-link internal-destination=\"./folder/test\">" ) );
+        assertTrue( result.contains( "<fo:basic-link internal-destination=\"./folder/whatsnew-1.1\">" ) );
+        assertTrue( result.contains( "<fo:block id=\"./whatsnew-1.1\">" ) );
 
         writer = new StringWriter();
         try
@@ -276,7 +275,7 @@ public class FoAggregateSinkTest
 
         result = writer.toString();
 
-        assertTrue( result.indexOf( "<fo:basic-link internal-destination=\"./root\">" ) != -1 );
-        assertTrue( result.indexOf( "<fo:basic-link internal-destination=\"./outside\">" ) != -1 );
+        assertTrue( result.contains( "<fo:basic-link internal-destination=\"./root\">" ) );
+        assertTrue( result.contains( "<fo:basic-link internal-destination=\"./outside\">" ) );
     }
 }

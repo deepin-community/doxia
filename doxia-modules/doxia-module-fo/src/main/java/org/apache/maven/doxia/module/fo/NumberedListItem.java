@@ -25,7 +25,6 @@ import org.apache.maven.doxia.sink.Sink;
  * Used to count the position in a numbered list.
  *
  * @author ltheussl
- * @version $Id: NumberedListItem.java 946933 2010-05-21 08:39:07Z ltheussl $
  * @since 1.1
  */
 public class NumberedListItem

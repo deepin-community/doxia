@@ -25,7 +25,6 @@ import org.apache.maven.doxia.sink.Sink;
  * Represens a Table Row
  *
  * @author Juan F. Codagnone
- * @version $Id: TableRowBlock.java 705065 2008-10-15 21:46:08Z vsiveton $
  */
 class TableRowBlock
     extends AbstractFatherBlock

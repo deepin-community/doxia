@@ -25,7 +25,6 @@ import java.util.Stack;
  * <p>SinkActionContext class.</p>
  *
  * @author Jason van Zyl
- * @version $Id: SinkActionContext.java 1438263 2013-01-24 23:28:22Z olamy $
  */
 public class SinkActionContext
 {
@@ -114,9 +113,7 @@ public class SinkActionContext
     /** Constant <code>UNDEFINED=82</code> */
     public static final int UNDEFINED = 82;
 
-    private Stack<Integer> stack = new Stack<Integer>();
-
-    private int currentAction;
+    private Stack<Integer> stack = new Stack<>();
 
     /**
      * <p>Getter for the field <code>currentAction</code>.</p>
@@ -132,7 +129,7 @@ public class SinkActionContext
         }
         else
         {
-            return stack.peek().intValue();
+            return stack.peek();
         }
     }
 
@@ -154,6 +151,6 @@ public class SinkActionContext
     {
         //currentAction = action;
 
-        stack.push( Integer.valueOf( action ) );
+        stack.push( action );
     }
 }

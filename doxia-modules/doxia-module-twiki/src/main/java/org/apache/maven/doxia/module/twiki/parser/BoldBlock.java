@@ -25,7 +25,6 @@ import org.apache.maven.doxia.sink.Sink;
  * Block that represents the bold text format
  *
  * @author Juan F. Codagnone
- * @version $Id: BoldBlock.java 705065 2008-10-15 21:46:08Z vsiveton $
  */
 class BoldBlock
     extends AbstractFatherBlock
@@ -35,7 +34,7 @@ class BoldBlock
      *
      * @param childBlocks child blocks
      */
-    public BoldBlock( final Block[] childBlocks )
+    BoldBlock( final Block[] childBlocks )
     {
         super( childBlocks );
     }

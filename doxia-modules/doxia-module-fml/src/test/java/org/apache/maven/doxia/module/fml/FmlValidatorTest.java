@@ -31,7 +31,6 @@ import org.codehaus.plexus.util.StringUtils;
  * Test FML files with namespace.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: FmlValidatorTest.java 1091053 2011-04-11 12:55:07Z ltheussl $
  * @since 1.0
  */
 public class FmlValidatorTest
@@ -56,7 +55,7 @@ public class FmlValidatorTest
             String root = matcher.group( 1 );
             String value = matcher.group( 2 );
 
-            if ( value.indexOf( FML_XSD.getName() ) == -1 )
+            if ( !value.contains( FML_XSD.getName() ) )
             {
                 String faqs =
                     "<" + root + " xmlns=\"" + FmlMarkup.FML_NAMESPACE + "\""
@@ -71,7 +70,6 @@ public class FmlValidatorTest
     }
 
     public void testValidateFiles()
-        throws Exception
     {
         // TODO: super.testValidateFiles() only validates files from doxia-test-docs, what's the point?
     }

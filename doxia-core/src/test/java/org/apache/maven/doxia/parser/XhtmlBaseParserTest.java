@@ -26,11 +26,12 @@ import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
 import org.apache.maven.doxia.sink.impl.SinkEventElement;
 import org.apache.maven.doxia.sink.impl.SinkEventTestingSink;
 
+import static org.junit.Assert.assertNotEquals;
+
 /**
  * Test for XhtmlBaseParser.
  *
  * @author ltheussl
- * @version $Id: XhtmlBaseParserTest.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.1
  */
 public class XhtmlBaseParserTest
@@ -68,7 +69,7 @@ public class XhtmlBaseParserTest
     public void testDoxiaVersion()
     {
         assertNotNull( XhtmlBaseParser.doxiaVersion() );
-        assertFalse( "unknown".equals( XhtmlBaseParser.doxiaVersion() ) );
+        assertNotEquals( "unknown", XhtmlBaseParser.doxiaVersion() );
     }
 
     /** @throws Exception  */
@@ -208,17 +209,17 @@ public class XhtmlBaseParserTest
         Iterator<SinkEventElement> it = sink.getEventList().iterator();
 
         assertEquals( "paragraph", it.next().getName() );
-        assertEquals( "bold", it.next().getName() );
+        assertEquals( "inline", it.next().getName() );
         assertEquals( "text", it.next().getName() );
-        assertEquals( "bold_", it.next().getName() );
+        assertEquals( "inline_", it.next().getName() );
 
         SinkEventElement el = it.next();
         assertEquals( "text", el.getName() );
         assertEquals( " ",  (String) el.getArgs()[0] );
 
-        assertEquals( "italic", it.next().getName() );
+        assertEquals( "inline", it.next().getName() );
         assertEquals( "text", it.next().getName() );
-        assertEquals( "italic_", it.next().getName() );
+        assertEquals( "inline_", it.next().getName() );
         assertEquals( "paragraph_", it.next().getName() );
         assertFalse( it.hasNext() );
 
@@ -232,18 +233,18 @@ public class XhtmlBaseParserTest
         it = sink.getEventList().iterator();
 
         assertEquals( "paragraph", it.next().getName() );
-        assertEquals( "bold", it.next().getName() );
+        assertEquals( "inline", it.next().getName() );
         assertEquals( "text", it.next().getName() );
-        assertEquals( "bold_", it.next().getName() );
+        assertEquals( "inline_", it.next().getName() );
 
         el = it.next();
         assertEquals( "text", el.getName() );
         // according to section 2.11 of the XML spec, parsers must normalize line breaks to "\n"
         assertEquals( "\n",  (String) el.getArgs()[0] );
 
-        assertEquals( "italic", it.next().getName() );
+        assertEquals( "inline", it.next().getName() );
         assertEquals( "text", it.next().getName() );
-        assertEquals( "italic_", it.next().getName() );
+        assertEquals( "inline_", it.next().getName() );
         assertEquals( "paragraph_", it.next().getName() );
         assertFalse( it.hasNext() );
 
@@ -257,9 +258,9 @@ public class XhtmlBaseParserTest
 
         assertEquals( "paragraph", it.next().getName() );
         assertEquals( "text", it.next().getName() );
-        assertEquals( "italic", it.next().getName() );
+        assertEquals( "inline", it.next().getName() );
         assertEquals( "text", it.next().getName() );
-        assertEquals( "italic_", it.next().getName() );
+        assertEquals( "inline_", it.next().getName() );
 
         el = it.next();
         assertEquals( "text", el.getName() );
@@ -348,7 +349,7 @@ public class XhtmlBaseParserTest
         Iterator<SinkEventElement> it = sink.getEventList().iterator();
 
         SinkEventElement event = it.next();
-        assertEquals( "bold", event.getName() );
+        assertEquals( "inline", event.getName() );
 
         event = it.next();
         assertEquals( "text", event.getName() );
@@ -367,7 +368,7 @@ public class XhtmlBaseParserTest
         assertEquals( "\uD835\uDFED",  (String) event.getArgs()[0] );
 
         event = it.next();
-        assertEquals( "bold_", event.getName() );
+        assertEquals( "inline_", event.getName() );
     }
 
     /** @throws Exception  */
@@ -492,41 +493,6 @@ public class XhtmlBaseParserTest
     }
 
     /** @throws Exception  */
-    public void testDecoration()
-        throws Exception
-    {
-        String text = "<div><u>u</u><s>s</s><del>del</del><strike>strike</strike><sub>sub</sub><sup>sup</sup></div>";
-        parser.parse( text, sink );
-        Iterator<SinkEventElement> it = sink.getEventList().iterator();
-
-        SinkEventElement event = it.next();
-        assertEquals( "text", event.getName() );
-        assertEquals( "u",  (String) event.getArgs()[0] );
-
-        event = it.next();
-        assertEquals( "text", event.getName() );
-        assertEquals( "s",  (String) event.getArgs()[0] );
-
-        event = it.next();
-        assertEquals( "text", event.getName() );
-        assertEquals( "del",  (String) event.getArgs()[0] );
-
-        event = it.next();
-        assertEquals( "text", event.getName() );
-        assertEquals( "strike",  (String) event.getArgs()[0] );
-
-        event = it.next();
-        assertEquals( "text", event.getName() );
-        assertEquals( "sub",  (String) event.getArgs()[0] );
-
-        event = it.next();
-        assertEquals( "text", event.getName() );
-        assertEquals( "sup",  (String) event.getArgs()[0] );
-//        assertTrue( ( (SinkEventAttributeSet) event.getArgs()[1] )
-//                .containsAttribute( SinkEventAttributeSet.VALIGN, "sup" ) ); // TODO
-    }
-
-    /** @throws Exception  */
     public void testLists()
         throws Exception
     {
@@ -555,32 +521,6 @@ public class XhtmlBaseParserTest
     }
 
     /** @throws Exception  */
-    public void testStyles()
-        throws Exception
-    {
-        String text = "<div><b></b><strong></strong><i></i><em></em><code></code><samp></samp><tt></tt></div>";
-        parser.parse( text, sink );
-        Iterator<SinkEventElement> it = sink.getEventList().iterator();
-
-        assertEquals( "bold", it.next().getName() );
-        assertEquals( "bold_", it.next().getName() );
-        assertEquals( "bold", it.next().getName() );
-        assertEquals( "bold_", it.next().getName() );
-
-        assertEquals( "italic", it.next().getName() );
-        assertEquals( "italic_", it.next().getName() );
-        assertEquals( "italic", it.next().getName() );
-        assertEquals( "italic_", it.next().getName() );
-
-        assertEquals( "monospaced", it.next().getName() );
-        assertEquals( "monospaced_", it.next().getName() );
-        assertEquals( "monospaced", it.next().getName() );
-        assertEquals( "monospaced_", it.next().getName() );
-        assertEquals( "monospaced", it.next().getName() );
-        assertEquals( "monospaced_", it.next().getName() );
-    }
-
-    /** @throws Exception  */
     public void testSimpleTags()
         throws Exception
     {
@@ -591,6 +531,62 @@ public class XhtmlBaseParserTest
         assertEquals( "lineBreak", it.next().getName() );
         assertEquals( "horizontalRule", it.next().getName() );
         assertEquals( "figureGraphics", it.next().getName() );
+    }
+
+    /** @throws Exception  */
+    public void testSemanticTags()
+        throws Exception
+    {
+        String text = "<s><i><b><code><samp><sup><sub><u>a text &amp; &#xc6;</u></sub></sup></samp></code></b></i></s>";
+        parser.parse( text, sink );
+        Iterator<SinkEventElement> it = sink.getEventList().iterator();
+
+        SinkEventElement event = it.next();
+        assertEquals( "inline", event.getName() );
+        assertEquals( "semantics=line-through",  event.getArgs()[0].toString().trim() );
+
+        event = it.next();
+        assertEquals( "inline", event.getName() );
+        assertEquals( "semantics=italic",  event.getArgs()[0].toString().trim() );
+
+        event = it.next();
+        assertEquals( "inline", event.getName() );
+        assertEquals( "semantics=bold",  event.getArgs()[0].toString().trim() );
+
+        event = it.next();
+        assertEquals( "inline", event.getName() );
+        assertEquals( "semantics=code",  event.getArgs()[0].toString().trim() );
+
+        event = it.next();
+        assertEquals( "inline", event.getName() );
+        assertEquals( "semantics=code",  event.getArgs()[0].toString().trim() );
+
+        event = it.next();
+        assertEquals( "inline", event.getName() );
+        assertEquals( "semantics=superscript",  event.getArgs()[0].toString().trim() );
+
+        event = it.next();
+        assertEquals( "inline", event.getName() );
+        assertEquals( "semantics=subscript",  event.getArgs()[0].toString().trim() );
+
+        event = it.next();
+        assertEquals( "inline", event.getName() );
+        assertEquals( "semantics=annotation",  event.getArgs()[0].toString().trim() );
+
+        assertEquals( "text", it.next().getName() );
+        assertEquals( "text", it.next().getName() );
+        assertEquals( "text", it.next().getName() );
+        assertEquals( "text", it.next().getName() );
+
+        assertEquals( "inline_", it.next().getName() );
+        assertEquals( "inline_", it.next().getName() );
+        assertEquals( "inline_", it.next().getName() );
+        assertEquals( "inline_", it.next().getName() );
+        assertEquals( "inline_", it.next().getName() );
+        assertEquals( "inline_", it.next().getName() );
+        assertEquals( "inline_", it.next().getName() );
+        assertEquals( "inline_", it.next().getName() );
+
     }
 
     /** @throws Exception  */
@@ -623,7 +619,7 @@ public class XhtmlBaseParserTest
         // DOXIA-374
         SinkEventElement el = it.next();
         assertEquals( "tableRows", el.getName() );
-        assertFalse( ( (Boolean) el.getArgs()[1] ).booleanValue() );
+        assertFalse( (Boolean) el.getArgs()[1] );
 
         assertEquals( "tableCaption", it.next().getName() );
         assertEquals( "tableCaption_", it.next().getName() );
@@ -752,16 +748,15 @@ public class XhtmlBaseParserTest
         parser.parse( text, sink );
 
         Iterator<SinkEventElement> it = sink.getEventList().iterator();
-        assertEquals( it, "definitionList", "definitionListItem", "definedTerm", "text", "definedTerm_", "definition",
-                      "text", "definition_", "definitionListItem_", "definitionList_" );
+        assertStartsWith( it, "definitionList", "definitionListItem", "definedTerm", "text", "definedTerm_",
+                          "definition", "text", "definition_", "definitionListItem_", "definitionList_" );
+        assertStartsWith( it, "definitionList", "definitionListItem", "definition", "text", "definition_",
+                          "definitionListItem_", "definitionList_" );
+        assertStartsWith( it, "definitionList", "definitionListItem", "definedTerm", "text", "definedTerm_",
+                          "definitionListItem_", "definitionList_" );
+        assertStartsWith( it, "definitionList", "definitionList_" );
         assertEquals( it, "definitionList", "definitionListItem", "definition", "text", "definition_",
-                      "definitionListItem_", "definitionList_" );
-        assertEquals( it, "definitionList", "definitionListItem", "definedTerm", "text", "definedTerm_",
-                      "definitionListItem_", "definitionList_" );
-        assertEquals( it, "definitionList", "definitionList_" );
-        assertEquals( it, "definitionList", "definitionListItem", "definition", "text", "definition_",
-                      "definitionListItem_", "definitionListItem", "definedTerm", "text", "definedTerm_",
-                      "definitionListItem_", "definitionList_" );
-        assertFalse( it.hasNext() );
+                          "definitionListItem_", "definitionListItem", "definedTerm", "text", "definedTerm_",
+                          "definitionListItem_", "definitionList_" );
     }
 }

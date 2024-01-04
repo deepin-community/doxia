@@ -25,8 +25,9 @@ import org.apache.maven.doxia.module.confluence.parser.Block;
 import java.util.List;
 
 /**
+ * ListBlock
+ *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: ListBlock.java 1090706 2011-04-09 23:15:28Z hboutemy $
  */
 abstract class ListBlock
     extends AbstractFatherBlock

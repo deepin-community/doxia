@@ -26,7 +26,6 @@ import org.apache.maven.doxia.sink.impl.AbstractSinkTest;
 
 /**
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: LatexSinkTest.java 1726411 2016-01-23 16:34:09Z hboutemy $
  */
 public class LatexSinkTest
     extends AbstractSinkTest
@@ -83,6 +82,24 @@ public class LatexSinkTest
     }
 
     /** {@inheritDoc} */
+    protected String getArticleBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
+    protected String getNavigationBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
+    protected String getSidebarBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
     protected String getSectionTitleBlock( String title )
     {
         return title;
@@ -116,6 +133,24 @@ public class LatexSinkTest
     protected String getSection5Block( String title )
     {
         return EOL + "\\subparagraph{" + title + "}" + EOL;
+    }
+
+    /** {@inheritDoc} */
+    protected String getHeaderBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
+    protected String getContentBlock()
+    {
+        return "";
+    }
+
+    /** {@inheritDoc} */
+    protected String getFooterBlock()
+    {
+        return "";
     }
 
     /** {@inheritDoc} */
@@ -166,6 +201,36 @@ public class LatexSinkTest
     }
 
     /** {@inheritDoc} */
+    protected String getDataBlock( String value, String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getTimeBlock( String datetime, String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getAddressBlock( String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getBlockquoteBlock( String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getDivisionBlock( String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
     protected String getVerbatimBlock( String text )
     {
         return EOL + "\\begin{small}" + EOL + "\\begin{Verbatim}[frame=single]" + EOL + text + EOL
@@ -197,6 +262,30 @@ public class LatexSinkTest
     }
 
     /** {@inheritDoc} */
+    protected String getInlineBlock( String text )
+    {
+        return text;
+    }
+
+    /** {@inheritDoc} */
+    protected String getInlineItalicBlock( String text )
+    {
+        return "\\textit{" + text + "}";
+    }
+
+    /** {@inheritDoc} */
+    protected String getInlineBoldBlock( String text )
+    {
+        return "\\textbf{" + text + "}";
+    }
+
+    /** {@inheritDoc} */
+    protected String getInlineCodeBlock( String text )
+    {
+        return "\\texttt{\\small " + text + "}";
+    }
+
+    /** {@inheritDoc} */
     protected String getItalicBlock( String text )
     {
         return "\\textit{" + text + "}";
@@ -218,6 +307,12 @@ public class LatexSinkTest
     protected String getLineBreakBlock()
     {
         return "\\newline" + EOL;
+    }
+
+    /** {@inheritDoc} */
+    protected String getLineBreakOpportunityBlock()
+    {
+        return "";
     }
 
     /** {@inheritDoc} */

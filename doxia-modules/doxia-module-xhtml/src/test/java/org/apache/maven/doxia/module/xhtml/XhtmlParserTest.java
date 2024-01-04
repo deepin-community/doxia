@@ -31,7 +31,6 @@ import org.apache.maven.doxia.sink.impl.SinkEventTestingSink;
 
 /**
  * @author <a href="mailto:lars@trieloff.net">Lars Trieloff</a>
- * @version $Id: XhtmlParserTest.java 1726536 2016-01-24 18:53:43Z rfscholte $
  */
 public class XhtmlParserTest
     extends AbstractParserTest
@@ -44,7 +43,7 @@ public class XhtmlParserTest
     {
         super.setUp();
 
-        parser = (XhtmlParser) lookup( Parser.ROLE, "xhtml" );
+        parser = (XhtmlParser) lookup( Parser.class, "xhtml" );
 
         // AbstractXmlParser.CachedFileEntityResolver downloads DTD/XSD files in ${java.io.tmpdir}
         // Be sure to delete them

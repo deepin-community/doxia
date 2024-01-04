@@ -38,8 +38,9 @@ doxia-modules/doxia-module-fml/pom.xml            --has-package-version --java-l
 doxia-modules/doxia-module-fo/pom.xml             --has-package-version --java-lib
 doxia-modules/doxia-module-itext/pom.xml          --has-package-version --java-lib
 doxia-modules/doxia-module-latex/pom.xml          --has-package-version --java-lib
-doxia-modules/doxia-module-markdown/pom.xml       --has-package-version --java-lib
+doxia-modules/doxia-module-markdown/pom.xml       --has-package-version --java-lib --ignore
 doxia-modules/doxia-module-rtf/pom.xml            --has-package-version --java-lib
 doxia-modules/doxia-module-twiki/pom.xml          --has-package-version --java-lib
 doxia-modules/doxia-module-xdoc/pom.xml           --has-package-version --java-lib
 doxia-modules/doxia-module-xhtml/pom.xml          --has-package-version --java-lib
+doxia-modules/doxia-module-xhtml5/pom.xml         --has-package-version --java-lib

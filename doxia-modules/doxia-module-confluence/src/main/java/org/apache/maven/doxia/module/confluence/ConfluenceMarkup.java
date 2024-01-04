@@ -28,7 +28,6 @@ import org.apache.maven.doxia.markup.TextMarkup;
  * Confluence Notation Guide Overview</a>
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: ConfluenceMarkup.java 1633964 2014-10-23 22:01:01Z hboutemy $
  * @since 1.0
  */
 @SuppressWarnings( "checkstyle:interfaceistype" )
@@ -50,6 +49,12 @@ public interface ConfluenceMarkup
 
     /** Syntax for the bold markup: "*" */
     String BOLD_START_MARKUP = "*";
+
+    /** Syntax for the citation markup: "??" */
+    String CITATION_END_MARKUP = "??";
+
+    /** Syntax for the citation markup: "??" */
+    String CITATION_START_MARKUP = "??";
 
     /** Syntax for the figure markup: "!" */
     String FIGURE_END_MARKUP = "!";
@@ -75,7 +80,7 @@ public interface ConfluenceMarkup
     /** Syntax for the link start markup: "[" */
     String LINK_START_MARKUP = "[";
 
-    /** Syntax for the list item markup: "* */
+    /** Syntax for the list item markup: <code>"* "</code> */
     String LIST_ITEM_MARKUP = "* ";
 
     /** Syntax for the mono-spaced style start: "{{" */

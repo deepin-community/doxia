@@ -21,19 +21,21 @@ package org.apache.maven.doxia.module.apt;
 
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 import org.apache.maven.doxia.sink.SinkEventAttributes;
 import org.apache.maven.doxia.sink.impl.AbstractTextSink;
+import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
  * APT generator implementation.
- * <br/>
+ * <br>
  * <b>Note</b>: The encoding used is UTF-8.
  *
  * @author eredmond
- * @version $Id: AptSink.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public class AptSink
@@ -65,6 +67,9 @@ public class AptSink
     /**  tableCaptionFlag. */
     private boolean tableCaptionFlag;
 
+    /**  tableCellFlag. */
+    private boolean tableCellFlag;
+
     /**  headerFlag. */
     private boolean headerFlag;
 
@@ -90,7 +95,7 @@ public class AptSink
     private final PrintWriter writer;
 
     /**  justification of table cells. */
-    private int cellJustif[];
+    private int[] cellJustif;
 
     /**  a line of a row in a table. */
     private String rowLine;
@@ -100,6 +105,9 @@ public class AptSink
 
     /**  listStyles. */
     private final Stack<String> listStyles;
+
+    /** Keep track of the closing tags for inline events. */
+    protected Stack<List<String>> inlineStack = new Stack<>();
 
     // ----------------------------------------------------------------------
     // Public protected methods
@@ -114,7 +122,7 @@ public class AptSink
     protected AptSink( Writer writer )
     {
         this.writer = new PrintWriter( writer );
-        this.listStyles = new Stack<String>();
+        this.listStyles = new Stack<>();
 
         init();
     }
@@ -149,7 +157,9 @@ public class AptSink
         init();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void init()
     {
         super.init();
@@ -164,6 +174,7 @@ public class AptSink
         this.date = null;
         this.startFlag = true;
         this.tableCaptionFlag = false;
+        this.tableCellFlag = false;
         this.headerFlag = false;
         this.bufferFlag = false;
         this.itemFlag = false;
@@ -174,6 +185,7 @@ public class AptSink
         this.cellJustif = null;
         this.rowLine = null;
         this.listStyles.clear();
+        this.inlineStack.clear();
     }
 
     /**
@@ -192,7 +204,9 @@ public class AptSink
         tableCaptionBuffer = new StringBuilder();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void head()
     {
         boolean startFlag = this.startFlag;
@@ -203,7 +217,9 @@ public class AptSink
         this.startFlag = startFlag;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void head_()
     {
         headerFlag = false;
@@ -230,7 +246,9 @@ public class AptSink
         write( HEADER_START_MARKUP + EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void title_()
     {
         if ( buffer.length() > 0 )
@@ -240,7 +258,9 @@ public class AptSink
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void author_()
     {
         if ( buffer.length() > 0 )
@@ -250,7 +270,9 @@ public class AptSink
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void date_()
     {
         if ( buffer.length() > 0 )
@@ -260,97 +282,129 @@ public class AptSink
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section1_()
     {
         write( EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section2_()
     {
         write( EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section3_()
     {
         write( EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section4_()
     {
         write( EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section5_()
     {
         write( EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle1()
     {
         write( EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle1_()
     {
         write( EOL + EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle2()
     {
         write( EOL + SECTION_TITLE_START_MARKUP );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle2_()
     {
         write( EOL + EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle3()
     {
         write( EOL + StringUtils.repeat( SECTION_TITLE_START_MARKUP, 2 ) );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle3_()
     {
         write( EOL + EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle4()
     {
         write( EOL + StringUtils.repeat( SECTION_TITLE_START_MARKUP, 3 ) );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle4_()
     {
         write( EOL + EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle5()
     {
         write( EOL + StringUtils.repeat( SECTION_TITLE_START_MARKUP, 4 ) );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle5_()
     {
         write( EOL + EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void list()
     {
         listNestingIndent += " ";
@@ -358,7 +412,9 @@ public class AptSink
         write( EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void list_()
     {
         if ( listNestingIndent.length() <= 1 )
@@ -374,7 +430,9 @@ public class AptSink
         itemFlag = false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void listItem()
     {
         //if ( !numberedList )
@@ -384,7 +442,9 @@ public class AptSink
         itemFlag = true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void listItem_()
     {
         write( EOL );
@@ -420,7 +480,9 @@ public class AptSink
         listStyles.push( style );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void numberedList_()
     {
         if ( listNestingIndent.length() <= 1 )
@@ -436,31 +498,37 @@ public class AptSink
         itemFlag = false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void numberedListItem()
     {
         String style = listStyles.peek();
         if ( style.equals( String.valueOf( STAR ) ) )
         {
-            write( EOL + listNestingIndent + String.valueOf( STAR ) + String.valueOf( SPACE ) );
+            write( EOL + listNestingIndent + STAR + SPACE );
         }
         else
         {
-            write( EOL + listNestingIndent + String.valueOf( LEFT_SQUARE_BRACKET )
-                + String.valueOf( LEFT_SQUARE_BRACKET ) + style + String.valueOf( RIGHT_SQUARE_BRACKET )
-                + String.valueOf( RIGHT_SQUARE_BRACKET ) + String.valueOf( SPACE ) );
+            write( EOL + listNestingIndent + LEFT_SQUARE_BRACKET
+                + LEFT_SQUARE_BRACKET + style + RIGHT_SQUARE_BRACKET
+                + RIGHT_SQUARE_BRACKET + SPACE );
         }
         itemFlag = true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void numberedListItem_()
     {
         write( EOL );
         itemFlag = false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definitionList()
     {
         listNestingIndent += " ";
@@ -468,7 +536,9 @@ public class AptSink
         write( EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definitionList_()
     {
         if ( listNestingIndent.length() <= 1 )
@@ -484,41 +554,57 @@ public class AptSink
         itemFlag = false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definedTerm()
     {
         write( EOL + " [" );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definedTerm_()
     {
         write( "] " );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definition()
     {
         itemFlag = true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definition_()
     {
         write( EOL );
         itemFlag = false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void pageBreak()
     {
         write( EOL + PAGE_BREAK + EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void paragraph()
     {
-        if ( itemFlag )
+        if ( tableCellFlag )
+        {
+            // ignore paragraphs in table cells
+        }
+        else if ( itemFlag )
         {
             write( EOL + EOL + "  " + listNestingIndent );
         }
@@ -528,10 +614,19 @@ public class AptSink
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void paragraph_()
     {
-        write( EOL + EOL );
+        if ( tableCellFlag )
+        {
+            // ignore paragraphs in table cells
+        }
+        else
+        {
+            write( EOL + EOL );
+        }
     }
 
     /** {@inheritDoc} */
@@ -550,7 +645,9 @@ public class AptSink
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void verbatim_()
     {
         if ( isBoxed )
@@ -565,19 +662,25 @@ public class AptSink
         verbatimFlag = false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void horizontalRule()
     {
         write( EOL + HORIZONTAL_RULE_MARKUP + EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void table()
     {
         write( EOL );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void table_()
     {
         if ( rowLine != null )
@@ -595,27 +698,33 @@ public class AptSink
     }
 
     /** {@inheritDoc} */
-    public void tableRows( int justification[], boolean grid )
+    public void tableRows( int[] justification, boolean grid )
     {
         cellJustif = justification;
         gridFlag = grid;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableRows_()
     {
         cellJustif = null;
         gridFlag = false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableRow()
     {
         bufferFlag = true;
         cellCount = 0;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableRow_()
     {
         bufferFlag = false;
@@ -673,13 +782,17 @@ public class AptSink
         this.rowLine = rLine.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableCell()
     {
         tableCell( false );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableHeaderCell()
     {
         tableCell( true );
@@ -696,15 +809,20 @@ public class AptSink
         {
             buffer.append( TABLE_CELL_SEPARATOR_MARKUP );
         }
+        tableCellFlag = true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableCell_()
     {
         endTableCell();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableHeaderCell_()
     {
         endTableCell();
@@ -715,23 +833,30 @@ public class AptSink
      */
     private void endTableCell()
     {
+        tableCellFlag = false;
         buffer.append( TABLE_CELL_SEPARATOR_MARKUP );
         cellCount++;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableCaption()
     {
         tableCaptionFlag = true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableCaption_()
     {
         tableCaptionFlag = false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void figureCaption_()
     {
         write( EOL );
@@ -749,7 +874,9 @@ public class AptSink
         write( ANCHOR_START_MARKUP );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void anchor_()
     {
         write( ANCHOR_END_MARKUP );
@@ -766,7 +893,9 @@ public class AptSink
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void link_()
     {
         if ( !headerFlag )
@@ -792,61 +921,113 @@ public class AptSink
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public void inline()
+    {
+        inline( null );
+    }
+
     /** {@inheritDoc} */
+    public void inline( SinkEventAttributes attributes )
+    {
+        if ( !headerFlag )
+        {
+            List<String> tags = new ArrayList<>();
+
+            if ( attributes != null )
+            {
+
+                if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "italic" ) )
+                {
+                    write( ITALIC_START_MARKUP );
+                    tags.add( 0, ITALIC_END_MARKUP );
+                }
+
+                if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "bold" ) )
+                {
+                    write( BOLD_START_MARKUP );
+                    tags.add( 0, BOLD_END_MARKUP );
+                }
+
+                if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "code" ) )
+                {
+                    write( MONOSPACED_START_MARKUP );
+                    tags.add( 0, MONOSPACED_END_MARKUP );
+                }
+
+            }
+
+            inlineStack.push( tags );
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void inline_()
+    {
+        if ( !headerFlag )
+        {
+            for ( String tag: inlineStack.pop() )
+            {
+                write( tag );
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void italic()
     {
-        if ( !headerFlag )
-        {
-            write( ITALIC_START_MARKUP );
-        }
+        inline( SinkEventAttributeSet.Semantics.ITALIC );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void italic_()
     {
-        if ( !headerFlag )
-        {
-            write( ITALIC_END_MARKUP );
-        }
+        inline_();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void bold()
     {
-        if ( !headerFlag )
-        {
-            write( BOLD_START_MARKUP );
-        }
+        inline( SinkEventAttributeSet.Semantics.BOLD );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void bold_()
     {
-        if ( !headerFlag )
-        {
-            write( BOLD_END_MARKUP );
-        }
+        inline_();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void monospaced()
     {
-        if ( !headerFlag )
-        {
-            write( MONOSPACED_START_MARKUP );
-        }
+        inline( SinkEventAttributeSet.Semantics.CODE );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void monospaced_()
     {
-        if ( !headerFlag )
-        {
-            write( MONOSPACED_END_MARKUP );
-        }
+        inline_();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void lineBreak()
     {
         if ( headerFlag || bufferFlag )
@@ -863,7 +1044,9 @@ public class AptSink
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void nonBreakingSpace()
     {
         if ( headerFlag || bufferFlag )
@@ -928,7 +1111,14 @@ public class AptSink
     protected void write( String text )
     {
         startFlag = false;
-        writer.write( unifyEOLs( text ) );
+        if ( tableCellFlag )
+        {
+            buffer.append( text );
+        }
+        else
+        {
+            writer.write( unifyEOLs( text ) );
+        }
     }
 
     /**
@@ -951,13 +1141,17 @@ public class AptSink
         write( escapeAPT( text ) );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void flush()
     {
         writer.flush();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void close()
     {
         writer.close();

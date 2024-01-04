@@ -25,12 +25,11 @@ import org.apache.maven.doxia.markup.HtmlMarkup;
 
 /**
  * List of <code>FML</code> markups.
- * <br/>
+ * <br>
  * FML uses several  {@link javax.swing.text.html.HTML.Tag} and {@link javax.swing.text.html.HTML.Attribute}
  * as markups and custom tags.
  *
  * @author ltheussl
- * @version $Id: FmlMarkup.java 1633964 2014-10-23 22:01:01Z hboutemy $
  * @since 1.0
  */
 @SuppressWarnings( "checkstyle:interfaceistype" )
@@ -40,8 +39,8 @@ public interface FmlMarkup
     /** FML namespace: "http://maven.apache.org/FML/1.0.1" */
     String FML_NAMESPACE = "http://maven.apache.org/FML/1.0.1";
 
-    /** FML system id: "http://maven.apache.org/xsd/fml-1.0.1.xsd" */
-    String FML_SYSTEM_ID = "http://maven.apache.org/xsd/fml-1.0.1.xsd";
+    /** FML system id: "https://maven.apache.org/xsd/fml-1.0.1.xsd" */
+    String FML_SYSTEM_ID = "https://maven.apache.org/xsd/fml-1.0.1.xsd";
 
     // ----------------------------------------------------------------------
     // Specific Fml tags

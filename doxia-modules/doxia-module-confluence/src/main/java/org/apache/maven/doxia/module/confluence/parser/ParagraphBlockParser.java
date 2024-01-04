@@ -24,8 +24,6 @@ import org.apache.maven.doxia.util.ByLineSource;
 
 /**
  * <p>ParagraphBlockParser class.</p>
- *
- * @version $Id: ParagraphBlockParser.java 1438269 2013-01-24 23:47:50Z olamy $
  */
 public class ParagraphBlockParser
     implements BlockParser
@@ -56,8 +54,7 @@ public class ParagraphBlockParser
      * @param source the source.
      * @param generateParagraphTags whether to generate a paragraph.
      * @return the visited Block.
-     *
-     * @throws org.apache.maven.doxia.parser.ParseException if any
+     * @throws org.apache.maven.doxia.parser.ParseException if any.
      */
     public Block visit( String line, ByLineSource source, boolean generateParagraphTags )
             throws ParseException
@@ -106,9 +103,8 @@ public class ParagraphBlockParser
             }
 
             boolean accepted = false;
-            for ( int i = 0; i < parsers.length; i++ )
+            for ( BlockParser parser : parsers )
             {
-                BlockParser parser = parsers[i];
                 if ( parser.accept( line, source ) )
                 {
                     accepted = true;
@@ -129,7 +125,7 @@ public class ParagraphBlockParser
             }
             else
             {
-                text.append( " " + line.trim() );
+                text.append( " " ).append( line.trim() );
             }
 
         }

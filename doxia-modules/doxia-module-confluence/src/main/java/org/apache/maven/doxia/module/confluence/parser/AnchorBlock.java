@@ -22,7 +22,7 @@ package org.apache.maven.doxia.module.confluence.parser;
 import org.apache.maven.doxia.sink.Sink;
 
 /**
- * @version $Id: AnchorBlock.java 763762 2009-04-09 18:19:56Z ltheussl $
+ * AnchorBlock
  */
 class AnchorBlock
     implements Block

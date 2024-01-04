@@ -20,7 +20,7 @@ package org.apache.maven.doxia.module.rtf;
  */
 
 /**
- * @version $Id: AlphaNumerals.java 1438269 2013-01-24 23:47:50Z olamy $
+ * AlphaNumerals
  */
 class AlphaNumerals
 {

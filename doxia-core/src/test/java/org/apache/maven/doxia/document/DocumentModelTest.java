@@ -19,21 +19,19 @@ package org.apache.maven.doxia.document;
  * under the License.
  */
 
+import org.apache.maven.doxia.document.io.xpp3.DocumentXpp3Reader;
+import org.apache.maven.doxia.document.io.xpp3.DocumentXpp3Writer;
+import org.codehaus.plexus.PlexusTestCase;
+import org.codehaus.plexus.util.ReaderFactory;
+import org.codehaus.plexus.util.WriterFactory;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Date;
 import java.util.List;
-
-import org.apache.maven.doxia.document.io.xpp3.DocumentXpp3Reader;
-import org.apache.maven.doxia.document.io.xpp3.DocumentXpp3Writer;
-
-import org.codehaus.plexus.PlexusTestCase;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.ReaderFactory;
-import org.codehaus.plexus.util.WriterFactory;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 /**
  * Test DocumentModel.
@@ -60,7 +58,7 @@ public class DocumentModelTest
 
         DocumentModel copy = writeAndRecover( model );
         verifyModel( copy );
-        assertTrue( copy.equals( model ) );
+        assertEquals( copy, model );
     }
 
     private DocumentModel getModel()
@@ -79,7 +77,8 @@ public class DocumentModelTest
     private void verifyModel( DocumentModel model )
     {
         assertNotNull( model );
-        assertTrue( model.equals( model ) );
+        //noinspection EqualsWithItself
+        assertEquals( model, model );
         assertTrue ( model.hashCode() != 0 );
         assertTrue( model.toString().length() > 0 );
 
@@ -336,34 +335,20 @@ public class DocumentModelTest
         }
 
         File testFile = getTestFile( dir.getAbsolutePath(), "testModel.xml" );
-        Writer w = null;
-
-        try
+        try( Writer w = WriterFactory.newXmlWriter( testFile ) )
         {
-            w = WriterFactory.newXmlWriter( testFile );
             new DocumentXpp3Writer().write( w, model );
-        }
-        finally
-        {
-            IOUtil.close( w );
         }
 
         DocumentModel documentModel;
 
-        Reader reader = null;
-
-        try
+        try ( Reader reader = ReaderFactory.newXmlReader( testFile ) )
         {
-            reader = ReaderFactory.newXmlReader( testFile );
             documentModel = new DocumentXpp3Reader().read( reader );
         }
         catch ( XmlPullParserException e )
         {
-            throw (IOException) new IOException( "Error parsing document descriptor" ).initCause( e );
-        }
-        finally
-        {
-            IOUtil.close( reader );
+            throw new IOException( "Error parsing document descriptor", e );
         }
 
         return documentModel;

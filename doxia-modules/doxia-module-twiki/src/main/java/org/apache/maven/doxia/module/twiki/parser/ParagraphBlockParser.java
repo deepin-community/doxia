@@ -32,7 +32,6 @@ import org.apache.maven.doxia.parser.ParseException;
  * Parse paragraphs.
  *
  * @author Juan F. Codagnone
- * @version $Id: ParagraphBlockParser.java 1438269 2013-01-24 23:47:50Z olamy $
  */
 public class ParagraphBlockParser
     implements BlockParser
@@ -48,7 +47,7 @@ public class ParagraphBlockParser
     private SectionBlockParser sectionParser;
 
     /**
-     * {@link ListBlockParser} to use. injected
+     * {@link GenericListBlockParser} to use. injected
      */
     private GenericListBlockParser listParser;
 
@@ -83,14 +82,12 @@ public class ParagraphBlockParser
         return !sectionParser.accept( line ) && !hrulerParser.accept( line ) && !verbatimParser.accept( line );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public final Block visit( final String line, final ByLineSource source )
         throws ParseException
     {
         StringBuilder sb = new StringBuilder();
-        List<Block> childs = new ArrayList<Block>();
+        List<Block> childs = new ArrayList<>();
 
         boolean sawText = false;
 
@@ -133,11 +130,11 @@ public class ParagraphBlockParser
                 {
                     sb.append( l );
                     // specific
-                    if ( l.indexOf( "<pre>" ) != -1 )
+                    if ( l.contains( "<pre>" ) )
                     {
                         pre = true;
                     }
-                    if ( l.indexOf( "</pre>" ) != -1 )
+                    if ( l.contains( "</pre>" ) )
                     {
                         pre = false;
                     }

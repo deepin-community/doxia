@@ -28,7 +28,9 @@ import java.util.Map;
 import org.apache.maven.doxia.sink.impl.SinkEventElement;
 import org.apache.maven.doxia.sink.impl.SinkEventTestingSink;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * Test swf macro.
@@ -36,19 +38,18 @@ import junit.framework.TestCase;
  * @author ltheussl
  */
 public class SwfMacroTest
-        extends TestCase
 {
-
     /**
      * Test of execute method, of class SwfMacro.
      *
      * @throws MacroExecutionException if a macro fails during testing.
      */
+    @Test
     public void testExecute()
             throws MacroExecutionException
     {
 
-        Map<String, Object> macroParameters = new HashMap<String, Object>();
+        Map<String, Object> macroParameters = new HashMap<>();
         macroParameters.put( "src", "src.swf" );
         macroParameters.put( "id", "Movie" );
         macroParameters.put( "width", "50" );
@@ -111,11 +112,12 @@ public class SwfMacroTest
      *
      * @throws MacroExecutionException if a macro fails during testing.
      */
+    @Test
     public void testOthersThenStringParameters()
             throws MacroExecutionException
     {
 
-        Map<String, Object> macroParameters = new HashMap<String, Object>();
+        Map<String, Object> macroParameters = new HashMap<>();
         macroParameters.put( "src", "src.swf" );
         macroParameters.put( "id", "Movie" );
         macroParameters.put( "width", "50" );
@@ -126,7 +128,7 @@ public class SwfMacroTest
         macroParameters.put( "play", "false" );
         macroParameters.put( "version", "6" );
         macroParameters.put( "allowScript", "always" );
-        macroParameters.put( "notAString", new Integer(0) );
+        macroParameters.put( "notAString", 0 );
 
 
         SinkEventTestingSink sink = new SinkEventTestingSink();
@@ -153,6 +155,4 @@ public class SwfMacroTest
         assertEquals( "rawText", event.getName() );
         assertFalse( it.hasNext() );
     }
-
-
 }

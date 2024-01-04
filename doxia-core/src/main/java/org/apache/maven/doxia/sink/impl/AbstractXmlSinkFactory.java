@@ -28,7 +28,6 @@ import org.apache.maven.doxia.sink.Sink;
  * when no encoding is specified.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: AbstractXmlSinkFactory.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.1
  */
 public abstract class AbstractXmlSinkFactory

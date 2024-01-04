@@ -25,12 +25,11 @@ import org.apache.maven.doxia.markup.HtmlMarkup;
 
 /**
  * List of <code>Xdoc</code> markups.
- * <br/>
+ * <br>
  * Xdoc uses several  {@link javax.swing.text.html.HTML.Tag} and {@link javax.swing.text.html.HTML.Attribute}
  * as markups and custom tags.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: XdocMarkup.java 1633964 2014-10-23 22:01:01Z hboutemy $
  * @since 1.0
  */
 @SuppressWarnings( "checkstyle:interfaceistype" )
@@ -40,8 +39,8 @@ public interface XdocMarkup
     /** XDOC namespace: "http://maven.apache.org/XDOC/2.0" */
     String XDOC_NAMESPACE = "http://maven.apache.org/XDOC/2.0";
 
-    /** XDOC system id: "http://maven.apache.org/xsd/xdoc-2.0.xsd" */
-    String XDOC_SYSTEM_ID = "http://maven.apache.org/xsd/xdoc-2.0.xsd";
+    /** XDOC system id: "https://maven.apache.org/xsd/xdoc-2.0.xsd" */
+    String XDOC_SYSTEM_ID = "https://maven.apache.org/xsd/xdoc-2.0.xsd";
 
     // ----------------------------------------------------------------------
     // Specific Xdoc tags

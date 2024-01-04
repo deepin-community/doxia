@@ -30,7 +30,6 @@ import org.apache.maven.doxia.sink.Sink;
  * </pre>
  *
  * @author Juan F. Codagnone
- * @version $Id: NumeratedListBlock.java 763762 2009-04-09 18:19:56Z ltheussl $
  */
 class NumeratedListBlock
     extends ListBlock
@@ -77,7 +76,11 @@ class NumeratedListBlock
         return ret;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @return a int.
+     */
     public final int hashCode()
     {
         final int magic = 17;

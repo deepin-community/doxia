@@ -48,7 +48,6 @@ import java.util.List;
  * twiki file format</a>
  *
  * @author Juan F. Codagnone
- * @version $Id: TWikiParser.java 1726913 2016-01-26 22:01:54Z rfscholte $
  * @since 1.0
  */
 @Component( role = Parser.class, hint = "twiki" )
@@ -106,7 +105,7 @@ public class TWikiParser
     public final List<Block> parse( final ByLineSource source )
         throws ParseException
     {
-        final List<Block> ret = new ArrayList<Block>();
+        final List<Block> ret = new ArrayList<>();
 
         String line;
         while ( ( line = source.getNextLine() ) != null )
@@ -131,6 +130,7 @@ public class TWikiParser
         return ret;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void parse( Reader source, Sink sink )
         throws ParseException
@@ -138,6 +138,7 @@ public class TWikiParser
         parse( source, sink, "" );
     }
     
+    /** {@inheritDoc} */
     @Override
     public final synchronized void parse( final Reader source, final Sink sink, String reference )
         throws ParseException
@@ -229,7 +230,9 @@ public class TWikiParser
         return title;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void init()
     {
         super.init();

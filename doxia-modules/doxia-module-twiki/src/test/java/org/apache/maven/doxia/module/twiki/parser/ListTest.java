@@ -25,6 +25,10 @@ import org.apache.maven.doxia.util.ByLineReaderSource;
 import org.apache.maven.doxia.util.ByLineSource;
 import org.apache.maven.doxia.parser.ParseException;
 import org.apache.maven.doxia.sink.Sink;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Units tests for Lists
@@ -35,16 +39,15 @@ import org.apache.maven.doxia.sink.Sink;
 public class ListTest
     extends AbstractBlockTestCase
 {
-
     /**
      * unit test for recurrent enumeration
      *
      * @throws ParseException on error
      */
+    @Test
     public final void testList()
         throws ParseException
     {
-        final BlockParser parser = listParser;
 
         final String text =
             "" + "      * item1.1 \n" + "   * item2\n" + "      * item2.1\n" + "   * item3\n"
@@ -52,14 +55,13 @@ public class ListTest
                 + "         * item3.2.3\n" + "      * item3.3\n" + "         * item3.3.1\n" + "   * item4";
 
         final ByLineSource source = new ByLineReaderSource( new StringReader( text ) );
-        final Block b = parser.visit( source.getNextLine(), source );
+        final Block b = ((BlockParser) listParser).visit( source.getNextLine(), source );
         final Block[] firstLevelBlocks = ( (UnorderedListBlock) b ).getBlocks();
         final int numberOfChild = 4;
         assertEquals( numberOfChild, firstLevelBlocks.length );
 
-        for ( int i = 0; i < firstLevelBlocks.length; i++ )
+        for ( Block block : firstLevelBlocks )
         {
-            Block block = firstLevelBlocks[i];
             assertEquals( ListItemBlock.class, block.getClass() );
         }
 
@@ -80,9 +82,7 @@ public class ListTest
         assertEquals( "item2.1", ( (TextBlock) item.getBlocks()[0] ).getText() );
     }
 
-    /**
-     * @throws ParseException on error
-     */
+    @Test
     public final void testNumeringDecimal()
         throws ParseException
     {
@@ -99,9 +99,7 @@ public class ListTest
         assertEquals( expected, blocks );
     }
 
-    /**
-     * @throws ParseException on error
-     */
+    @Test
     public final void testHetero()
         throws ParseException
     {

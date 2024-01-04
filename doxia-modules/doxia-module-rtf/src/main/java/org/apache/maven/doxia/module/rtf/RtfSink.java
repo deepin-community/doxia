@@ -20,7 +20,6 @@ package org.apache.maven.doxia.module.rtf;
  */
 
 import java.awt.Color;
-
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -28,12 +27,13 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -41,11 +41,11 @@ import java.util.Vector;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.SinkEventAttributes;
 import org.apache.maven.doxia.sink.impl.AbstractTextSink;
+import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
 
 /**
  * <a href="http://en.wikipedia.org/wiki/Rich_Text_Format">RTF</a> Sink implementation.
  *
- * @version $Id: RtfSink.java 1726411 2016-01-23 16:34:09Z hboutemy $
  * @since 1.0
  */
 public class RtfSink
@@ -177,7 +177,7 @@ public class RtfSink
 
     private int charSet = DEFAULT_CHAR_SET;
 
-    private final Hashtable fontTable;
+    private final Hashtable<String, Font> fontTable;
 
     private Context context;
 
@@ -189,9 +189,9 @@ public class RtfSink
 
     private int listItemIndent;
 
-    private final Vector numbering;
+    private final Vector<Integer> numbering;
 
-    private final Vector itemNumber;
+    private final Vector<Counter> itemNumber;
 
     private int style = STYLE_ROMAN;
 
@@ -215,16 +215,19 @@ public class RtfSink
 
     protected OutputStream stream; // for raw image data
 
+    /** Keep track of the closing tags for inline events. */
+    protected Stack<List<Integer>> inlineStack = new Stack<>();
+
     /** Map of warn messages with a String as key to describe the error type and a Set as value.
      * Using to reduce warn messages. */
-    private Map warnMessages;
+    private Map<String, Set<String>> warnMessages;
 
     // -----------------------------------------------------------------------
 
     /**
      * <p>Constructor for RtfSink.</p>
      *
-     * @throws java.io.IOException if any
+     * @throws java.io.IOException if any.
      */
     protected RtfSink()
         throws IOException
@@ -236,7 +239,7 @@ public class RtfSink
      * <p>Constructor for RtfSink.</p>
      *
      * @param output not null
-     * @throws java.io.IOException if any
+     * @throws java.io.IOException if any.
      */
     protected RtfSink( OutputStream output )
         throws IOException
@@ -254,9 +257,9 @@ public class RtfSink
     protected RtfSink( OutputStream output, String encoding )
         throws IOException
     {
-        this.fontTable = new Hashtable();
-        this.numbering = new Vector();
-        this.itemNumber = new Vector();
+        this.fontTable = new Hashtable<>();
+        this.numbering = new Vector<>();
+        this.itemNumber = new Vector<>();
 
         Writer w;
         this.stream = new BufferedOutputStream( output );
@@ -359,7 +362,7 @@ public class RtfSink
     /**
      * <p>Setter for the field <code>imageFormat</code>.</p>
      *
-     * @param format
+     * @param format a {@link java.lang.String} object.
      */
     public void setImageFormat( String format )
     {
@@ -369,7 +372,7 @@ public class RtfSink
     /**
      * <p>Setter for the field <code>imageType</code>.</p>
      *
-     * @param type
+     * @param type a {@link java.lang.String} object.
      */
     public void setImageType( String type )
     {
@@ -379,7 +382,7 @@ public class RtfSink
     /**
      * <p>Setter for the field <code>imageDataFormat</code>.</p>
      *
-     * @param format
+     * @param format a {@link java.lang.String} object.
      */
     public void setImageDataFormat( String format )
     {
@@ -389,7 +392,7 @@ public class RtfSink
     /**
      * <p>Setter for the field <code>imageCompression</code>.</p>
      *
-     * @param compression
+     * @param compression a boolean.
      */
     public void setImageCompression( boolean compression )
     {
@@ -399,7 +402,7 @@ public class RtfSink
     /**
      * <p>Setter for the field <code>codePage</code>.</p>
      *
-     * @param cp
+     * @param cp a int.
      */
     public void setCodePage( int cp )
     {
@@ -409,14 +412,16 @@ public class RtfSink
     /**
      * <p>Setter for the field <code>charSet</code>.</p>
      *
-     * @param cs
+     * @param cs a int.
      */
     public void setCharSet( int cs )
     {
         charSet = cs;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void head()
     {
         init();
@@ -451,7 +456,9 @@ public class RtfSink
         emptyHeader = true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void head_()
     {
         space.restore();
@@ -496,7 +503,9 @@ public class RtfSink
         return (int) Math.rint( points * 20. );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void title()
     {
         Paragraph p = new Paragraph( STYLE_BOLD, fontSize + 6 );
@@ -505,13 +514,17 @@ public class RtfSink
         emptyHeader = false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void title_()
     {
         endParagraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void author()
     {
         Paragraph p = new Paragraph( STYLE_ROMAN, fontSize + 2 );
@@ -520,13 +533,17 @@ public class RtfSink
         emptyHeader = false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void author_()
     {
         endParagraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void date()
     {
         Paragraph p = new Paragraph( STYLE_ROMAN, fontSize );
@@ -535,86 +552,114 @@ public class RtfSink
         emptyHeader = false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void date_()
     {
         endParagraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void body()
     {
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void body_()
     {
         writer.println( "}" );
         writer.flush();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section1()
     {
         sectionLevel = 1;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section1_()
     {
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section2()
     {
         sectionLevel = 2;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section2_()
     {
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section3()
     {
         sectionLevel = 3;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section3_()
     {
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section4()
     {
         sectionLevel = 4;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section4_()
     {
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section5()
     {
         sectionLevel = 5;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void section5_()
     {
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle()
     {
         int stl = STYLE_BOLD;
@@ -645,7 +690,9 @@ public class RtfSink
         beginParagraph( p );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void sectionTitle_()
     {
         endParagraph();
@@ -656,21 +703,27 @@ public class RtfSink
         return level;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void list()
     {
         indentation.add( LIST_INDENT );
         space.set( space.get() / 2 );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void list_()
     {
         indentation.restore();
         space.restore();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void listItem()
     {
         Paragraph p = new Paragraph();
@@ -686,7 +739,9 @@ public class RtfSink
         space.set( space.get() / 2 );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void listItem_()
     {
         endParagraph();
@@ -698,14 +753,16 @@ public class RtfSink
     /** {@inheritDoc} */
     public void numberedList( int numbering )
     {
-        this.numbering.addElement( Integer.valueOf( numbering ) );
+        this.numbering.addElement( numbering );
         itemNumber.addElement( new Counter( 0 ) );
 
         indentation.add( LIST_INDENT );
         space.set( space.get() / 2 );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void numberedList_()
     {
         numbering.removeElementAt( numbering.size() - 1 );
@@ -715,7 +772,9 @@ public class RtfSink
         space.restore();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void numberedListItem()
     {
         ( (Counter) itemNumber.lastElement() ).increment();
@@ -741,7 +800,9 @@ public class RtfSink
         space.set( space.get() / 2 );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void numberedListItem_()
     {
         endParagraph();
@@ -752,7 +813,7 @@ public class RtfSink
 
     private String getItemHeader()
     {
-        int nmb = ( (Integer) this.numbering.lastElement() ).intValue();
+        int nmb = (Integer) this.numbering.lastElement();
         int iNmb = ( (Counter) this.itemNumber.lastElement() ).get();
         StringBuilder buf = new StringBuilder();
 
@@ -800,7 +861,9 @@ public class RtfSink
         return buf.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definitionList()
     {
         int next = space.getNext();
@@ -810,14 +873,18 @@ public class RtfSink
         space.setNext( next );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definitionList_()
     {
         indentation.restore();
         space.restore();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definitionListItem()
     {
         int next = space.getNext();
@@ -825,25 +892,33 @@ public class RtfSink
         space.setNext( next );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definitionListItem_()
     {
         space.restore();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definedTerm()
     {
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definedTerm_()
     {
         endParagraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definition()
     {
         int next = space.getNext();
@@ -853,7 +928,9 @@ public class RtfSink
         space.setNext( next );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void definition_()
     {
         endParagraph();
@@ -862,13 +939,17 @@ public class RtfSink
         space.restore();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void table()
     {
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void table_()
     {
         // nop
@@ -882,7 +963,9 @@ public class RtfSink
         context.set( CONTEXT_TABLE );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableRows_()
     {
         boolean bb = false;
@@ -1026,45 +1109,59 @@ public class RtfSink
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableRow()
     {
         row = new Row();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableRow_()
     {
         table.add( row );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableHeaderCell()
     {
         tableCell();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableHeaderCell_()
     {
         tableCell_();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableCell()
     {
         cell = new Cell();
         line = new Line();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableCell_()
     {
         cell.add( line );
         row.add( cell );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableCaption()
     {
         Paragraph p = new Paragraph();
@@ -1073,13 +1170,17 @@ public class RtfSink
         beginParagraph( p );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void tableCaption_()
     {
         endParagraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void paragraph()
     {
         if ( paragraph == null )
@@ -1088,7 +1189,9 @@ public class RtfSink
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void paragraph_()
     {
         endParagraph();
@@ -1126,7 +1229,9 @@ public class RtfSink
         context.set( CONTEXT_VERBATIM );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void verbatim_()
     {
         String text = verbatim.toString();
@@ -1156,13 +1261,17 @@ public class RtfSink
         context.restore();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void figure()
     {
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void figure_()
     {
         // nop
@@ -1242,7 +1351,7 @@ public class RtfSink
             bytesPerLine = 4 * ( ( srcWidth + 3 ) / 4 );
             byte[] bitmap = new byte[srcHeight * bytesPerLine];
 
-            Vector colors = new Vector( 256 );
+            Vector<Color> colors = new Vector<>( 256 );
             colors.addElement( Color.white );
             colors.addElement( Color.black );
 
@@ -1383,7 +1492,9 @@ public class RtfSink
         writer.println( "}" );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void figureCaption()
     {
         Paragraph p = new Paragraph();
@@ -1392,13 +1503,17 @@ public class RtfSink
         beginParagraph( p );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void figureCaption_()
     {
         endParagraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void horizontalRule()
     {
         writer.print( "\\pard\\li" + indentation.get() );
@@ -1414,7 +1529,9 @@ public class RtfSink
         writer.println( "\\plain\\fs1\\par" );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void pageBreak()
     {
         writer.println( "\\page" );
@@ -1426,7 +1543,9 @@ public class RtfSink
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void anchor_()
     {
         // nop
@@ -1438,46 +1557,111 @@ public class RtfSink
         // nop
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void link_()
     {
         // nop
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public void inline()
+    {
+        inline( null );
+    }
+
     /** {@inheritDoc} */
+    public void inline( SinkEventAttributes attributes )
+    {
+        List<Integer> tags = new ArrayList<>();
+
+        if ( attributes != null )
+        {
+
+            if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "italic" ) )
+            {
+                tags.add( 0, this.style );
+                beginStyle( STYLE_ITALIC );
+            }
+
+            if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "bold" ) )
+            {
+                tags.add( 0, this.style );
+                beginStyle( STYLE_BOLD );
+            }
+
+            if ( attributes.containsAttribute( SinkEventAttributes.SEMANTICS, "code" ) )
+            {
+                tags.add( 0, this.style );
+                beginStyle( STYLE_TYPEWRITER );
+            }
+
+        }
+
+        inlineStack.push( tags );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void inline_()
+    {
+        for ( Integer style: inlineStack.pop() )
+        {
+            endStyle();
+            this.style = style;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void italic()
     {
-        beginStyle( STYLE_ITALIC );
+        inline( SinkEventAttributeSet.Semantics.ITALIC );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void italic_()
     {
-        endStyle();
+        inline_();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void bold()
     {
-        beginStyle( STYLE_BOLD );
+        inline( SinkEventAttributeSet.Semantics.BOLD );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void bold_()
     {
-        endStyle();
+        inline_();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void monospaced()
     {
-        beginStyle( STYLE_TYPEWRITER );
+        inline( SinkEventAttributeSet.Semantics.CODE );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void monospaced_()
     {
-        endStyle();
+        inline_();
     }
 
     private void beginStyle( int style )
@@ -1528,7 +1712,9 @@ public class RtfSink
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void lineBreak()
     {
         switch ( context.get() )
@@ -1543,7 +1729,9 @@ public class RtfSink
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void nonBreakingSpace()
     {
         switch ( context.get() )
@@ -1681,11 +1869,11 @@ public class RtfSink
                 font = new Font( style, size );
                 fontTable.put( key, font );
             }
-            catch ( Exception ignored )
+            catch ( Exception e )
             {
                 if ( getLog().isDebugEnabled() )
                 {
-                    getLog().debug( ignored.getMessage(), ignored );
+                    getLog().debug( e.getMessage(), e );
                 }
             }
         }
@@ -1715,29 +1903,30 @@ public class RtfSink
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void flush()
     {
         writer.flush();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void close()
     {
         writer.close();
 
         if ( getLog().isWarnEnabled() && this.warnMessages != null )
         {
-            for ( Iterator it = this.warnMessages.entrySet().iterator(); it.hasNext(); )
+            for ( Map.Entry<String, Set<String>> entry : this.warnMessages.entrySet() )
             {
-                Map.Entry entry = (Map.Entry) it.next();
 
-                Set set = (Set) entry.getValue();
+                Set<String> set = entry.getValue();
 
-                for ( Iterator it2 = set.iterator(); it2.hasNext(); )
+                for ( String msg : set )
                 {
-                    String msg = (String) it2.next();
-
                     getLog().warn( msg );
                 }
             }
@@ -1768,19 +1957,21 @@ public class RtfSink
 
         if ( warnMessages == null )
         {
-            warnMessages = new HashMap();
+            warnMessages = new HashMap<>();
         }
 
-        Set set = (Set) warnMessages.get( key );
+        Set<String> set = warnMessages.get( key );
         if ( set == null )
         {
-            set = new TreeSet();
+            set = new TreeSet<>();
         }
         set.add( msg );
         warnMessages.put( key, set );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void init()
     {
         super.init();
@@ -1845,11 +2036,11 @@ public class RtfSink
     {
         private int context = CONTEXT_UNDEFINED;
 
-        private Vector stack = new Vector();
+        private Vector<Integer> stack = new Vector<>();
 
         void set( int context )
         {
-            stack.addElement( Integer.valueOf( this.context ) );
+            stack.addElement( this.context );
             this.context = context;
         }
 
@@ -1857,7 +2048,7 @@ public class RtfSink
         {
             if ( !stack.isEmpty() )
             {
-                context = ( (Integer) stack.lastElement() ).intValue();
+                context = stack.lastElement();
                 stack.removeElementAt( stack.size() - 1 );
             }
         }
@@ -1978,7 +2169,7 @@ public class RtfSink
 
         private int next;
 
-        private Vector stack = new Vector();
+        private Vector<Integer> stack = new Vector<>();
 
         Space( int space /*twips*/ )
         {
@@ -1988,7 +2179,7 @@ public class RtfSink
 
         void set( int space /*twips*/ )
         {
-            stack.addElement( Integer.valueOf( this.space ) );
+            stack.addElement( this.space );
             this.space = space;
             next = space;
         }
@@ -2002,7 +2193,7 @@ public class RtfSink
         {
             if ( !stack.isEmpty() )
             {
-                space = ( (Integer) stack.lastElement() ).intValue();
+                space = stack.lastElement();
                 stack.removeElementAt( stack.size() - 1 );
                 next = space;
             }
@@ -2040,7 +2231,7 @@ public class RtfSink
     {
         private int indent;
 
-        private Vector stack = new Vector();
+        private Vector<Integer> stack = new Vector<>();
 
         Indentation( int indent /*twips*/ )
         {
@@ -2049,7 +2240,7 @@ public class RtfSink
 
         void set( int indent /*twips*/ )
         {
-            stack.addElement( Integer.valueOf( this.indent ) );
+            stack.addElement( this.indent );
             this.indent = indent;
         }
 
@@ -2062,7 +2253,7 @@ public class RtfSink
         {
             if ( !stack.isEmpty() )
             {
-                indent = ( (Integer) stack.lastElement() ).intValue();
+                indent = stack.lastElement();
                 stack.removeElementAt( stack.size() - 1 );
             }
         }
@@ -2083,7 +2274,7 @@ public class RtfSink
 
         boolean grid;
 
-        Vector rows;
+        Vector<Row> rows;
 
         Table( int[] justification, boolean grid )
         {
@@ -2091,7 +2282,7 @@ public class RtfSink
             columnWidths = new int[numColumns];
             this.justification = justification;
             this.grid = grid;
-            rows = new Vector();
+            rows = new Vector<>();
         }
 
         void add( Row row )
@@ -2104,7 +2295,7 @@ public class RtfSink
                 {
                     break;
                 }
-                Cell cell = (Cell) row.cells.elementAt( i );
+                Cell cell = row.cells.elementAt( i );
                 int width = cell.boundingBox().width;
                 if ( width > columnWidths[i] )
                 {
@@ -2130,7 +2321,7 @@ public class RtfSink
 
     static class Row
     {
-        Vector cells = new Vector();
+        Vector<Cell> cells = new Vector<>();
 
         void add( Cell cell )
         {
@@ -2143,7 +2334,7 @@ public class RtfSink
             int numCells = cells.size();
             for ( int i = 0; i < numCells; ++i )
             {
-                Cell cell = (Cell) cells.elementAt( i );
+                Cell cell = cells.elementAt( i );
                 Box box = cell.boundingBox();
                 if ( box.height > height )
                 {
@@ -2156,7 +2347,7 @@ public class RtfSink
 
     class Cell
     {
-        Vector lines = new Vector();
+        Vector<Line> lines = new Vector<>();
 
         void add( Line line )
         {
@@ -2209,7 +2400,7 @@ public class RtfSink
 
     static class Line
     {
-        Vector items = new Vector();
+        Vector<Item> items = new Vector<>();
 
         void add( Item item )
         {

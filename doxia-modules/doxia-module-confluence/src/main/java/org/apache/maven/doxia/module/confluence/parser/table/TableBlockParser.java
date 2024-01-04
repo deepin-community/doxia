@@ -39,9 +39,8 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Parse tables
- * 
+ *
  * @author Juan F. Codagnone
- * @version $Id: TableBlockParser.java 1726441 2016-01-23 19:37:22Z rfscholte $
  */
 public class TableBlockParser
     implements BlockParser
@@ -85,7 +84,7 @@ public class TableBlockParser
             throw new IllegalAccessError( "call accept before this ;)" );
         }
 
-        List<Block> rows = new ArrayList<Block>();
+        List<Block> rows = new ArrayList<>();
 
         String l = line;
 
@@ -93,19 +92,19 @@ public class TableBlockParser
         {
             l = l.substring( 0, l.lastIndexOf( "|" ) );
 
-            List<Block> cells = new ArrayList<Block>();
+            List<Block> cells = new ArrayList<>();
 
             if ( l.startsWith( "||" ) )
             {
                 String[] text = StringUtils.split( l, "||" );
 
-                for ( int i = 0; i < text.length; i++ )
+                for ( String s : text )
                 {
-                    List<Block> textBlocks = new ArrayList<Block>();
+                    List<Block> textBlocks = new ArrayList<>();
 
-                    textBlocks.add( parseLine( text[i], new ByLineReaderSource( new StringReader( EMPTY_STRING ) ) ) );
+                    textBlocks.add( parseLine( s, new ByLineReaderSource( new StringReader( EMPTY_STRING ) ) ) );
 
-                    List<Block> blocks = new ArrayList<Block>();
+                    List<Block> blocks = new ArrayList<>();
 
                     blocks.add( new BoldBlock( textBlocks ) );
 
@@ -116,7 +115,7 @@ public class TableBlockParser
             {
                 int it = 0;
                 String[] text = StringUtils.split( l, "|" );
-                List<String> texts = new LinkedList<String>();
+                List<String> texts = new LinkedList<>();
 
                 while ( it < text.length )
                 {
@@ -135,7 +134,7 @@ public class TableBlockParser
 
                 for ( String pText : texts )
                 {
-                    List<Block> blocks = new ArrayList<Block>();
+                    List<Block> blocks = new ArrayList<>();
 
                     blocks.add( parseLine( pText, new ByLineReaderSource( new StringReader( EMPTY_STRING ) ) ) );
 
